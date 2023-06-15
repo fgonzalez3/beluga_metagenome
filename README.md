@@ -1,2 +1,4 @@
 # Beluga Metagenome
-This repository contains all scripts necessary for data processing and visualization of our beluga whale metagenomics smaples.
+This repo contains documation for Beluga whale metagenome assembly. 
+
+Initial metagenomics QC and assembly can be found [here](
