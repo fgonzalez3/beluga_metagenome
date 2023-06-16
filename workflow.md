@@ -188,25 +188,26 @@ module load kraken2/2.0.8-beta
 kraken2-build --standard --threads 24 --db KRAKEN_DB
 ```
 
-2. Now assign taxonomy to contigs. 
+2. Now assign taxonomy to contigs. McCleary doesn't have the right version of Perl to run this, so I did these on the HCC. 
 
 ```
 #!/bin/bash
 #SBATCH --job-name=kraken
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=12
-#SBATCH --time=24:00:00
+#SBATCH --mem=60G
+#SBATCH --time=48:00:00
 #SBATCH --output=kraken.out
 #SBATCH --error=kraken.err
 
-module load miniconda 
-conda activate beluga
+module load kraken2
 
-kraken --preload --db $KRAKEN_DB
+kraken2 --preload --db $KRAKEN2_DB
 
 mkdir TAXONOMY_MAG
 
-kraken2 --db $KRAKEN_DB --threads 12 -input contigs.fasta --output TAXONOMY_MAG/contigs.kraken --report TAXONOMY_MAG/contigs.report
+# run kraken2 with the full input data and monitor memory usage
+/usr/bin/time -v kraken2 --db $KRAKEN2_DB --threads 12 --memory-mapping -input contigs.fasta --output TAXONOMY_MAG/contigs.kraken --report TAXONOMY_MAG/contigs.report 2> memory_usage.txt
 ```
 
 3. Then assign taxonomy to reads. 
@@ -216,13 +217,17 @@ kraken2 --db $KRAKEN_DB --threads 12 -input contigs.fasta --output TAXONOMY_MAG/
 #SBATCH --job-name=kraken
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=12
+#SBATCH --mem=60G
 #SBATCH --time=48:00:00
 #SBATCH --output=kraken.out
 #SBATCH --error=kraken.err
 
 module load kraken2
 
+kraken2 --preload --db $KRAKEN2_DB
+
 mkdir TAXONOMY_MAG
 
-kraken2 --db $KRAKEN2_DB --threads 12 --paired SAMPLE_host_removed_R1.fastq.gz SAMPLE_host_removed_R2.fastq.gz --output TAXONOMY_MAG/contigs.kraken --report TAXONOMY_MAG/contigs.report
+# run kraken2 with the full input data and monitor memory usage
+/usr/bin/time -v kraken2 --db $KRAKEN2_DB --threads 12 --memory-mapping --paired SAMPLE_host_removed_R1.fastq.gz SAMPLE_host_removed_R2.fastq.gz --output TAXONOMY_MAG/contigs.kraken --report TAXONOMY_MAG/contigs.report 2> memory_usage.txt
 ```
