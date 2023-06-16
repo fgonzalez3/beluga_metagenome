@@ -231,3 +231,22 @@ mkdir TAXONOMY_MAG
 # run kraken2 with the full input data and monitor memory usage
 /usr/bin/time -v kraken2 --db $KRAKEN2_DB --threads 12 --memory-mapping --paired SAMPLE_host_removed_R1.fastq.gz SAMPLE_host_removed_R2.fastq.gz --output TAXONOMY_MAG/contigs.kraken --report TAXONOMY_MAG/contigs.report 2> memory_usage.txt
 ```
+
+### Visualization
+
+1. Now let's visualize these outputs.
+
+```
+#!/bin/bash
+#SBATCH --job-name=krona
+#SBATCH --nodes=1
+#SBATCH --mem=8G
+#SBATCH --time=6:00:00
+#SBATCH --output=krona.out
+#SBATCH --error=krona.err
+
+module load krona 
+
+cut -f2,3 contigs.kraken > krona.input
+ktImportTaxonomy krona.input -o krona.out.html
+```
