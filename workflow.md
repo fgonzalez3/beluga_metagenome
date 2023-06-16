@@ -33,6 +33,29 @@ mkdir docs
 cat */summary.txt > docs/fastqc_summaries.txt
 ```
 
+2. Since we did not need to trim, this step was taken. Though if we were to, a similar process could be taken as the one below:
+
+```
+#!/bin/bash
+#SBATCH --job-name=trimmomatic
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=4
+#SBATCH --time=24:00:00
+#SBATCH --output=trimmomatic.out
+#SBATCH --error=trimmomatic.err
+
+module load miniconda 
+conda activate beluga 
+
+trimmomatic PE -threads 4 whale_feces_S170_R1_001.fastq whale_feces_S170_R2_001.fastq \
+whale_feces_S170_R1_001.trimmed.fastq whale_feces_S170_R1_001.orphaned.fastq \
+whale_feces_S170_R2_001.trimmed.fastq whale_feces_S170_R2_001.orphaned.fastq \
+ILLUMINACLIP:adapter_sequences.fasta SLIDINGWINDOW:4:20
+
+# this is what we would run if we had adapters or needed to trim, but the .fastq files are already trimmed 
+# so let's just worry about filtering out host background 
+```
+
 ### Filtering
 
 1. Since the reads were already trimmed, we could skip ahead to the filtering step. Here, first mapped paired, trimmed reads to the Beluga genome and removed all reads that mapped. This left behind only unmapped reads from microbes that we would analyze downstream. I downloaded the Beluga genome from [here](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_002288925.2/). Using Bowtie and Samtools, I was able to get unmapped reads that would be used for assembly. These were the same steps outlined [here](https://www.metagenomics.wiki/tools/short-read/remove-host-sequences). 
