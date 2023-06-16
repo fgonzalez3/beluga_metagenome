@@ -35,7 +35,7 @@ cat */summary.txt > docs/fastqc_summaries.txt
 
 ### Filtering
 
-1. Since the reads were already trimmed, we could skip ahead to the filtering step. Here, first mapped paired, trimmed reads to the Beluga genome and removed all reads that mapped. This left behind only unmapped reads from microbes that we would analyze downstream. I downloaded the Beluga genome from [here](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_002288925.2/). Using Bowtie and Samtools, I was able to get unmapped reads that would be used for assembly. 
+1. Since the reads were already trimmed, we could skip ahead to the filtering step. Here, first mapped paired, trimmed reads to the Beluga genome and removed all reads that mapped. This left behind only unmapped reads from microbes that we would analyze downstream. I downloaded the Beluga genome from [here](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_002288925.2/). Using Bowtie and Samtools, I was able to get unmapped reads that would be used for assembly. These were the same steps outlined [here](https://www.metagenomics.wiki/tools/short-read/remove-host-sequences). 
 
 ```
 #!/bin/bash
