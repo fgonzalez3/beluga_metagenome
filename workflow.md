@@ -1,4 +1,4 @@
-### Quality Control 
+# Quality Control 
 
 1. We received trimmed raw reads from SeqCenter, which I analyzed for this project. The first step was to run FASTQC on these samples:
 
@@ -56,7 +56,7 @@ ILLUMINACLIP:adapter_sequences.fasta SLIDINGWINDOW:4:20
 # so let's just worry about filtering out host background 
 ```
 
-### Filtering
+# Filtering
 
 1. Since the reads were already trimmed, we could skip ahead to the filtering step. Here, first mapped paired, trimmed reads to the Beluga genome and removed all reads that mapped. This left behind only unmapped reads from microbes that we would analyze downstream. I downloaded the Beluga genome from [here](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_002288925.2/). Using Bowtie and Samtools, I was able to get unmapped reads that would be used for assembly. These were the same steps outlined [here](https://www.metagenomics.wiki/tools/short-read/remove-host-sequences). 
 
@@ -102,7 +102,7 @@ samtools sort -n -m 5G -@8 SAMPLE_BOTH_reads_unmapped.bam -o SAMPLE_BOTH_reads_u
 samtools fastq -@8 SAMPLE_BOTH_reads_unmapped.sorted.bam -1 SAMPLE_host_removed_R1.fastq.gz -2 SAMPLE_host_removed_R2.fastq.gz -0 /dev/null -s /dev/null -n
 ```
 
-### Metagenome assembly 
+# Metagenome assembly 
 
 1. Once reads underwent filtering, I assembled a metagenome. SPAdes is best for this data. 
 
@@ -151,7 +151,7 @@ samtools sort contig_alignments.bam -o sample.sorted.bam
 samtools index sample.sorted.bam -o indexed.bam
 ```
 
-### Binning 
+# Binning 
 
 1. Next I binned my MAGs. There are two programs you could use here. 
 
@@ -203,7 +203,7 @@ jgi_summarize_bam_contig_depths --outputDepth depth.txt *.bam
 metabat2 -i contigs.fasta -a depth.txt -o METABAT
 ```
 
-### Taxonomy
+# Taxonomy
 
 1. Next, it's time to assign taxonomy. There are two ways to do this a) assign to paired reads or b) assign to contigs. I did both, but we first have to create a database using Kraken2. 
 
@@ -265,7 +265,7 @@ mkdir TAXONOMY_MAG
 /usr/bin/time -v kraken2 --db $KRAKEN2_DB --threads 12 --memory-mapping --paired SAMPLE_host_removed_R1.fastq.gz SAMPLE_host_removed_R2.fastq.gz --output TAXONOMY_MAG/contigs.kraken --report TAXONOMY_MAG/contigs.report 2> memory_usage.txt
 ```
 
-### Visualization
+# Visualization
 
 1. Now let's visualize these outputs.
 
