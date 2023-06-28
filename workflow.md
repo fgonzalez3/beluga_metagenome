@@ -124,6 +124,33 @@ mkdir results
 metaspades.py -1 SAMPLE_host_removed_R1.fastq.gz -2 SAMPLE_host_removed_R2.fastq.gz -o results
 ```
 
+# Read mapping 
+
+1. Here, map reads to contigs to get coverage data.
+
+```
+#!/bin/bash
+#SBATCH --job-name=alignment
+#SBATCH --nodes=2
+#SBATCH --time=24:00:00
+#SBATCH --output=alignment.out
+#SBATCH --error=alignment.err
+
+ml miniconda 
+conda activate primer_design
+
+# bowtie2 mapping host_removed reads to contigs for binning input 
+
+seqtk seq -a SAMPLE_host_removed_R1.fastq.gz > out1.fa
+seqtk seq -a SAMPLE_host_removed_R2.fastq.gz > out2.fa
+
+bowtie2-build -f results/contigs.fasta index_prefix
+bowtie2 -x index_prefix -f -1 out1.fa -2 out2.fa -S contig_alignments.bam
+
+samtools sort contig_alignments.bam -o sample.sorted.bam
+samtools index sample.sorted.bam -o indexed.bam
+```
+
 ### Binning 
 
 1. Next I binned my MAGs. There are two programs you could use here. 
