@@ -137,10 +137,16 @@ metaspades.py -1 SAMPLE_host_removed_R1.fastq.gz -2 SAMPLE_host_removed_R2.fastq
 #SBATCH --output=binning.out
 #SBATCH --error=binning.err
 
-module load miniconda 
+ml miniconda 
+
 conda activate binning 
 
-mkdir MAXBIN
+mkdir -p $CONDA_PREFIX/etc/conda/activate.d
+
+echo 'export PERL5LIB='/gpfs/gibbs/project/turner/flg9/conda_envs/binning/lib/site_perl/5.26.2/:/gpfs/gibbs/project/turner/flg9/conda_envs/binning/lib/5.26.2 >> $CONDA_PREFIX/etc/conda/activate.d/env_vars.sh
+
+conda deactivate binning
+conda activate binning
 
 run_MaxBin.pl -thread 8 -contig contigs.fasta -reads SAMPLE_host_removed_R1.fastq.gz -reads2 SAMPLE_host_removed_R2.fastq.gz -o MAXBIN
 ```
