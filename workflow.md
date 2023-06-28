@@ -148,7 +148,7 @@ echo 'export PERL5LIB='/gpfs/gibbs/project/turner/flg9/conda_envs/binning/lib/si
 conda deactivate binning
 conda activate binning
 
-run_MaxBin.pl -thread 8 -contig contigs.fasta -reads SAMPLE_host_removed_R1.fastq.gz -reads2 SAMPLE_host_removed_R2.fastq.gz -o MAXBIN
+run_MaxBin.pl -thread 8 -contig results/contigs.fasta -reads SAMPLE_host_removed_R1.fastq.gz -reads2 SAMPLE_host_removed_R2.fastq.gz -o MAXBIN
 ```
 
 OR
