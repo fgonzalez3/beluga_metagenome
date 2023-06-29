@@ -153,7 +153,7 @@ samtools index sample.sorted.bam -o indexed.bam
 
 # Binning 
 
-1. Next I binned my MAGs. 
+1. Next, bin your MAGs. 
 
 ```
 #!/bin/bash
@@ -167,6 +167,30 @@ samtools index sample.sorted.bam -o indexed.bam
 module load MaxBin/2.2.7-gompi-2020b 
 
 run_MaxBin.pl -thread 8 -contig results/contigs.fasta -reads SAMPLE_host_removed_R1.fastq.gz -reads2 SAMPLE_host_removed_R2.fastq.gz -out MAXBIN
+```
+2. Then, assess quality of bins and MAGs.
+
+```
+#!/bin/bash
+#SBATCH --job-name=checkm
+#SBATCH --nodes=1
+#SBATCH --time=12:00:00
+#SBATCH --ntasks-per-node=4
+#SBATCH --mem=60G
+#SBATCH --output=checkm.out
+#SBATCH --error=checkm.err
+
+ml miniconda 
+conda activate qc_binning 
+
+# checkm calls genes internally using prodigal 
+
+mkdir binning/CHECKM
+checkm lineage_wf -t 4 -x fasta binning binning/CHECKM
+
+# run qa to make tables and plots 
+
+checkm qa binning/CHECKM/lineage.ms binning/CHECKM/ --file binning/CHECKM/quality.tsv --tab_table -o 2
 ```
 
 # Taxonomy
