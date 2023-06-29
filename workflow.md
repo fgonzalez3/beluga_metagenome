@@ -164,43 +164,9 @@ samtools index sample.sorted.bam -o indexed.bam
 #SBATCH --output=binning.out
 #SBATCH --error=binning.err
 
-ml miniconda 
+module load MaxBin/2.2.7-gompi-2020b 
 
-conda activate binning 
-
-mkdir -p $CONDA_PREFIX/etc/conda/activate.d
-
-echo 'export PERL5LIB='/gpfs/gibbs/project/turner/flg9/conda_envs/binning/lib/site_perl/5.26.2/:/gpfs/gibbs/project/turner/flg9/conda_envs/binning/lib/5.26.2 >> $CONDA_PREFIX/etc/conda/activate.d/env_vars.sh
-
-conda deactivate binning
-conda activate binning
-
-run_MaxBin.pl -thread 8 -contig results/contigs.fasta -reads SAMPLE_host_removed_R1.fastq.gz -reads2 SAMPLE_host_removed_R2.fastq.gz -o MAXBIN
-```
-
-OR
-
-```
-#!/bin/bash
-#SBATCH --job-name=metabat
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=8
-#SBATCH --time=24:00:00
-#SBATCH --output=metabat.out
-#SBATCH --error=metabat.err
-
-module load miniconda 
-conda activate binning 
-
-mkdir METABAT
-
-runMetaBat.sh -i contigs.fasta SAMPLE_BOTH_reads_unmapped.sorted.bam -o METABAT
-
-runMetaBat.sh contigs.fasta SAMPLE_BOTH_reads_unmapped.sorted.bam -o METABAT
-
-jgi_summarize_bam_contig_depths --outputDepth depth.txt *.bam
-
-metabat2 -i contigs.fasta -a depth.txt -o METABAT
+run_MaxBin.pl -thread 8 -contig results/contigs.fasta -reads SAMPLE_host_removed_R1.fastq.gz -reads2 SAMPLE_host_removed_R2.fastq.gz -out MAXBIN
 ```
 
 # Taxonomy
