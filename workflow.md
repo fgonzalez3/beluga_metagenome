@@ -168,6 +168,30 @@ module load MaxBin/2.2.7-gompi-2020b
 
 run_MaxBin.pl -thread 8 -contig results/contigs.fasta -reads SAMPLE_host_removed_R1.fastq.gz -reads2 SAMPLE_host_removed_R2.fastq.gz -out MAXBIN
 ```
+1a. Conda didn't automatically point to the Perl libraries for these functions so we initially tried to include a few lines to ensure that my Conda environment was looking in the right place for those modules. This didn't end up working out, which is why I had McCleary install MaxBin instead. Either way, this is still useful if this issue arises again in the future. 
+
+```
+#!/bin/bash
+#SBATCH --job-name=binning
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=8
+#SBATCH --time=24:00:00
+#SBATCH --output=binning.out
+#SBATCH --error=binning.err
+
+ml miniconda 
+conda activate binning 
+
+mkdir -p $CONDA_PREFIX/etc/conda/activate.d
+
+echo 'export PERL5LIB='/gpfs/gibbs/project/turner/flg9/conda_envs/binning/lib/site_perl/5.26.2/:/gpfs/gibbs/project/turner/flg9/conda_envs/binning/lib/5.26.2 >> $CONDA_PREFIX/etc/conda/activate.d/env_vars.sh
+
+conda deactivate binning
+conda activate binning
+
+run_MaxBin.pl -thread 8 -contig results/contigs.fasta -reads SAMPLE_host_removed_R1.fastq.gz -reads2 SAMPLE_host_removed_R2.fastq.gz -out MAXBIN
+```
+
 2. Then, assess quality of bins and MAGs.
 
 ```
@@ -211,7 +235,7 @@ module load kraken2/2.0.8-beta
 kraken2-build --standard --threads 24 --db KRAKEN_DB
 ```
 
-2. Now assign taxonomy to contigs. McCleary doesn't have the right version of Perl to run this, so I did these on the HCC. 
+2. Now assign taxonomy to contigs. I first tried this on the HCC since they already have Kraken2 installed - much more straightforward than running it through Yale's cluster. 
 
 ```
 #!/bin/bash
@@ -230,7 +254,7 @@ kraken2 --preload --db $KRAKEN2_DB
 mkdir TAXONOMY_MAG
 
 # run kraken2 with the full input data and monitor memory usage
-/usr/bin/time -v kraken2 --db $KRAKEN2_DB --threads 12 --memory-mapping -input contigs.fasta --output TAXONOMY_MAG/contigs.kraken --report TAXONOMY_MAG/contigs.report 2> memory_usage.txt
+/usr/bin/time -v kraken2 --db $KRAKEN2_DB --threads 12 --memory-mapping --output TAXONOMY_MAG/contigs.kraken --report TAXONOMY_MAG/contigs.report contigs.fasta 2> memory_usage.txt 
 ```
 
 3. Then assign taxonomy to reads. 
@@ -252,8 +276,60 @@ kraken2 --preload --db $KRAKEN2_DB
 mkdir TAXONOMY_MAG
 
 # run kraken2 with the full input data and monitor memory usage
-/usr/bin/time -v kraken2 --db $KRAKEN2_DB --threads 12 --memory-mapping --paired SAMPLE_host_removed_R1.fastq.gz SAMPLE_host_removed_R2.fastq.gz --output TAXONOMY_MAG/contigs.kraken --report TAXONOMY_MAG/contigs.report 2> memory_usage.txt
+/usr/bin/time -v kraken2 --db $KRAKEN2_DB --threads 12 --memory-mapping --output TAXONOMY_MAG/contigs.kraken --report TAXONOMY_MAG/contigs.report --paired SAMPLE_host_removed_R1.fastq.gz SAMPLE_host_removed_R2.fastq.gz 2> memory_usage.txt
 ```
+
+4. To run on McCleary, a few extra steps (similar to getting MaxBin to run) had to be taken.
+
+```
+ml miniconda
+conda activate taxonomy
+
+cd project/conda_envs/taxonomy/
+
+####finds directory that has FTP.pm inside based off of error provided####
+find . -type d -name 'Net'
+
+#####enter directory where Net/FTP.pm is located##########
+cd lib/perl5/core_perl/
+
+####get full path location to library#########
+readlink -f .
+
+####creates file that is read everytime conda environment is activated#########
+mkdir -p $CONDA_PREFIX/etc/conda/activate.d
+
+#####saves library location from readlink -f . to file in activate.d that will tell conda where perl5 library is everytime###########
+echo 'export PERL5LIB=/gpfs/gibbs/project/turner/flg9/conda_envs/taxonomy/lib/perl5/core_perl' >> $CONDA_PREFIX/etc/conda/activate.d/env_vars.sh
+
+conda deactivate
+```
+
+Now, my Conda environment should have the correct location for the Kraken2 libraries meaning we can run the workflow in the same way we did for the HCC. 
+
+```
+#!/bin/bash
+#SBATCH --job-name=kraken
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=4
+#SBATCH --mem=60G
+#SBATCH --time=24:00:00
+#SBATCH --output=kraken.out
+#SBATCH --error=kraken.err
+
+module load miniconda 
+conda activate taxonomy
+
+# first build a database using the standard db
+
+kraken2-build --standard --threads 4 --db KRAKEN_DB
+
+# then run on contigs 
+
+kraken2 --db $KRAKEN2_DB --threads 4 --output TAXONOMY_MAG/contigs.kraken --report TAXONOMY_MAG/contigs.report contigs.fasta 
+```
+
+
 
 # Visualization
 
