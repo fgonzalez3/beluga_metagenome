@@ -219,7 +219,7 @@ checkm qa binning/CHECKM/lineage.ms binning/CHECKM/ --file binning/CHECKM/qualit
 
 # Taxonomy
 
-1. Next, it's time to assign taxonomy. There are two ways to do this a) assign to paired reads or b) assign to contigs. I did both, but we first have to create a database using Kraken2. 
+1. Next, it's time to assign taxonomy. There are two ways to do this a) assign to paired reads or b) assign to contigs. I did both, but we first have to create a database using Kraken2 if we are running on Yale's cluster. HCC already has this downloaded, so I only needed to preload it. 
 
 ```
 #!/bin/bash
