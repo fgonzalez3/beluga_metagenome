@@ -153,7 +153,7 @@ samtools index sample.sorted.bam -o indexed.bam
 
 # Binning 
 
-1. Next I binned my MAGs. There are two programs you could use here. 
+1. Next I binned my MAGs. 
 
 ```
 #!/bin/bash
