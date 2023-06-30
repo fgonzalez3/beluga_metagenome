@@ -232,7 +232,7 @@ checkm qa binning/CHECKM/lineage.ms binning/CHECKM/ --file binning/CHECKM/qualit
 
 module load kraken2/2.0.8-beta	 
 
-kraken2-build --standard --threads 24 --db KRAKEN_DB
+kraken2-build --standard --threads 24 --db KRAKEN2_DB
 ```
 
 2. Now assign taxonomy to contigs. I first tried this on the HCC since they already have Kraken2 installed - much more straightforward than running it through Yale's cluster. 
@@ -322,11 +322,11 @@ conda activate taxonomy
 
 # first build a database using the standard db
 
-kraken2-build --standard --threads 4 --db KRAKEN_DB
+kraken2-build --standard --threads 4 --db KRAKEN2_DB
 
 # then run on contigs 
 
-kraken2 --db $KRAKEN2_DB --threads 4 --output TAXONOMY_MAG/contigs.kraken --report TAXONOMY_MAG/contigs.report contigs.fasta 
+kraken2 --db KRAKEN2_DB --threads 4 --output TAXONOMY_MAG/contigs.kraken --report TAXONOMY_MAG/contigs.report contigs.fasta 
 ```
 
 
