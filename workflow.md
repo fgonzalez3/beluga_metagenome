@@ -305,14 +305,14 @@ echo 'export PERL5LIB=/gpfs/gibbs/project/turner/flg9/conda_envs/taxonomy/lib/pe
 conda deactivate
 ```
 
-Now, my Conda environment should have the correct location for the Kraken2 libraries meaning we can run the workflow in the same way we did for the HCC. 
+Now, my Conda environment should have the correct location for the Kraken2 libraries meaning we can run the workflow in the same way we did for the HCC. Building databases take up quite a bit of RAM, so it's necessary to load in ~150-200G of memory to avoid crashes. 
 
 ```
 #!/bin/bash
 #SBATCH --job-name=kraken
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=4
-#SBATCH --mem=60G
+#SBATCH --mem=200G
 #SBATCH --time=24:00:00
 #SBATCH --output=kraken.out
 #SBATCH --error=kraken.err
@@ -358,7 +358,7 @@ To get abundance metrics useful for R visualization, we first run [BRACKEN](http
 #!/bin/bash
 #SBATCH --job-name=bracken
 #SBATCH --nodes=2
-#SBATCH --mem=12G
+#SBATCH --mem=200G
 #SBATCH --ntasks=15
 #SBATCH --time=24:00:00
 #SBATCH --output=bracken.out
@@ -377,5 +377,3 @@ bracken-build -d /gpfs/gibbs/project/turner/flg9/TurnerLab/beluga_feces/taxonomy
 
 bracken -d KRAKEN2_DB -i contigs.report -o BRACKEN/contigs.bracken -t 15
 ```
-
-
