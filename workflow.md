@@ -329,8 +329,6 @@ kraken2-build --standard --threads 4 --db KRAKEN2_DB
 kraken2 --db KRAKEN2_DB --threads 4 --output TAXONOMY_MAG/contigs.kraken --report TAXONOMY_MAG/contigs.report contigs.fasta 
 ```
 
-
-
 # Visualization
 
 1. Now let's visualize these outputs.
@@ -349,5 +347,35 @@ module load krona
 cut -f2,3 contigs.kraken > krona.input
 ktImportTaxonomy krona.input -o krona.out.html
 ```
-This looks great. 
+This looks great, now let's figure out how to import this into R to manipulate it some more. 
 ![snapshot](https://github.com/fgonzalez3/beluga_metagenome/assets/51669806/b05ada59-bdc1-4671-a81e-dc983f3f99e4)
+
+# Abundance 
+
+To get abundance metrics useful for R visualization, we first run [BRACKEN](https://github.com/jenniferlu717/Bracken) on our KRAKEN report file. I created a new Conda environment using Bioconda, link [here](https://anaconda.org/bioconda/bracken). Script to run BRACKEN below: 
+
+```
+#!/bin/bash
+#SBATCH --job-name=bracken
+#SBATCH --nodes=2
+#SBATCH --mem=12G
+#SBATCH --ntasks=15
+#SBATCH --time=24:00:00
+#SBATCH --output=bracken.out
+#SBATCH --error=bracken.err
+
+module load miniconda 
+conda activate abundance
+
+mkdir BRACKEN
+
+# first build a BRACKEN db
+
+bracken-build -d /gpfs/gibbs/project/turner/flg9/TurnerLab/beluga_feces/taxonomy/KRAKEN2_DB -t 15
+
+# then run BRACKEN for abundance estimation 
+
+bracken -d KRAKEN2_DB -i contigs.report -o BRACKEN/contigs.bracken -t 15
+```
+
+
