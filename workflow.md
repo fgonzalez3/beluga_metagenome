@@ -1,6 +1,6 @@
 # Quality Control 
 
-1. We received trimmed raw reads from SeqCenter, which I analyzed for this project. The first step was to run FASTQC on these samples:
+1. We received trimmed raw reads from SeqCenter, which I analyzed for this project. The first step was to run [FASTQC](https://github.com/s-andrews/FastQC) on these samples.
 
 ```
 #!/bin/bash
@@ -33,7 +33,7 @@ mkdir docs
 cat */summary.txt > docs/fastqc_summaries.txt
 ```
 
-2. Since we did not need to trim, this step was taken. Though if we were to, a similar process could be taken as the one below:
+2. Since we did not need to trim, this step was taken. Though if we were to, a similar process could be taken as the one below using [Trimmomatic](https://github.com/usadellab/Trimmomatic). 
 
 ```
 #!/bin/bash
@@ -58,7 +58,7 @@ ILLUMINACLIP:adapter_sequences.fasta SLIDINGWINDOW:4:20
 
 # Filtering
 
-1. Since the reads were already trimmed, we could skip ahead to the filtering step. Here, first mapped paired, trimmed reads to the Beluga genome and removed all reads that mapped. This left behind only unmapped reads from microbes that we would analyze downstream. I downloaded the Beluga genome from [here](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_002288925.2/). Using Bowtie and Samtools, I was able to get unmapped reads that would be used for assembly. These were the same steps outlined [here](https://www.metagenomics.wiki/tools/short-read/remove-host-sequences). 
+1. Since the reads were already trimmed, we could skip ahead to the filtering step. Here, first mapped paired, trimmed reads to the Beluga genome and removed all reads that mapped. This left behind only unmapped reads from microbes that we would analyze downstream. I downloaded the Beluga genome from [here](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_002288925.2/). Using [Bowtie2](https://github.com/BenLangmead/bowtie2) and [Samtools](https://github.com/samtools/samtools), I was able to get unmapped reads that would be used for assembly. These were the same steps outlined [here](https://www.metagenomics.wiki/tools/short-read/remove-host-sequences). 
 
 ```
 #!/bin/bash
@@ -104,7 +104,7 @@ samtools fastq -@8 SAMPLE_BOTH_reads_unmapped.sorted.bam -1 SAMPLE_host_removed_
 
 # Metagenome assembly 
 
-1. Once reads underwent filtering, I assembled a metagenome. SPAdes is best for this data. 
+1. Once reads underwent filtering, I assembled a metagenome. [SPAdes](https://github.com/ablab/spades) is best for this data. 
 
 ```
 #!/bin/bash
@@ -126,7 +126,7 @@ metaspades.py -1 SAMPLE_host_removed_R1.fastq.gz -2 SAMPLE_host_removed_R2.fastq
 
 # Read mapping 
 
-1. Here, map reads to contigs to get coverage data.
+1. Here, map reads to contigs to get coverage data. I converted my gunzip files to fasta files using [Seqtk](https://github.com/lh3/seqtk). 
 
 ```
 #!/bin/bash
@@ -153,7 +153,7 @@ samtools index sample.sorted.bam -o indexed.bam
 
 # Binning 
 
-1. Next, bin your MAGs. 
+1. Next, bin your MAGs. I used [MaxBin2](https://anaconda.org/bioconda/maxbin2), but there are others you can use as well. I first tried this on the HCC, a little simpler this way. 
 
 ```
 #!/bin/bash
@@ -192,7 +192,7 @@ conda activate binning
 run_MaxBin.pl -thread 8 -contig results/contigs.fasta -reads SAMPLE_host_removed_R1.fastq.gz -reads2 SAMPLE_host_removed_R2.fastq.gz -out MAXBIN
 ```
 
-2. Then, assess quality of bins and MAGs.
+2. Then, assess the quality of bins and MAGs. I used [CHECKM](https://github.com/Ecogenomics/CheckM). 
 
 ```
 #!/bin/bash
@@ -219,7 +219,7 @@ checkm qa binning/CHECKM/lineage.ms binning/CHECKM/ --file binning/CHECKM/qualit
 
 # Taxonomy
 
-1. Next, it's time to assign taxonomy. There are two ways to do this a) assign to paired reads or b) assign to contigs. I did both, but we first have to create a database using Kraken2 if we are running on Yale's cluster. HCC already has this downloaded, so I only needed to preload it. 
+1. Next, it's time to assign taxonomy. There are two ways to do this a) assign to paired reads or b) assign to contigs. I did both, but we first have to create a database using [Kraken2](https://github.com/DerrickWood/kraken2) if we are running on Yale's cluster. HCC already has this downloaded, so I only needed to preload it. 
 
 ```
 #!/bin/bash
@@ -331,7 +331,7 @@ kraken2 --db KRAKEN2_DB --threads 4 --output TAXONOMY_MAG/contigs.kraken --repor
 
 # Visualization
 
-1. Now let's visualize these outputs.
+1. Now let's visualize these outputs. I used [Krona](https://github.com/marbl/Krona/wiki) for this. 
 
 ```
 #!/bin/bash
