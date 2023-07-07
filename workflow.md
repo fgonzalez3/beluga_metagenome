@@ -354,6 +354,7 @@ This looks great, now let's figure out how to import this into R to manipulate i
 
 To get abundance metrics useful for R visualization, we first run [BRACKEN](https://github.com/jenniferlu717/Bracken) on our KRAKEN report file. I created a new Conda environment using Bioconda, link [here](https://anaconda.org/bioconda/bracken). This will require quite a bit of CPU and RAM to get it running properly. Also, multiple threads or it will take multiple days with only one.  
 
+```
 #!/bin/bash
 #SBATCH --job-name=bracken
 #SBATCH --nodes=2
@@ -376,4 +377,4 @@ bracken-build -d /gpfs/gibbs/project/turner/flg9/TurnerLab/beluga_feces/taxonomy
 # then run BRACKEN for abundance estimation 
 
 bracken -d KRAKEN2_DB -i contigs.report -o BRACKEN/contigs.bracken -t 15
-
+```
