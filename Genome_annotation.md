@@ -38,4 +38,4 @@ conda activate genome_annotation
 prokka --kingdom Bacteria --genus Clostridium --outdir output_directory Clostridia.fasta
 ```
 
-This will provide a .gff file in the output directory that we will use to visualize genome annotations. 
+This will provide a .gff file in the output directory that we will use to visualize genome annotations within the Integrative Genomics Viewer (IGV). 
