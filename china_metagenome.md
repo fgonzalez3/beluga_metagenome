@@ -29,3 +29,41 @@ reformat.sh in=SRR15037281_ANDY1.fastq.gz out1=ANDY1_R1.fastq out2=ANDY1_R2.fast
 reformat.sh in=SRR15037280_ANDY2.fastq.gz out1=ANDY2_R1.fastq out2=ANDY2_R2.fastq
 reformat.sh in=SRR15037304_ANDY3.fastq.gz out1=ANDY3_R1.fastq out2=ANDY3_R2.fastq
 ```
+
+# Quality control 
+
+I next did some quality control analyses on these samples. I mainly wanted to verify that the adapter sequences had been previously trimmed before proceeding. 
+
+```
+#!/bin/bash
+#SBATCH --job-name=fastqc
+#SBATCH --nodes=1
+#SBATCH --time=12:00:00
+#SBATCH --output=fastqc.out
+#SBATCH --error=fastqc.err
+
+module load miniconda 
+conda activate beluga 
+
+samples=("ANDY1" "ANDY2" "ANDY3" "TINA1" "TINA2" "TINA3")
+
+for sample_name in "${samples[@]}"
+do
+    mkdir "$sample_name"
+    fastqc "${sample_name}_R1.fastq" "${sample_name}_R2.fastq" -o "$sample_name"
+
+    cd "$sample_name" # Enter the sample directory
+
+    # Unzip FastQC results
+    for filename in *.zip 
+    do 
+        unzip "$filename"
+    done 
+
+    # Create 'docs' directory and combine summary files
+    mkdir docs
+    cat */summary.txt > docs/fastqc_summaries.txt
+
+    cd .. # Go back to the main directory
+done
+```
