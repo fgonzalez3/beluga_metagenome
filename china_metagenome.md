@@ -70,7 +70,7 @@ done
 
 # Further Quality Control 
 
-Running FASTQC showed numerous quality metric failures. Specifically, Per base sequence content, Per sequence GC content, Sequence duplication levels, and Overrepresented sequences metrics failed. To troubleshoot, I ran some additional quality control in order to make downstream analysis easier. I (a) first trimmed low-quality bases and (b) deduplicated reads. Afterward, I ran FASTQC on this parsed through data. 
+Running FASTQC showed numerous quality metric failures. Specifically, Per base sequence content, Per sequence GC content, Sequence duplication levels, and Overrepresented sequences metrics failed. To troubleshoot, I ran some additional quality control in order to make downstream analysis easier. I (a) first trimmed low-quality bases and (b) deduplicated reads. Afterward, I ran FASTQC on this parsed-through data. For my trimming of low-quality bases, I followed the procedure of the Beluga metagenome paper as closely as possible to replicate their results. That would be encompassed by using a sliding window of 5 and trimming bases with a <20 quality score, removing reads shorter than 200bp, and removing N bases (LEADING:0 and TRAILING:0). 
 
 ```
 #!/bin/bash
