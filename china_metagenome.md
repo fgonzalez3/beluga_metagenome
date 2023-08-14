@@ -67,3 +67,31 @@ do
     cd .. # Go back to the main directory
 done
 ```
+
+# Further Quality Control 
+
+Running FASTQC showed numerous quality metric failures. Specifically, Per base sequence content, Per sequence GC content, Sequence duplication levels, and Overrepresented sequences metrics failed. To troubleshoot, I ran some additional quality control in order to make downstream analysis easier. I (a) first trimmed low-quality bases and (b) deduplicated reads. Afterward, I ran FASTQC on this parsed through data. 
+
+```
+#!/bin/bash
+#SBATCH --job-name=china_qc
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=4
+#SBATCH --time=12:00:00
+#SBATCH --output=china_qc.out
+#SBATCH --error=china_qc.err
+
+ml miniconda 
+conda activate beluga 
+
+trimmomatic PE -threads 4 -phred33 ANDY1_R1.fastq ANDY1_R2.fastq ANDY1_R1.filtered.fastq ANDY1_R1.unfiltered.fastq ANDY1_R2.filtered.fastq ANDY1_R2.unfiltered.fastq SLIDINGWINDOW:5:20 MINLEN:200 LEADING:0 TRAILING:0
+
+mkdir cd-hit 
+mv *.filtered.fastq cd-hit 
+cd cd-hit
+
+conda activate morbillivirus 
+
+cd-hit-est -i ANDY1_R1.filtered.fastq -o ANDY1_R1.filtered.DEDUP.fastq -T 4 -c 0.95 -n 8
+cd-hit-est -i ANDY1_R2.filtered.fastq -o ANDY1_R2.filtered.DEDUP.fastq -T 4 -c 0.95 -n 8
+```
