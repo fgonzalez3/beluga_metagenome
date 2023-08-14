@@ -94,4 +94,12 @@ conda activate morbillivirus
 
 cd-hit-est -i ANDY1_R1.filtered.fastq -o ANDY1_R1.filtered.DEDUP.fastq -T 4 -c 0.95 -n 8
 cd-hit-est -i ANDY1_R2.filtered.fastq -o ANDY1_R2.filtered.DEDUP.fastq -T 4 -c 0.95 -n 8
+
+conda activate beluga 
+
+mkdir FASTQC 
+mv *.DEDUP.fastq FASTQC
+cd FASTQC
+
+fastqc ANDY1_R1.filtered.DEDUP.fastq ANDY1_R2.filtered.DEDUP.fastq
 ```
