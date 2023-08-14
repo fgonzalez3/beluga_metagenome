@@ -1,6 +1,6 @@
 # China metagenome
 
-I first navigated to the data used in the Bai et al paper to obtain the Beluga raw reads from that paper. I chose to only focus on the Beluga samples, though others were taken from dolphins and seals. Their data is freely available on NCBI following this [link](https://www.ncbi.nlm.nih.gov/biosample/SAMN20056375). 
+I first navigated to the data used in the Bai et al paper to obtain the Beluga raw reads from that paper. I chose to only focus on the Beluga samples, though others were taken from dolphins and seals. Their data is freely available on NCBI following this [link](https://www.ncbi.nlm.nih.gov/biosample/SAMN20056375). After looking back at the paper, this was amplicon-based sequencing. No further steps were taken beyond QC. 
 
 # De-merging paired-end reads 
 
