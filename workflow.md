@@ -378,3 +378,197 @@ bracken-build -d /gpfs/gibbs/project/turner/flg9/TurnerLab/beluga_feces/taxonomy
 
 bracken -d KRAKEN2_DB -i contigs.report -o BRACKEN/contigs.bracken -t 15
 ```
+
+To streamline this process, here's a working script (incomplete) that will run over numerous metagenomic samples. 
+
+```
+#!/bin/bash
+#SBATCH --job-name=metagenomics_pipeline
+#SBATCH --nodes=1
+#SBATCH --mem=200G
+##SBATCH --ntasks=4
+#SBATCH --time=12:00:00
+#SBATCH --output=metagenomics_pipeline.out
+#SBATCH --error=metagenomics_pipeline.err
+
+# Define paths and parameters
+DATA_DIR="/gpfs/gibbs/project/turner/flg9/TurnerLab/beluga_virome"
+SAMPLES=("data/whale_feces_S170_R1_001.fastq" "data/whale_feces_S170_R2_001.fastq")  # Add sample names as needed
+
+# Load necessary modules
+ml miniconda
+module load SPAdes/3.15.1-GCCcore-10.2.0-Python-3.8.6
+module load MaxBin/2.2.7-gompi-2020b
+module load Kraken2/2.1.3-gompi-2020b
+
+# Define functions for pipeline steps
+run_fastqc() {
+    mkdir -p FASTQC
+    for input_file in "$@"; do
+        fastqc "$input_file" -o FASTQC
+    done
+    cd FASTQC
+    for filename in *.zip; do
+        unzip "$filename"
+    done
+    cat */summary.txt > fastqc_summaries.txt
+}
+
+run_host_removal() {
+    cd "${DATA_DIR}/host_removal"
+
+    # Implement the host removal steps here
+    cp "${DATA_DIR}/${SAMPLE}_R1.filtered.fastq" "${DATA_DIR}/${SAMPLE}_R2.filtered.fastq" .
+
+    # ... Implement remaining host removal steps ...
+    conda activate primer_design 
+    cp data/whale_fecR1.filtered.fastq && data/whale_fecR2.filtered.fastq host_removal
+    cd host_removal
+
+    # Create Beluga & Human DB
+    bowtie2-build beluga_genome.fna,human_genome.fna host_DB
+
+    # Map reads against Beluga DB, keeping both aligned and unaligned reads 
+    bowtie2 -p 8 -x host_DB -1 whale_fecR1.filtered.fastq -2 whale_fecR2.filtered.fastq -S SAMPLE_mapped_and_unmapped.sam
+
+    # Convert file from .sam to .bam
+    samtools view -bS SAMPLE_mapped_and_unmapped.sam > SAMPLE_mapped_and_unmapped.bam
+
+    # Filter Unmapped Reads 
+    # -f: extract only alignments with both reads unmapped 
+    # -F: do not extract alignments which are not primary alignment
+    samtools view -b -f 12 -F 256 SAMPLE_mapped_and_unmapped.bam > SAMPLE_BOTH_reads_unmapped.bam
+
+    # Split paired-end reads into separated fastq files 
+    # Sort bam file by read name -n to have paired reads next to each other 
+    samtools sort -n -m 5G -@8 SAMPLE_BOTH_reads_unmapped.bam -o SAMPLE_BOTH_reads_unmapped.sorted.bam 
+    samtools fastq -@8 SAMPLE_BOTH_reads_unmapped.sorted.bam -1 SAMPLE_host_removed_R1.fastq.gz -2 SAMPLE_host_removed_R2.fastq.gz -0 /dev/null -s /dev/null -n
+}
+
+run_metaspades() {
+    cd "${DATA_DIR}/MAGs"
+
+    # Implement metaspades assembly steps here
+    cp "${DATA_DIR}/host_removal/${SAMPLE}_host_removed_R1.fastq.gz" "${DATA_DIR}/host_removal/${SAMPLE}_host_removed_R2.fastq.gz" .
+
+    metaspades.py -1 "${SAMPLE}_host_removed_R1.fastq.gz" -2 "${SAMPLE}_host_removed_R2.fastq.gz" -o .
+}
+
+run_read_mapping() {
+    cd "${DATA_DIR}/MAGs/read_mapping"
+
+    # Implement read mapping steps here
+    cp "${DATA_DIR}/host_removal/${SAMPLE}_host_removed_R1.fastq.gz" "${DATA_DIR}/host_removal/${SAMPLE}_host_removed_R2.fastq.gz" .
+    cp "${DATA_DIR}/MAGs/contigs.fasta" .
+
+    # ... Implement remaining read mapping steps ...
+    # map host_removed reads to MAGs for coverage input
+
+    seqtk seq -a SAMPLE_host_removed_R1.fastq.gz > out1.fa
+    seqtk seq -a SAMPLE_host_removed_R2.fastq.gz > out2.fa
+
+    bowtie2-build -f contigs.fasta index_prefix
+    bowtie2 -x index_prefix -f -1 out1.fa -2 out2.fa -S contig_alignments.bam
+
+    samtools sort contig_alignments.bam -o sample.sorted.bam
+    samtools index sample.sorted.bam -o indexed.bam
+}
+
+run_binning() {
+    cd "${DATA_DIR}/MAGs"
+
+    # Implement binning steps here
+    run_MaxBin.pl -thread 8 -contig contigs.fasta -reads "${SAMPLE}_host_removed_R1.fastq.gz" -reads2 "${SAMPLE}_host_removed_R2.fastq.gz" -out MAXBIN
+
+    # ... Implement remaining binning steps ...
+    # Step 6a: Assess Bin Quality 
+
+    conda activate qc_binning 
+
+    # checkm calls genes internally using prodigal 
+
+    mkdir MAXBIN/CHECKM
+    checkm lineage_wf -t 4 -x fasta binning MAXBIN/CHECKM
+
+    # run qa to make tables and plots 
+
+    checkm qa MAXBIN/CHECKM/lineage.ms binning/CHECKM/ --file MAXBIN/CHECKM/quality.tsv --tab_table -o 2
+}
+
+run_taxonomy_assignment() {
+    cd "${DATA_DIR}/kraken"
+
+    # Implement taxonomy assignment steps here
+    kraken2-build --standard --threads 4 --db KRAKEN2_DB
+    kraken2 --db KRAKEN2_DB --threads 4 --output TAXONOMY_MAG/${SAMPLE}_contigs.kraken --report TAXONOMY_MAG/${SAMPLE}_contigs.report contigs.fasta 2> memory_usage.txt
+
+    # ... Implement remaining taxonomy assignment steps ...
+}
+
+run_visualization() {
+    cd "${DATA_DIR}"
+
+    # Implement visualization steps here
+    mkdir -p krona
+    cp "kraken/${SAMPLE}_contigs.kraken" krona
+    module load krona
+
+    cut -f2,3 "${SAMPLE}_contigs.kraken" > krona.input
+    ktImportTaxonomy krona.input -o krona/${SAMPLE}_krona.out.html
+
+    # ... Implement remaining visualization steps ...
+}
+
+run_abundance_estimation() {
+    cd "${DATA_DIR}/kraken"
+    conda activate bracken
+    mkdir -p BRACKEN
+
+    # Implement abundance estimation steps here
+    bracken-build -d "/gpfs/gibbs/project/turner/flg9/TurnerLab/beluga_feces/kraken/KRAKEN2_DB" -t 15
+    bracken -d KRAKEN2_DB -i "${SAMPLE}_contigs.report" -o BRACKEN/${SAMPLE}_contigs.bracken -t 15
+
+    # ... Implement remaining abundance estimation steps ...
+}
+
+# Main loop for processing multiple samples
+for SAMPLE in "${SAMPLES[@]}"; do
+    # Step 1: Quality Trimming
+    trimmomatic PE -threads 4 -phred33 "${DATA_DIR}/${SAMPLE}_R1_001.fastq" "${DATA_DIR}/${SAMPLE}_R2_001.fastq" \
+        "${DATA_DIR}/${SAMPLE}_R1.filtered.fastq" "${DATA_DIR}/${SAMPLE}_R1.unfiltered.fastq" "${DATA_DIR}/${SAMPLE}_R2.filtered.fastq" "${DATA_DIR}/${SAMPLE}_R2.unfiltered.fastq" \
+        SLIDINGWINDOW:5:20 LEADING:3 TRAILING:3
+
+    # Step 2: Read Quality Analysis
+    run_fastqc "${DATA_DIR}/${SAMPLE}_R1.filtered.fastq" "${DATA_DIR}/${SAMPLE}_R2.filtered.fastq"
+
+    # Step 3: Contaminant read removal
+    run_host_removal
+
+    # Step 4: Metagenome Assembly
+    run_metaspades
+
+    # Step 5: Read Mapping
+    run_read_mapping
+
+    # Step 6: Binning
+    run_binning
+
+    # Step 6a: Assess Bin Quality
+    conda activate qc_binning
+    mkdir -p MAXBIN/CHECKM
+    checkm lineage_wf -t 4 -x fasta binning MAXBIN/CHECKM
+    checkm qa MAXBIN/CHECKM/lineage.ms binning/CHECKM/ --file MAXBIN/CHECKM/quality.tsv --tab_table -o 2
+
+    # Step 7: Taxonomy Assignment
+    run_taxonomy_assignment
+
+    # Step 8: Visualization
+    run_visualization
+
+    # Step 9: Microbial Abundance
+    run_abundance_estimation
+
+    # Cleanup
+    # ... Implement cleanup steps ...
+done
+```
