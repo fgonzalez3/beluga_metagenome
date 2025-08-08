@@ -1,0 +1,3 @@
+genera: beluga
+beluga_refseq: input/beluga_genome_sequence.fna
+human_refseq: input/GRCh38.fna
