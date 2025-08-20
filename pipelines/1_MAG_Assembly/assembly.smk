@@ -37,7 +37,7 @@ rule all:
         expand("results/{genera}/1_assembly/contig_index/{sample}/{sample}_indexed_contig.rev.2.bt2", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/1_assembly/contig_read_alignment/{sample}_aligned_sorted.bam", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/1_assembly/contig_aln_stats/{sample}_mappingstats.txt", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/1_assembly/assembly_eval/{sample}/metaspades_assembly_DEDUP95_m1500.fna.fasta", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/1_assembly/assembly_eval/{sample}/metaspades_assembly_DEDUP95_m1500.fasta", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/1_assembly/assembly_eval/{sample}/assembly_stats.csv", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/1_assembly/assembly_eval/{sample}/report.html", sample=SAMPLES, genera=config["genera"])
 
@@ -314,7 +314,7 @@ rule metagenome_assembly:
         stdout = "logs/{genera}/1_assembly/metagenome_assembly/{sample}/assembly.out",
         stderr = "logs/{genera}/1_assembly/metagenome_assembly/{sample}/assembly.err"
     resources:
-        mem_mb=1000000,
+        mem_mb=200000,
         threads=4
     shell:
         """
@@ -379,16 +379,15 @@ rule align_reads_to_contigs:
         module load Bowtie2/2.5.1-GCC-12.2.0
         module load SAMtools/1.21-GCC-12.2.0
 
-        (
-        # Build contig index
+        # 1. Build contig index
         bowtie2-build \
-        -f {input.contigs} {params.outdir}/{wildcards.sample}_indexed_contig
+        -f {input.contigs} {params.outdir}/{wildcards.sample}_indexed_contig \
+        1>> {log.stdout} 2>> {log.stderr}
 
-        # Align reads back to assembled contigs
+        # 2. Align reads back to assembled contigs
         bowtie2 \
-        -x {params.outdir}/{wildcards.sample}_indexed_contig -1 {input.r1} -2 {input.r2} | samtools view -b -F 4 -F 2048 | samtools sort -o {output[6]} 
-        )
-        1> {log.stdout} 2> {log.stderr}
+        -x {params.outdir}/{wildcards.sample}_indexed_contig -1 {input.r1} -2 {input.r2} | samtools view -b -F 4 -F 2048 | samtools sort -o {output[6]} \
+        1>> {log.stdout} 2>> {log.stderr}
         """
 
 rule contig_quality:
@@ -421,7 +420,7 @@ rule assembly_eval:
     input:
         contigs = "results/{genera}/1_assembly/dedup_contigs/{sample}/{sample}_DEDUP95.fasta"
     output:
-        filtered_contigs = "results/{genera}/1_assembly/assembly_eval/{sample}/metaspades_assembly_DEDUP95_m1500.fna.fasta",
+        filtered_contigs = "results/{genera}/1_assembly/assembly_eval/{sample}/metaspades_assembly_DEDUP95_m1500.fasta",
         whole_assembly_stats = "results/{genera}/1_assembly/assembly_eval/{sample}/assembly_stats.csv",
         metaquast_output = "results/{genera}/1_assembly/assembly_eval/{sample}/report.html"
     params:
@@ -437,25 +436,33 @@ rule assembly_eval:
         module unload miniconda
         module load SeqKit/2.8.1
         module load BBMap/38.90-GCCcore-10.2.0
-        source activate /home/flg9/.conda/envs/quast  
+        source activate /home/flg9/.conda/envs/quast
 
-        (
-            # Filter out contigs <1.5kb
-            seqkit seq \
-            --min-len {params.len} {input.contigs} --threads {params.threads} > {output.filtered_contigs}
+        mkdir -p {params.outdir}
 
-            # Generate specific assembly data covering quality of contigs generated
-            stats.sh \
-            in={output.filtered_contigs} out={output.whole_assembly_stats}
+        set -x
+        echo "Running seqkit..." 1>> {log.stdout} 2>> {log.stderr}
 
-            # Lastly, generate comprehensive evaluation of assembly data using metaquast
-            metaquast.py \
-            -t {params.threads} --labels {params.outfile_label} --output-dir {params.outdir} --test-no-ref \
-            {output.filtered_contigs}
+        #1. Filter out contigs <1.5kb
+        seqkit seq \
+        {input.contigs} --min-len {params.len} --threads {params.threads} -o {output.filtered_contigs} 
 
-            tar -cvzf metaquast_results.tar.gz {params.outdir}
-        ) 
-        1> {log.stdout} 2> {log.stderr}
+        echo "Running stats.sh..." 1>> {log.stdout} 2>> {log.stderr}
+
+        #2. Generate specific assembly data covering quality of contigs generated
+        stats.sh \
+        in={output.filtered_contigs} out={output.whole_assembly_stats}
+
+        echo "Running quast.py..." 1>> {log.stdout} 2>> {log.stderr}
+
+        #3. Lastly, generate comprehensive evaluation of assembly data using metaquast
+        metaquast.py \
+        -t {params.threads} --labels {params.outfile_label} --output-dir {params.outdir} \
+        {output.filtered_contigs}
+
+        echo "Tarring results ..." 1>> {log.stdout} 2>> {log.stderr}
+        tar \
+        -cvzf metaquast_results.tar.gz {params.outdir}
         """
 
 #include: pipelines/binning.smk
