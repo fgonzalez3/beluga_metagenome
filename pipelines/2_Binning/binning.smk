@@ -15,9 +15,10 @@ rule all:
         expand("results/{genera}/2_binning/aggregate_bins/reporter_files/maxbin_associations.tsv", genera=config["genera"], sample=SAMPLES),
         expand("results/{genera}/2_binning/aggregate_bins/reporter_files/concoct_associations.tsv", genera=config["genera"], sample=SAMPLES),
         expand("results/{genera}/2_binning/aggregate_bins/reporter_files/DASTOOL.*.fa", genera=config["genera"], sample=SAMPLES),
+        expand(results/{genera}/deepurify/{sample}/MetaInfo.tsv, genera=config["genera"], sample=SAMPLES),
+         "results/{genera}/deepurify/{sample}/clean_bins.fa"
 
-        "results/{genera}/magpurify/{sample}/clean_bins.fa",
-        "results/{genera}/binning_qc/{sample}/quality_report.tsv",
+     
         ""
 
 rule concoct: #done
@@ -225,7 +226,7 @@ rule semibin2: #download conda
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule DASTool: #download conda
+rule DASTool: #download conda and db
     """
     Calculate an optimized set of bins from multiple binning tools that were previously used
     """
@@ -289,66 +290,40 @@ rule DASTool: #download conda
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule deep_purify: # work in progress
+rule deepurify: # conda install and db install
     """
-    Refine bins further by removing contaminants with DeepPurify
+    Refine converged bins further by removing contaminants with DeepPurify
     """
     input:
-        # Refine both individually binned outputs and those from converged binning to compare
-        maxbin_bins=lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/binning/{wildcards.sample}/MAXBIN.*.fasta")),
-        metabat_bins=lambda wildcards: sorted(glob.glob(f"results/{genera}/2_binning/metabat/{sample}/METABAT.*.fa")),
-        concoct_bins=lambda wildcards: sorted(glob.glob(f"results/{genera}/2_binning/metabat/{sample}/CONCOCT.*.fa")),
-        dastool_bins=lambda wildcards: sorted(glob.glob(f"results/{genera}/2_binning/aggregate_bins/reporter_files/DASTOOL.*.fa")),
-        metawrap_bins= "",
-        semibin_bins = "",
-        bams = "results/{genera}/1_assembly/contig_read_alignment/{sample}_aligned_sorted.bam"
+        dastool_bins=lambda wildcards: sorted(glob.glob(f"results/{genera}/2_binning/aggregate_bins/reporter_files/DASTOOL.*.fa"))
     output:
-        "results/{genera}/magpurify/{sample}/clean_bins.fa"
+        "results/{genera}/deepurify/{sample}/MetaInfo.tsv",
+        "results/{genera}/deepurify/{sample}/clean_bins.fa"
     params:
         threads=4,
-        outdir = "results/{genera}/magpurify/{sample}"
+        db = path/to/db,
+        gpus = 4,
+        outdir = "results/{genera}/deepurify/{sample}",
+        tmp = "results/{genera}/deepurify/tmp",
+        suffix = "results/{genera}/deepurify/{sample}/DEEPURIFY"
     log:
-        stdout = "logs/{genera}/magpurify/{sample}/magpurify.out",
-        stderr = "logs/{genera}/magpurify/{sample}/magpurify.err"
+        stdout = "logs/{genera}/deepurify/{sample}/deepurify.out",
+        stderr = "logs/{genera}/deepurify/{sample}/deepurify.err"
     shell:
         """
         module unload miniconda 
         source activate XXXXXX
 
-        # 1. Run the composition module
-        # This module identifies putative contaminants using tetranucleotide frequencies
-        magpurify2 composition \
-        {input.maxbin_bins} {input.concoct_bins} {input.metabat_bins} \
-        {input.dastool_bins} {input.magpurify_bins} {input.metawrap_bins} \
-        -t {params.threads} {params.outdir} \
-        1>> {log.stdout} 2>> {log.stderr}
-
-        # 2. Run the coverage module
-        # This module assesses contig relatedness via differential contig coverage
-        magpurify2 coverage \
-        {input.maxbin_bins} {input.concoct_bins} {input.metabat_bins} \
-        {input.dastool_bins} {input.magpurify_bins} {input.metawrap_bins} \
-        --bam_files {input.bams} {params.outdir} \
-        1>> {log.stdout} 2>> {log.stderr}
-
-        # 3. Run the taxonomy module
-        # This module assess contig contamination via taxonomical analysis
-        magpurify2 taxonomy \
-        {input.maxbin_bins} {input.concoct_bins} {input.metabat_bins} \
-        {input.dastool_bins} {input.magpurify_bins} {input.metawrap_bins} \
-        {params.outdir} magpurify2DB \
-        1>> {log.stdout} 2>> {log.stderr}
-
-        # 4. Run the filter module
-        # This module filters out contaminants
-        magpurify2 filter \
-        {input.maxbin_bins} {input.concoct_bins} {input.metabat_bins} \
-        {input.dastool_bins} {input.magpurify_bins} {input.metawrap_bins} \
-        {params.outdir} filtered_genomes \
+        # Run Deepurify clean mode
+        deepurify clean \
+        -i {input.dastool_bins} -o {params.outdir} \
+        -db {params.db} --gpu_num {params.gpus} --bin_suffix {params.suffix} \
+        --each_gpu_threads {params.threads} \
+        --temp_output_folder {params.tmp} \
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule refine_bins_MetaWRAP: #download conda
+rule refine_bins_MetaWRAP: #download conda and db
     """
     Bin with binning module from MetaWrap to compare with the above methods
     """
@@ -420,17 +395,23 @@ rule refine_bins_MetaWRAP: #download conda
         1>> {log.stdout} 2>> {log.stderr}
         """ 
 
-rule bin_quality_check: # work in progress
+rule bin_quality_check: # done-ish
     """
     Check bin quality with CheckM2 from our custom binning methods & compare with those of MetaWrap
     """
     input:
         # Compare between individual and refined bin datasets
+
+        # Individual binning tools
         maxbin_bins=lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/binning/{wildcards.sample}/MAXBIN.*.fasta")),
         metabat_bins=lambda wildcards: sorted(glob.glob(f"results/{genera}/2_binning/metabat/{sample}/METABAT.*.fa")),
         concoct_bins=lambda wildcards: sorted(glob.glob(f"results/{genera}/2_binning/metabat/{sample}/CONCOCT.*.fa")),
-        dastool_bins=lambda wildcards: sorted(glob.glob(f"results/{genera}/2_binning/aggregate_bins/reporter_files/DASTOOL.*.fa")),
-        magpurify_bins=lambda wildcards: sorted(glob.glob(f"results/{genera}/magurify/{sample}/clean_bins.fa")),
+        semibin_bins=lambda wildcards: sorted(glob.glob(f"results/{genera}/2_binning/semibin2/output_recluster_bins/semibin2.*.fa)),
+
+        # Refinement tool output
+        deepurify_bins=lambda wildcards: sorted(glob.glob(f"results/{genera}/deepurify/{sample}/clean_bins.fa")),
+
+        # Wrapper outputs
         metawrap_bins= "results/{genera}/metawrap/reassembly/reassembled_bins"
     output:
         "results/{genera}/binning_qc/{sample}/quality_report.tsv"
@@ -452,56 +433,20 @@ rule bin_quality_check: # work in progress
         # Assess bins using CheckM2 ML models
         checkm2 predict \
         --threads {params.threads} \
-        --input {input.maxbin_bins} {input.concoct_bins} {input.metabat_bins} \
-        {input.dastool_bins} {input.magpurify_bins} {input.metawrap_bins} \
+        --input {input.maxbin_bins} {input.concoct_bins} {input.metabat_bins} {input.semibin_bins} \
+        {input.dastool_bins} {input.deepurify_bins} {input.metawrap_bins} \
         --output_directory {params.outdir} \
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule align_reads_to_bins:
-    """
-    Filter out any reads that align to our pre-assembled and refined bins
-    """
-    input:
-    output:
-    params:
-    log:
-    shell:
-        """
-        """
-
-rule assemble_bin_reads:
-    """
-    Re-assemble reads that aligned to our pre-assembled and refined bins
-    """
-    input:
-    output:
-    params:
-    log:
-    shell:
-        """
-        """
-
-rule bin_reassemblies:
-    """
-    Bin and refine re-assemblies
-    """
-    input:
-    output:
-    params:
-    log:
-    shell:
-        """
-        """
-
-rule GUNC:
+rule GUNC: # work in progress
     """
     Visualize binning accuracy
     """
     input:
-        ""
+        deepurify_bins=lambda wildcards: sorted(glob.glob(f"results/{genera}/deepurify/{sample}/clean_bins.fa"))
     output:
-        ""
+        "results/{genera}/vis_bins/all_levels.tsv"
     params:
         db_path = "",
         threads = 4,
@@ -515,9 +460,11 @@ rule GUNC:
         module unload miniconda
         source activate XXXXXX
 
-        gunc run -i {input} -r {params.db_path} \
+        # Run chimerism analysis
+        gunc run \
+        -i {input} -r {params.db_path} \
         --threads {params.threads} --temp_dir {params.tmp} \
         --sensitive --out_dir {params.outdir} --detailed_output \
-        --contig_taxonomy_output \
+        --contig_taxonomy_output --diamond_file\
         1>> {log.stdout} 2>> {log.stderr}
         """
