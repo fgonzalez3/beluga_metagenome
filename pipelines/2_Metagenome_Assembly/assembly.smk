@@ -2,21 +2,29 @@ import os
 import glob
 import pandas as pd
 
-rule metagenome_assembly_spades:
+# This pipeline contains 3 assemblies - 
+    # 1. Individual assemblies where each sample undergoes its own assembly
+        # individual_metagenome_assembly_spades & individual_metagenome_assembly_megahit
+    # 2. Individual co-assemblies where reads are assembled by individual
+        # individual_metagenome_coassembly_spades & individual_metagenome_coassembly_megahit
+    # 3. Master co-assembly where all of our reads from all individuals are grouped and co-assembled
+        # master_metagenome_coassembly_spades & master_metagenome_coassembly_megahit
+
+rule individual_metagenome_assembly_spades:
     """
     Assemble contigs from individual samples using SPAdes
     """
     input:
-        fwd = "results/{genera}/1_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
-        rev = "results/{genera}/1_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
+        r1 = "results/{genera}/2_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
+        r2 = "results/{genera}/2_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
     output:
-        "results/{genera}/1_assembly/metagenome_assembly/{sample}/contigs.fasta"
+        "results/{genera}/2_assembly/individual_metagenome_assembly_spades/{sample}/contigs.fasta"
     params:
         genera=config["genera"],
-        outdir = "results/{genera}/1_assembly/metagenome_assembly/{sample}"
+        outdir = "results/{genera}/2_assembly/individual_metagenome_assembly_spades/{sample}"
     log:
-        stdout = "logs/{genera}/1_assembly/metagenome_assembly/{sample}/assembly.out",
-        stderr = "logs/{genera}/1_assembly/metagenome_assembly/{sample}/assembly.err"
+        stdout = "logs/{genera}/2_assembly/individual_metagenome_assembly_spades/{sample}/assembly.out",
+        stderr = "logs/{genera}/2_assembly/individual_metagenome_assembly_spades/{sample}/assembly.err"
     resources:
         mem_mb=200000,
         threads=4
@@ -27,57 +35,146 @@ rule metagenome_assembly_spades:
 
         spades.py \
         --meta --threads {resources.threads} \
-        -1 {input.fwd} -2 {input.rev} -o {params.outdir} \
+        -1 {input.r1} -2 {input.r2} -o {params.outdir} \
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule metagenome_assembly_megahit:
+rule individual_metagenome_assembly_megahit:
     """
     Assemble contigs from individual samples with Megahit
     """
     input:
-        fwd = "results/{genera}/1_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
-        rev = "results/{genera}/1_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
+        r1 = "results/{genera}/2_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
+        r2 = "results/{genera}/2_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
     output:
-        "results/{genera}/1_assembly/metagenome_assembly_megahit/{sample}/final.contigs.fa"
+        "results/{genera}/2_assembly/individual_metagenome_assembly_megahit/{sample}/final.contigs.fa"
     params:
         genera=config["genera"],
         preset="meta-large"
-        outdir = "results/{genera}/1_assembly/metagenome_assembly_megahit/{sample}"
+        outdir = "results/{genera}/2_assembly/individual_metagenome_assembly_megahit/{sample}"
     log:
-        stdout = "logs/{genera}/1_assembly/metagenome_assembly_megahit/{sample}/assembly.out",
-        stderr = "logs/{genera}/1_assembly/metagenome_assembly_megahit/{sample}/assembly.err"
+        stdout = "logs/{genera}/2_assembly/individual_metagenome_assembly_megahit/{sample}/assembly.out",
+        stderr = "logs/{genera}/2_assembly/individual_metagenome_assembly_megahit/{sample}/assembly.err"
     shell:
         """
         module unload miniconda
-        source activate XXXXXX
+        source activate /home/flg9/.conda/envs/megahit
 
         megahit \
-        -1 {input.fwd} -2 {input.rev} -o {params.outdir} \
+        -1 {input.r1} -2 {input.r2} -o {params.outdir} \
         --presets {params.preset} \
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule metagenome_coassembly_spades:
+rule master_metagenome_coassembly_spades:
     """
+    Generate a co-assembly from merged PE files of all samples using SPAdes
     """
     input:
+        r1 = "results/{genera}/1_assembly/co_assembly_reads/all_samples_R1_norm.fq",
+        r2 = "results/{genera}/1_assembly/co_assembly_reads/all_samples_R2_norm.fq"
     output:
+        "results/{genera}/2_assembly/master_metagenome_coassembly_spades/{sample}/contigs.fasta"
     params:
+        genera=config["genera"],
+        outdir = "results/{genera}/2_assembly/master_metagenome_coassembly_spades/{sample}"
     log:
+        stdout = "logs/{genera}/2_assembly/master_metagenome_coassembly_spades/{sample}/assembly.out",
+        stderr = "logs/{genera}/2_assembly/master_metagenome_coassembly_spades/{sample}/assembly.err"
+    resources:
+        mem_mb=200000,
+        threads=4
     shell:
         """
+        module unload miniconda
+        module load SPAdes/3.15.5-GCC-12.2.0
+
+        spades.py \
+        --meta --threads {resources.threads} \
+        -1 {input.r1} -2 {input.r2} -o {params.outdir} \
+        1> {log.stdout} 2> {log.stderr}
         """
 
-rule metagenome_coassembly_megahit:
+rule master_metagenome_coassembly_megahit:
+    """
+    Generate a co-assembly from merged PE files of all samples using Megahit
+    """
+    input:
+        r1 = "results/{genera}/1_assembly/co_assembly_reads/all_samples_R1_norm.fq",
+        r2 = "results/{genera}/1_assembly/co_assembly_reads/all_samples_R2_norm.fq"
+    output:
+        "results/{genera}/2_assembly/master_metagenome_coassembly_megahit/{sample}/final.contigs.fa"
+    params:
+        genera=config["genera"],
+        preset="meta-large"
+        outdir = "results/{genera}/2_assembly/master_metagenome_coassembly_megahit/{sample}"
+    log:
+        stdout = "logs/{genera}/2_assembly/master_metagenome_coassembly_megahit/{sample}/assembly.out",
+        stderr = "logs/{genera}/2_assembly/master_metagenome_coassembly_megahit/{sample}/assembly.err"
+    shell:
+        """
+        module unload miniconda
+        source activate /home/flg9/.conda/envs/megahit
+
+        megahit \
+        -1 {input.r1} -2 {input.r2} -o {params.outdir} \
+        --presets {params.preset} \
+        1> {log.stdout} 2> {log.stderr}
+        """
+
+rule individual_metagenome_coassembly_spades:
+    """
+    Generate a co-assembly using spades
+    """
+    input:
+        norm1 = "results/{genera}/1_QC/individual_coassembly_normalization/{individual}_ME_R1_norm.fq.gz",
+        norm2 = "results/{genera}/1_QC/individual_coassembly_normalization/{individual}_ME_R2_norm.fq.gz"
+    output:
+        "results/{genera}/2_assembly/individual_metagenome_coassembly_spades/{sample}/contigs.fasta"
+    params:
+        genera=config["genera"],
+        outdir = "results/{genera}/2_assembly/individual_metagenome_coassembly_spades/{sample}"
+    log:
+        stdout = "logs/{genera}/2_assembly/individual_metagenome_coassembly_spades/{sample}/assembly.out",
+        stderr = "logs/{genera}/2_assembly/individual_metagenome_coassembly_spades/{sample}/assembly.err"
+    resources:
+        mem_mb=200000,
+        threads=4
+    shell:
+        """
+        module unload miniconda
+        module load SPAdes/3.15.5-GCC-12.2.0
+
+        spades.py \
+        --meta --threads {resources.threads} \
+        -1 {input.r1} -2 {input.r2} -o {params.outdir} \
+        1> {log.stdout} 2> {log.stderr}
+        """
+
+rule indvidual_metagenome_coassembly_megahit:
     """
     """
     input:
+        norm1 = "results/{genera}/1_QC/individual_coassembly_normalization/{individual}_ME_R1_norm.fq.gz",
+        norm2 = "results/{genera}/1_QC/individual_coassembly_normalization/{individual}_ME_R2_norm.fq.gz"
     output:
+        "results/{genera}/2_assembly/indvidual_metagenome_coassembly_megahit/{sample}/final.contigs.fa"
     params:
+        genera=config["genera"],
+        preset="meta-large"
+        outdir = "results/{genera}/2_assembly/indvidual_metagenome_coassembly_megahit/{sample}"
     log:
+        stdout = "logs/{genera}/2_assembly/indvidual_metagenome_coassembly_megahit/{sample}/assembly.out",
+        stderr = "logs/{genera}/2_assembly/indvidual_metagenome_coassembly_megahit/{sample}/assembly.err"
     shell:
         """
+        module unload miniconda
+        source activate /home/flg9/.conda/envs/megahit
+
+        megahit \
+        -1 {input.r1} -2 {input.r2} -o {params.outdir} \
+        --presets {params.preset} \
+        1> {log.stdout} 2> {log.stderr}
         """
 
 rule deduplicate_contigs:
@@ -85,8 +182,12 @@ rule deduplicate_contigs:
     Run CD-HIT to deduplicate contigs that may have been introduced during metagenome assembly
     """
     input:
-        SPAdes_assembly = "results/{genera}/1_assembly/metagenome_assembly/{sample}/contigs.fasta",
-        megahit_assembly = "results/{genera}/1_assembly/metagenome_assembly_megahit/{sample}/final.contigs.fa"
+        SPAdes_master = "results/{genera}/2_assembly/master_metagenome_coassembly_spades/{sample}/contigs.fasta",
+        SPAdes_indiv = "results/{genera}/2_assembly/individual_metagenome_coassembly_spades/{sample}/contigs.fasta",
+        SPAdes_single = "results/{genera}/2_assembly/individual_metagenome_assembly_spades/{sample}/contigs.fasta",
+        megahit_master = "results/{genera}/2_assembly/master_metagenome_coassembly_megahit/{sample}/final.contigs.fa",
+        megahit_indiv = "results/{genera}/2_assembly/indvidual_metagenome_coassembly_megahit/{sample}/final.contigs.fa",
+        megahit_single = "results/{genera}/2_assembly/individual_metagenome_assembly_megahit/{sample}/final.contigs.fa",
     output:
         SPAdes_dedups = "results/{genera}/1_assembly/dedup_contigs_spades/{sample}/{sample}_DEDUP95.fasta",
         megahit_dedups = "results/{genera}/1_assembly/dedup_contigs_megahit/{sample}/{sample}_DEDUP95.fasta"
@@ -105,12 +206,36 @@ rule deduplicate_contigs:
         mkdir -p {params.out1}
         mkdir -p {params.out2}
 
-        # 1. Deduplicate contigs from SPAdes assembly
+        #SPAdes deduplication 
+
+        # 1. Deduplicate contigs from SPAdes single assemblies
         cd-hit-est \
-        -i {inpu.SPAdes_assembly} -o {out1.dedups} -T 4 -c 0.95 \
+        -i {inpu.SPAdes_single} -o {out1.dedups} -T 4 -c 0.95 \
+        1>> {log.stdout} 2>> {log.stderr}
+
+        # 2. Deduplicate contigs from SPAdes per individual assemblies
+        cd-hit-est \
+        -i {inpu.SPAdes_indiv} -o {out1.dedups} -T 4 -c 0.95 \
+        1>> {log.stdout} 2>> {log.stderr}
+
+        # 3. Deduplicate contigs from SPAdes master assembly
+        cd-hit-est \
+        -i {inpu.SPAdes_master} -o {out1.dedups} -T 4 -c 0.95 \
+        1>> {log.stdout} 2>> {log.stderr}
+
+        # Megahit deduplication 
+
+        # 1. Deduplicate contigs from Megahit assembly
+        cd-hit-est \
+        -i {input.megahit_assembly} -o {out2.dedups} -T 4 -c 0.95 \
         1>> {log.stdout} 2>> {log.stderr}
 
         # 2. Deduplicate contigs from Megahit assembly
+        cd-hit-est \
+        -i {input.megahit_assembly} -o {out2.dedups} -T 4 -c 0.95 \
+        1>> {log.stdout} 2>> {log.stderr}
+
+        # 3. Deduplicate contigs from Megahit assembly
         cd-hit-est \
         -i {input.megahit_assembly} -o {out2.dedups} -T 4 -c 0.95 \
         1>> {log.stdout} 2>> {log.stderr}
