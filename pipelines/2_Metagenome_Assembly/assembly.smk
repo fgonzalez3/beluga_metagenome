@@ -10,21 +10,21 @@ import pandas as pd
     # 3. Master co-assembly where all of our reads from all individuals are grouped and co-assembled
         # master_metagenome_coassembly_spades & master_metagenome_coassembly_megahit
 
-rule individual_metagenome_assembly_spades:
+rule individual_metagenome_assembly_spades: # done
     """
     Assemble contigs from individual samples using SPAdes
     """
     input:
-        r1 = "results/{genera}/2_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
-        r2 = "results/{genera}/2_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
+        r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
+        r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
     output:
-        "results/{genera}/2_assembly/individual_metagenome_assembly_spades/{sample}/contigs.fasta"
+        "results/{genera}/2_assembly/SPAdes/individual_metagenome_assembly/{sample}/contigs.fasta"
     params:
         genera=config["genera"],
-        outdir = "results/{genera}/2_assembly/individual_metagenome_assembly_spades/{sample}"
+        outdir = "results/{genera}/2_assembly/SPAdes/individual_metagenome_assembly/{sample}"
     log:
-        stdout = "logs/{genera}/2_assembly/individual_metagenome_assembly_spades/{sample}/assembly.out",
-        stderr = "logs/{genera}/2_assembly/individual_metagenome_assembly_spades/{sample}/assembly.err"
+        stdout = "logs/{genera}/2_assembly/SPAdes/individual_metagenome_assembly/{sample}/assembly.out",
+        stderr = "logs/{genera}/2_assembly/SPAdes/individual_metagenome_assembly{sample}/assembly.err"
     resources:
         mem_mb=200000,
         threads=4
@@ -39,22 +39,22 @@ rule individual_metagenome_assembly_spades:
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule individual_metagenome_assembly_megahit:
+rule individual_metagenome_assembly_megahit: # done
     """
     Assemble contigs from individual samples with Megahit
     """
     input:
-        r1 = "results/{genera}/2_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
-        r2 = "results/{genera}/2_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
+        r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
+        r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
     output:
-        "results/{genera}/2_assembly/individual_metagenome_assembly_megahit/{sample}/final.contigs.fa"
+        "results/{genera}/2_assembly/megahit/individual_metagenome_assembly/{sample}/final.contigs.fa"
     params:
         genera=config["genera"],
         preset="meta-large"
-        outdir = "results/{genera}/2_assembly/individual_metagenome_assembly_megahit/{sample}"
+        outdir = "results/{genera}/2_assembly/megahit/individual_metagenome_assembly/{sample}"
     log:
-        stdout = "logs/{genera}/2_assembly/individual_metagenome_assembly_megahit/{sample}/assembly.out",
-        stderr = "logs/{genera}/2_assembly/individual_metagenome_assembly_megahit/{sample}/assembly.err"
+        stdout = "logs/{genera}/2_assembly/megahit/individual_metagenome_assembly/{sample}/assembly.out",
+        stderr = "logs/{genera}/2_assembly/megahit/individual_metagenome_assembly/{sample}/assembly.err"
     shell:
         """
         module unload miniconda
@@ -66,21 +66,21 @@ rule individual_metagenome_assembly_megahit:
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule master_metagenome_coassembly_spades:
+rule master_metagenome_coassembly_spades: # done
     """
-    Generate a co-assembly from merged PE files of all samples using SPAdes
+    Generate a master co-assembly from merged PE files of all samples using SPAdes
     """
     input:
-        r1 = "results/{genera}/1_assembly/co_assembly_reads/all_samples_R1_norm.fq",
-        r2 = "results/{genera}/1_assembly/co_assembly_reads/all_samples_R2_norm.fq"
+        r1 = "results/{genera}/1_pre_processing/master_coassembly_normalization/all_samples_ME_R1_norm.fq.gz",
+        r2 = "results/{genera}/1_pre_processing/master_coassembly_normalization/all_samples_ME_R2_norm.fq.gz"
     output:
-        "results/{genera}/2_assembly/master_metagenome_coassembly_spades/{sample}/contigs.fasta"
+        "results/{genera}/2_assembly/SPAdes/master_metagenome_coassembly/{sample}/contigs.fasta"
     params:
         genera=config["genera"],
-        outdir = "results/{genera}/2_assembly/master_metagenome_coassembly_spades/{sample}"
+        outdir = "results/{genera}/2_assembly/SPAdes/master_metagenome_coassembly/{sample}"
     log:
-        stdout = "logs/{genera}/2_assembly/master_metagenome_coassembly_spades/{sample}/assembly.out",
-        stderr = "logs/{genera}/2_assembly/master_metagenome_coassembly_spades/{sample}/assembly.err"
+        stdout = "logs/{genera}/2_assembly/SPAdes/master_metagenome_coassembly/{sample}/assembly.out",
+        stderr = "logs/{genera}/2_assembly/SPAdes/master_metagenome_coassembly/{sample}/assembly.err"
     resources:
         mem_mb=200000,
         threads=4
@@ -95,22 +95,22 @@ rule master_metagenome_coassembly_spades:
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule master_metagenome_coassembly_megahit:
+rule master_metagenome_coassembly_megahit: # done
     """
     Generate a co-assembly from merged PE files of all samples using Megahit
     """
     input:
-        r1 = "results/{genera}/1_assembly/co_assembly_reads/all_samples_R1_norm.fq",
-        r2 = "results/{genera}/1_assembly/co_assembly_reads/all_samples_R2_norm.fq"
+        r1 = "results/{genera}/1_pre_processing/master_coassembly_normalization/all_samples_ME_R1_norm.fq.gz",
+        r2 = "results/{genera}/1_pre_processing/master_coassembly_normalization/all_samples_ME_R2_norm.fq.gz"
     output:
-        "results/{genera}/2_assembly/master_metagenome_coassembly_megahit/{sample}/final.contigs.fa"
+        "results/{genera}/2_assembly/megahit/master_metagenome_coassembly/{sample}/final.contigs.fa"
     params:
         genera=config["genera"],
         preset="meta-large"
-        outdir = "results/{genera}/2_assembly/master_metagenome_coassembly_megahit/{sample}"
+        outdir = "results/{genera}/megahit/2_assembly/master_metagenome_coassembly/{sample}"
     log:
-        stdout = "logs/{genera}/2_assembly/master_metagenome_coassembly_megahit/{sample}/assembly.out",
-        stderr = "logs/{genera}/2_assembly/master_metagenome_coassembly_megahit/{sample}/assembly.err"
+        stdout = "logs/{genera}/2_assembly/megahit/master_metagenome_coassembly/{sample}/assembly.out",
+        stderr = "logs/{genera}/2_assembly/megahit/master_metagenome_coassembly/{sample}/assembly.err"
     shell:
         """
         module unload miniconda
@@ -122,21 +122,31 @@ rule master_metagenome_coassembly_megahit:
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule individual_metagenome_coassembly_spades:
+# Define individuals for this next rule 
+
+INDIVIDUALS = ["JUNO", "KELA", "NATTY"]
+
+def indiv_r1(wildcards):
+    return sorted(glob.glob(f"results/{wildcards.genera}/1_pre_processing/dedup_reads/{sample}/Sample_{wildcards.individual}_*_host_removed_dedup_R1.fastq"))
+
+def indiv_r2(wildcards):
+    return sorted(glob.glob(f"results/{wildcards.genera}/1_pre_processing/dedup_reads/{sample}/Sample_{wildcards.individual}_*_host_removed_dedup_R2.fastq"))
+
+rule individual_metagenome_coassembly_spades: # done
     """
-    Generate a co-assembly using spades
+    Generate a co-assembly using spades per individual
     """
     input:
-        norm1 = "results/{genera}/1_QC/individual_coassembly_normalization/{individual}_ME_R1_norm.fq.gz",
-        norm2 = "results/{genera}/1_QC/individual_coassembly_normalization/{individual}_ME_R2_norm.fq.gz"
+        r1 = "results/{genera}/1_pre_processing/individual_coassembly_normalization/{individual}_ME_R1_norm.fq.gz",
+        r2 = "results/{genera}/1_pre_processing/individual_coassembly_normalization/{individual}_ME_R2_norm.fq.gz"
     output:
-        "results/{genera}/2_assembly/individual_metagenome_coassembly_spades/{sample}/contigs.fasta"
+        "results/{genera}/2_assembly/SPAdes/individual_metagenome_coassembly/{sample}/contigs.fasta"
     params:
         genera=config["genera"],
-        outdir = "results/{genera}/2_assembly/individual_metagenome_coassembly_spades/{sample}"
+        outdir = "results/{genera}/2_assembly/SPAdes/individual_metagenome_coassembly/{sample}"
     log:
-        stdout = "logs/{genera}/2_assembly/individual_metagenome_coassembly_spades/{sample}/assembly.out",
-        stderr = "logs/{genera}/2_assembly/individual_metagenome_coassembly_spades/{sample}/assembly.err"
+        stdout = "logs/{genera}/2_assembly/SPAdes/individual_metagenome_coassembly/{sample}/assembly.out",
+        stderr = "logs/{genera}/2_assembly/SPAdes/individual_metagenome_coassembly/{sample}/assembly.err"
     resources:
         mem_mb=200000,
         threads=4
@@ -151,21 +161,22 @@ rule individual_metagenome_coassembly_spades:
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule indvidual_metagenome_coassembly_megahit:
+rule indvidual_metagenome_coassembly_megahit: # done
     """
+    Generate a co-assembly using megahit per individual
     """
     input:
-        norm1 = "results/{genera}/1_QC/individual_coassembly_normalization/{individual}_ME_R1_norm.fq.gz",
-        norm2 = "results/{genera}/1_QC/individual_coassembly_normalization/{individual}_ME_R2_norm.fq.gz"
+        r1 = "results/{genera}/1_pre_processing/individual_coassembly_normalization/{individual}_ME_R1_norm.fq.gz",
+        r2 = "results/{genera}/1_pre_processing/individual_coassembly_normalization/{individual}_ME_R2_norm.fq.gz"
     output:
-        "results/{genera}/2_assembly/indvidual_metagenome_coassembly_megahit/{sample}/final.contigs.fa"
+        "results/{genera}/2_assembly/megahit/indvidual_metagenome_coassembly/{sample}/final.contigs.fa"
     params:
         genera=config["genera"],
         preset="meta-large"
-        outdir = "results/{genera}/2_assembly/indvidual_metagenome_coassembly_megahit/{sample}"
+        outdir = "results/{genera}/2_assembly/megahit/indvidual_metagenome_coassembly/{sample}"
     log:
-        stdout = "logs/{genera}/2_assembly/indvidual_metagenome_coassembly_megahit/{sample}/assembly.out",
-        stderr = "logs/{genera}/2_assembly/indvidual_metagenome_coassembly_megahit/{sample}/assembly.err"
+        stdout = "logs/{genera}/2_assembly/megahit/indvidual_metagenome_coassembly/{sample}/assembly.out",
+        stderr = "logs/{genera}/2_assembly/megahit/indvidual_metagenome_coassembly/{sample}/assembly.err"
     shell:
         """
         module unload miniconda
@@ -177,67 +188,80 @@ rule indvidual_metagenome_coassembly_megahit:
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule deduplicate_contigs:
+rule deduplicate_contigs: # done 
     """
-    Run CD-HIT to deduplicate contigs that may have been introduced during metagenome assembly
+    Run CD-HIT to deduplicate overrepresented contigs that may have been introduced during metagenome assembly
     """
     input:
-        SPAdes_master = "results/{genera}/2_assembly/master_metagenome_coassembly_spades/{sample}/contigs.fasta",
-        SPAdes_indiv = "results/{genera}/2_assembly/individual_metagenome_coassembly_spades/{sample}/contigs.fasta",
-        SPAdes_single = "results/{genera}/2_assembly/individual_metagenome_assembly_spades/{sample}/contigs.fasta",
-        megahit_master = "results/{genera}/2_assembly/master_metagenome_coassembly_megahit/{sample}/final.contigs.fa",
-        megahit_indiv = "results/{genera}/2_assembly/indvidual_metagenome_coassembly_megahit/{sample}/final.contigs.fa",
-        megahit_single = "results/{genera}/2_assembly/individual_metagenome_assembly_megahit/{sample}/final.contigs.fa",
+        SPAdes_master = "results/{genera}/2_assembly/SPAdes/master_metagenome_coassembly/{sample}/contigs.fasta",
+        SPAdes_whales = "results/{genera}/2_assembly/SPAdes/individual_metagenome_coassembly/{sample}/contigs.fasta",
+        SPAdes_single = "results/{genera}/2_assembly/SPAdes/individual_metagenome_assembly/{sample}/contigs.fasta",
+        megahit_master = "results/{genera}/2_assembly/megahit/master_metagenome_coassembly/{sample}/final.contigs.fa",
+        megahit_whales = "results/{genera}/2_assembly/megahit/indvidual_metagenome_coassembly/{sample}/final.contigs.fa",
+        megahit_single = "results/{genera}/2_assembly/megahit/individual_metagenome_assembly/{sample}/final.contigs.fa",
     output:
-        SPAdes_dedups = "results/{genera}/1_assembly/dedup_contigs_spades/{sample}/{sample}_DEDUP95.fasta",
-        megahit_dedups = "results/{genera}/1_assembly/dedup_contigs_megahit/{sample}/{sample}_DEDUP95.fasta"
+        SPAdes_single_dedups = "results/{genera}/2_assembly/dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta",
+        SPAdes_master_dedups = "results/{genera}/2_assembly/dedup_contigs/SPAdes_master/{sample}/{sample}_DEDUP95.fasta",
+        SPAdes_whales_dedups = "results/{genera}/2_assembly/dedup_contigs/SPAdes_whales/{sample}/{sample}_DEDUP95.fasta",
+        megahit_single_dedups = "results/{genera}/2_assembly/dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta",
+        megahit_master_dedups = "results/{genera}/2_assembly/dedup_contigs/megahit_master/{sample}/{sample}_DEDUP95.fasta",
+        megahit_whales_dedups = "results/{genera}/2_assembly/dedup_contigs/megahit_whales/{sample}/{sample}_DEDUP95.fasta"
     params:
         genera=config["genera"],
-        out1 = "results/{genera}/1_assembly/dedup_contigs_spades/{sample}",
-        out2 = "results/{genera}/1_assembly/dedup_contigs_megahit/{sample}"
+        out1 = "results/{genera}/2_assembly/dedup_contigs_spades/{sample}",
+        out2 = "results/{genera}/2_assembly/dedup_contigs/SPAdes_master/{sample}",
+        out3 = "results/{genera}/2_assembly/dedup_contigs/SPAdes_whales/{sample}",
+        out4 = "results/{genera}/2_assembly/dedup_contigs/megahit_single/{sample}",
+        out5 = "results/{genera}/2_assembly/dedup_contigs/megahit_master/{sample}",
+        out6 = "results/{genera}/2_assembly/dedup_contigs/megahit_whales/{sample}"
     log:
-        stdout = "logs/{genera}/1_assembly/dedup_contigs/{sample}/dedup_contigs.out",
-        stderr = "logs/{genera}/1_assembly/dedup_contigs/{sample}/dedup_contigs.err"
+        stdout = "logs/{genera}/2_assembly/dedup_contigs/SPAdes_single/{sample}/dedup_contigs.out",
+        stderr = "logs/{genera}/2_assembly/dedup_contigs/{sample}/dedup_contigs.err"
     shell:
         """
         module unload miniconda
         module load CD-HIT/4.8.1-GCC-10.2.0
 
+        # Create output directories 
         mkdir -p {params.out1}
         mkdir -p {params.out2}
+        mkdir -p {params.out3}
+        mkdir -p {params.out4}
+        mkdir -p {params.out5}
+        mkdir -p {params.out6}
 
-        #SPAdes deduplication 
+        # SPAdes de-duplication 
 
         # 1. Deduplicate contigs from SPAdes single assemblies
         cd-hit-est \
-        -i {inpu.SPAdes_single} -o {out1.dedups} -T 4 -c 0.95 \
+        -i {input.SPAdes_single} -o {output.SPAdes_single_dedups} -T 4 -c 0.95 \
         1>> {log.stdout} 2>> {log.stderr}
 
-        # 2. Deduplicate contigs from SPAdes per individual assemblies
+        # 2. Deduplicate contigs from SPAdes per whale assemblies
         cd-hit-est \
-        -i {inpu.SPAdes_indiv} -o {out1.dedups} -T 4 -c 0.95 \
+        -i {inpu.SPAdes_indiv} -o {output.SPAdes_whales_dedups} -T 4 -c 0.95 \
         1>> {log.stdout} 2>> {log.stderr}
 
         # 3. Deduplicate contigs from SPAdes master assembly
         cd-hit-est \
-        -i {inpu.SPAdes_master} -o {out1.dedups} -T 4 -c 0.95 \
+        -i {inpu.SPAdes_master} -o {output.SPAdes_master_dedups} -T 4 -c 0.95 \
         1>> {log.stdout} 2>> {log.stderr}
 
-        # Megahit deduplication 
+        # Megahit de-duplication 
 
-        # 1. Deduplicate contigs from Megahit assembly
+        # 1. Deduplicate contigs from Megahit single assemblies
         cd-hit-est \
-        -i {input.megahit_assembly} -o {out2.dedups} -T 4 -c 0.95 \
+        -i {input.megahit_assembly} -o {output.megahit_single_dedups} -T 4 -c 0.95 \
         1>> {log.stdout} 2>> {log.stderr}
 
-        # 2. Deduplicate contigs from Megahit assembly
+        # 2. Deduplicate contigs from Megahit per whale assemblies
         cd-hit-est \
-        -i {input.megahit_assembly} -o {out2.dedups} -T 4 -c 0.95 \
+        -i {input.megahit_assembly} -o {out2.megahit_whales_dedups} -T 4 -c 0.95 \
         1>> {log.stdout} 2>> {log.stderr}
 
-        # 3. Deduplicate contigs from Megahit assembly
+        # 3. Deduplicate contigs from Megahit master assemblies
         cd-hit-est \
-        -i {input.megahit_assembly} -o {out2.dedups} -T 4 -c 0.95 \
+        -i {input.megahit_assembly} -o {out2.megahit_master_dedups} -T 4 -c 0.95 \
         1>> {log.stdout} 2>> {log.stderr}
         """
 
@@ -246,23 +270,23 @@ rule align_reads_to_contigs_spades:
     Align raw reads back to assembled contigs to assess coverage, assembly quality, and obtain BAM files for binning from SPAdes assembly
     """
     input:
-        contigs = "results/{genera}/1_assembly/dedup_contigs_spades/{sample}/{sample}_DEDUP95.fasta",
-        r1 = "results/{genera}/1_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
-        r2 = "results/{genera}/1_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
+        contigs = "results/{genera}/2_assembly/dedup_contigs_spades/{sample}/{sample}_DEDUP95.fasta",
+        r1 = "results/{genera}/2_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
+        r2 = "results/{genera}/2_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
     output:
-        "results/{genera}/1_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.1.bt2",
-        "results/{genera}/1_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.2.bt2",
-        "results/{genera}/1_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.3.bt2",
-        "results/{genera}/1_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.4.bt2",
-        "results/{genera}/1_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.rev.1.bt2",
-        "results/{genera}/1_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.rev.2.bt2",
-        "results/{genera}/1_assembly/contig_read_alignment_spades/{sample}_aligned_sorted.bam"
+        "results/{genera}/2_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.1.bt2",
+        "results/{genera}/2_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.2.bt2",
+        "results/{genera}/2_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.3.bt2",
+        "results/{genera}/2_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.4.bt2",
+        "results/{genera}/2_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.rev.1.bt2",
+        "results/{genera}/2_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.rev.2.bt2",
+        "results/{genera}/2_assembly/contig_read_alignment_spades/{sample}_aligned_sorted.bam"
     params:
         genera=config["genera"],
-        outdir = "results/{genera}/1_assembly/contig_index_spades/{sample}"
+        outdir = "results/{genera}/2_assembly/contig_index_spades/{sample}"
     log:
-        stdout = "logs/{genera}/1_assembly/contig_read_alignment_spades/{sample}_aln.out",
-        stderr = "logs/{genera}/1_assembly/contig_read_alignment_spades/{sample}_aln.err"
+        stdout = "logs/{genera}/2_assembly/contig_read_alignment_spades/{sample}_aln.out",
+        stderr = "logs/{genera}/2_assembly/contig_read_alignment_spades/{sample}_aln.err"
     shell:
         """
         module unload miniconda 
@@ -285,23 +309,23 @@ rule align_reads_to_contigs_megahit:
     Align raw reads back to assembled contigs to assess coverage, assembly quality, and obtain BAM files for binning from megahit assembly
     """
     input:
-        contigs = "results/{genera}/1_assembly/dedup_contigs_megahit/{sample}/{sample}_DEDUP95.fasta",
-        r1 = "results/{genera}/1_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
-        r2 = "results/{genera}/1_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
+        contigs = "results/{genera}/2_assembly/dedup_contigs_megahit/{sample}/{sample}_DEDUP95.fasta",
+        r1 = "results/{genera}/2_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
+        r2 = "results/{genera}/2_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
     output:
-        "results/{genera}/1_assembly/contig_index_megahit/{sample}/{sample}_indexed_contig.1.bt2",
-        "results/{genera}/1_assembly/contig_index_megahit/{sample}/{sample}_indexed_contig.2.bt2",
-        "results/{genera}/1_assembly/contig_index_megahit/{sample}/{sample}_indexed_contig.3.bt2",
-        "results/{genera}/1_assembly/contig_index_megahit/{sample}/{sample}_indexed_contig.4.bt2",
-        "results/{genera}/1_assembly/contig_index_megahit/{sample}/{sample}_indexed_contig.rev.1.bt2",
-        "results/{genera}/1_assembly/contig_index_megahit/{sample}/{sample}_indexed_contig.rev.2.bt2",
-        "results/{genera}/1_assembly/contig_read_alignment_megahit/{sample}_aligned_sorted.bam"
+        "results/{genera}/2_assembly/contig_index_megahit/{sample}/{sample}_indexed_contig.1.bt2",
+        "results/{genera}/2_assembly/contig_index_megahit/{sample}/{sample}_indexed_contig.2.bt2",
+        "results/{genera}/2_assembly/contig_index_megahit/{sample}/{sample}_indexed_contig.3.bt2",
+        "results/{genera}/2_assembly/contig_index_megahit/{sample}/{sample}_indexed_contig.4.bt2",
+        "results/{genera}/2_assembly/contig_index_megahit/{sample}/{sample}_indexed_contig.rev.1.bt2",
+        "results/{genera}/2_assembly/contig_index_megahit/{sample}/{sample}_indexed_contig.rev.2.bt2",
+        "results/{genera}/2_assembly/contig_read_alignment_megahit/{sample}_aligned_sorted.bam"
     params:
         genera=config["genera"],
-        outdir = "results/{genera}/1_assembly/contig_index_megahit/{sample}"
+        outdir = "results/{genera}/2_assembly/contig_index_megahit/{sample}"
     log:
-        stdout = "logs/{genera}/1_assembly/contig_read_alignment_megahit/{sample}_aln.out",
-        stderr = "logs/{genera}/1_assembly/contig_read_alignment_megahit/{sample}_aln.err"
+        stdout = "logs/{genera}/2_assembly/contig_read_alignment_megahit/{sample}_aln.out",
+        stderr = "logs/{genera}/2_assembly/contig_read_alignment_megahit/{sample}_aln.err"
     shell:
         """
         module unload miniconda 
@@ -324,20 +348,20 @@ rule assembly_eval:
     Evaluate assemblies
     """
     input:
-        spades_contigs = "results/{genera}/1_assembly/dedup_contigs_spades/{sample}/{sample}_DEDUP95.fasta",
-        megahit_contigs = "results/{genera}/1_assembly/dedup_contigs_megahit/{sample}/{sample}_DEDUP95.fasta"
+        spades_contigs = "results/{genera}/2_assembly/dedup_contigs_spades/{sample}/{sample}_DEDUP95.fasta",
+        megahit_contigs = "results/{genera}/2_assembly/dedup_contigs_megahit/{sample}/{sample}_DEDUP95.fasta"
     output:
-        filtered_contigs = "results/{genera}/1_assembly/assembly_eval/{sample}/metaspades_assembly_DEDUP95_m1500.fasta",
-        whole_assembly_stats = "results/{genera}/1_assembly/assembly_eval/{sample}/assembly_stats.csv",
-        metaquast_output = "results/{genera}/1_assembly/assembly_eval/{sample}/report.html"
+        filtered_contigs = "results/{genera}/2_assembly/assembly_eval/{sample}/metaspades_assembly_DEDUP95_m1500.fasta",
+        whole_assembly_stats = "results/{genera}/2_assembly/assembly_eval/{sample}/assembly_stats.csv",
+        metaquast_output = "results/{genera}/2_assembly/assembly_eval/{sample}/report.html"
     params:
         len = 1500,
         threads = 4,
-        outdir = "results/{genera}/1_assembly/assembly_eval/{sample}",
+        outdir = "results/{genera}/2_assembly/assembly_eval/{sample}",
         outfile_label = "SPAdes.m1500"
     log:
-        stdout = "logs/{genera}/1_assembly/assembly_eval/{sample}/assembly_eval.out",
-        stderr = "logs/{genera}/1_assembly/assembly_eval/{sample}/assembly_eval.err"
+        stdout = "logs/{genera}/2_assembly/assembly_eval/{sample}/assembly_eval.out",
+        stderr = "logs/{genera}/2_assembly/assembly_eval/{sample}/assembly_eval.err"
     shell:
         """
         module unload miniconda
