@@ -2,7 +2,7 @@ import os
 import glob
 import pandas as pd
 
-rule concoct: #done
+rule concoct_bin: #done
     """
     Group assembled contigs into bins that represent individual genomes or closely related organisms using Concoct
 
@@ -66,7 +66,7 @@ rule concoct: #done
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule metabat2: #done
+rule metabat2_bin: #done
     """
     Group assembled contigs into bins that represent individual genomes or closely related organisms using Metabat
     """
@@ -134,7 +134,7 @@ rule maxbin2_depth: # done
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule maxbin2: # done
+rule maxbin2_bin: # done
     """
     Bin contigs using MaxBin and previously generated depth file
     """
@@ -166,6 +166,8 @@ rule maxbin2: # done
         1>> {log.stdout} 2>> {log.stderr}
         """
 
+##### Semibin - binning multi-sample workflow for individual binning assemblies #####
+
 rule semibin2_generate_concatenated_db: # done
     """
     Generate concatenated FASTA file necessary for SembiBin's multi-sample binning pipeline
@@ -173,13 +175,13 @@ rule semibin2_generate_concatenated_db: # done
     input:
         contigs = expand("results/{genera}/1_assembly/dedup_contigs/{sample}/{sample}_DEDUP95.fasta", genera=config["genera"], sample=SAMPLES)
     output:
-        "results/{genera}/2_binning/semibin2/concatenated.fa"
+        "results/{genera}/2_binning/semibin2/generate_concatenated_db/concatenated.fa"
     params:
-        outdir = "results/{genera}/2_binning/semibin2",
+        outdir = "results/{genera}/2_binning/semibin2/generate_concatenated_db",
         threads = 4
     log:
-        stdout = "logs/{genera}/2_binning/semibin2/features_model.out",
-        stderr = "logs/{genera}/2_binning/semibin2/features_model.err"
+        stdout = "logs/{genera}/2_binning/semibin2/generate_concatenated_db/concatenate_fa.out",
+        stderr = "logs/{genera}/2_binning/semibin2/generate_concatenated_db/concatenate_fa.err"
     shell:
         """
         module unload miniconda
@@ -195,23 +197,23 @@ rule sembin2_align_to_concatenated_db: # done
     Align reads from each sample to our concatenated FASTA db, necessary for SemiBin pipeline
     """
     input:
-        contigs = "results/{genera}/2_binning/semibin2/concatenated.fa",
+        contigs = "results/{genera}/2_binning/semibin2/generate_concatenated_db/concatenated.fa",
         r1 = "results/{genera}/2_binning/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
         r2 = "results/{genera}/2_binning/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
     output:
-        "results/{genera}/2_binning/sembin2_align_to_concatenated_db/{sample}/{sample}_indexed_contig.1.bt2",
-        "results/{genera}/2_binning/sembin2_align_to_concatenated_db/{sample}/{sample}_indexed_contig.2.bt2",
-        "results/{genera}/2_binning/sembin2_align_to_concatenated_db/{sample}/{sample}_indexed_contig.3.bt2",
-        "results/{genera}/2_binning/sembin2_align_to_concatenated_db/{sample}/{sample}_indexed_contig.4.bt2",
-        "results/{genera}/2_binning/sembin2_align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.1.bt2",
-        "results/{genera}/2_binning/sembin2_align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.2.bt2",
-        "results/{genera}/2_binning/sembin2_align_to_concatenated_db/{sample}_aligned_sorted.bam"
+        "results/{genera}/2_binning/semibin2/align_to_concatenated_db/{sample}/{sample}_indexed_contig.1.bt2",
+        "results/{genera}/2_binning/semibin2/align_to_concatenated_db/{sample}/{sample}_indexed_contig.2.bt2",
+        "results/{genera}/2_binning/semibin2/align_to_concatenated_db/{sample}/{sample}_indexed_contig.3.bt2",
+        "results/{genera}/2_binning/semibin2/align_to_concatenated_db/{sample}/{sample}_indexed_contig.4.bt2",
+        "results/{genera}/2_binning/semibin2/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.1.bt2",
+        "results/{genera}/2_binning/semibin2/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.2.bt2",
+        "results/{genera}/2_binning/semibin2/align_to_concatenated_db/{sample}_aligned_sorted.bam"
     params:
         genera=config["genera"],
-        outdir = "results/{genera}/2_binning/sembin2_align_to_concatenated_db/{sample}"
+        outdir = "results/{genera}/2_binning/semibin2/align_to_concatenated_db/{sample}"
     log:
-        stdout = "logs/{genera}/2_binning/sembin2_align_to_concatenated_db/{sample}_aln.out",
-        stderr = "logs/{genera}/2_binning/sembin2_align_to_concatenated_db/{sample}_aln.err"
+        stdout = "logs/{genera}/2_binning/semibin2/align_to_concatenated_db/{sample}_aln.out",
+        stderr = "logs/{genera}/2_binning/semibin2/align_to_concatenated_db/{sample}_aln.err"
     shell:
         """
         module unload miniconda 
@@ -223,7 +225,7 @@ rule sembin2_align_to_concatenated_db: # done
         -f {input.contigs} {params.outdir}/{wildcards.sample}_indexed_contig \
         1>> {log.stdout} 2>> {log.stderr}
 
-        # 2. Align reads back to SemiBin index
+        # 2. Align reads back to SemiBin db index
         bowtie2 \
         -x {params.outdir}/{wildcards.sample}_indexed_contig -1 {input.r1} -2 {input.r2} | samtools view -b -F 4 -F 2048 | samtools sort -o {output[6]} \
         1>> {log.stdout} 2>> {log.stderr}
@@ -234,32 +236,52 @@ rule semibin2_features_and_model: # done
     Generate sequence features and train model for SemiBin2
     """
     input:
-        contigs = expand("results/{genera}/1_assembly/dedup_contigs/{sample}/{sample}_DEDUP95.fasta", genera=config["genera"], sample=SAMPLES),
-        bams = expand("results/{genera}/1_assembly/contig_read_alignment/{sample}_aligned_sorted.bam", genera=config["genera"], sample=SAMPLES)
+        cat_fa = "results/{genera}/2_binning/semibin2/generate_concatenated_db/concatenated.fa",
+        bams = expand("results/{genera}/2_binning/semibin2/align_to_concatenated_db/{sample}_aligned_sorted.bam", genera=config["genera"], sample=SAMPLES)
     output:
-        split = "results/{genera}/2_binning/semibin2/data_split.csv",
-        csv = "results/{genera}/2_binning/semibin2/data.csv",
-        model = "results/{genera}/2_binning/semibin2/model.pt"
+        split = "results/{genera}/2_binning/semibin2/features_and_model/{sample}/data_split.csv",
+        csv = "results/{genera}/2_binning/semibin2/features_and_model/{sample}/data.csv"
     params:
-        outdir = "results/{genera}/2_binning/semibin2",
+        outdir = "results/{genera}/2_binning/semibin2/features_and_model/{sample}",
         threads = 4
     log:
-        stdout = "logs/{genera}/2_binning/semibin2/features_model.out",
-        stderr = "logs/{genera}/2_binning/semibin2/features_model.err"
+        stdout = "logs/{genera}/2_binning/semibin2/features_and_model/{sample}/sequence_features.out",
+        stderr = "logs/{genera}/2_binning/semibin2/features_and_model/{sample}/sequence_features.err"
     shell:
         """
         module unload miniconda
         source activate /vast/palmer/pi/turner/flg9/conda_envs/semibin
 
-        # 1. Generate sequence features
+        # Generate sequence features data.csv & data_split.csv files
         SemiBin2 generate_sequence_features_single \
-        -i {input.contigs} \
+        -i {input.cat_fa} \
         -b {input.bams} \
         -o {params.outdir} \
         -t {params.threads} \
         1>> {log.stdout} 2>> {log.stderr}
+        """
 
-        # 2. Train model
+rule semibin2_train_model: # done
+    """
+    Train ML model on previously curated SemiBin2 feature data
+    """
+    input:
+        split = "results/{genera}/2_binning/semibin2/features_and_model/{sample}/data_split.csv",
+        csv = "results/{genera}/2_binning/semibin2/features_and_model/{sample}/data.csv"
+    output:
+        model = "results/{genera}/2_binning/semibin2/train_model/{sample}/model.pt"
+    params:
+        outdir = "results/{genera}/2_binning/semibin2/train_model/{sample}",
+        threads = 4
+    log:
+        stdout = "logs/{genera}/2_binning/semibin2/train_model/{sample}/ML_train.out",
+        stderr = "logs/{genera}/2_binning/semibin2/train_model/{sample}/ML_train.err"
+    shell:
+        """
+        module unload miniconda
+        source activate /vast/palmer/pi/turner/flg9/conda_envs/semibin
+
+        # Train model
         SemiBin2 train_self \
         --data {output.csv} \
         --data-split {output.split} \
@@ -270,28 +292,24 @@ rule semibin2_features_and_model: # done
 
 rule semibin2_bin: # done
     """
-    Bin contigs using SemiBin's co-assembly binning model.
-    This model co-assembles samples as if the pool of samples were a single sample.
-    Bins are then constructed from this pool of co-assembled contigs. 
-    This model is most appropriate for samples that are very similar and can be expected to contain
-    overlapping sets of organisms (i.e. time series from the same habitat).
-    Since our samples are from three co-habiting individuals, this seemed most appropriate.
+    Bin contigs using SemiBin's multi-sample binning model for individual binning of samples.
+    This method often returns the most bins and is most optimized for complex samples.    
     """
     input:
         contigs = "results/{genera}/1_assembly/dedup_contigs/{sample}/{sample}_DEDUP95.fasta",
-        csv = "results/{genera}/2_binning/semibin2/data.csv",
-        model = "results/{genera}/2_binning/semibin2/model.pt"
+        csv = "results/{genera}/2_binning/semibin2/features_and_model/{sample}/data.csv",
+        model = "results/{genera}/2_binning/semibin2/train_model/{sample}/model.pt"
     output:
-        bins = "results/{genera}/2_binning/semibin2/{sample}/bin.*.fa"
+        bins = "results/{genera}/2_binning/semibin2/bin/{sample}/bin.*.fa"
     params:
-        outdir = "results/{genera}/2_binning/semibin2/{sample}",
+        outdir = "results/{genera}/2_binning/semibin2/bin/{sample}",
         seq_type = "short_reads",
         GTDB_path = "/vast/palmer/pi/turner/data/db/gtdbtk-2.4.1",
         minlen = "1500",
         threads = 4
     log:
-        stdout = "logs/{genera}/2_binning/semibin2/{sample}/semibin2.out",
-        stderr = "logs/{genera}/2_binning/semibin2/{sample}/semibin2.err"
+        stdout = "logs/{genera}/2_binning/semibin2/bin/{sample}/bin.out",
+        stderr = "logs/{genera}/2_binning/semibin2/bin/{sample}/bin.err"
     shell:
         """
         module unload miniconda
@@ -318,7 +336,7 @@ rule DASTool: #done
         maxbin_contigs = "results/{genera}/2_binning/maxbin/{sample}/MAXBIN.*.fa",
         concoct_csv = "results/{genera}/2_binning/concoct/{sample}/concoct_output/clustering_merged.csv",
         metabat_contigs = "results/{genera}/2_binning/metabat/{sample}/METABAT.*.fa",
-        semibin_contigs = "results/{genera}/2_binning/semibin2/{sample}/bin.*.fa",
+        semibin_contigs = "results/{genera}/2_binning/semibin2/bin/{sample}/bin.*.fa",
         contigs = "results/{genera}/1_assembly/dedup_contigs/{sample}/{sample}_DEDUP95.fasta"
     output:
         metabat_summ = "results/{genera}/2_binning/aggregate_bins/{sample}/metabat_associations.tsv",
@@ -379,7 +397,7 @@ rule bin_quality_check:
         maxbin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/2_binning/maxbin/{wildcards.sample}/MAXBIN.*.fa")),
         metabat_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/2_binning/metabat/{wildcards.sample}/METABAT.*.fa")),
         concoct_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/2_binning/concoct/{wildcards.sample}/CONCOCT.*.fa")),
-        semibin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/2_binning/semibin2/{wildcards.sample}/semibin2.*.fa")),
+        semibin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/2_binning/semibin2/bin/{wildcards.sample}/semibin2.*.fa")),
         dastool_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/2_binning/aggregate_bins/{wildcards.sample}/DASTOOL.*.fa"))
     output:
         "results/{genera}/2_binning/binning_qc/{sample}/quality_report.tsv"
