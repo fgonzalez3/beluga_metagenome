@@ -80,7 +80,7 @@ rule all:
         expand("results/{genera}/3_binning/semibin2/train_model/{sample}/model.pt", genera=config["genera"], sample=SAMPLES),
         expand("results/{genera}/3_binning/semibin2/bin/{sample}/bin.*.fa", genera=config["genera"], sample=SAMPLES)
 
-rule adapter_trimming:
+rule adapter_trimming: # done 
     """
     Trim adapters and low-quality reads
     """
@@ -109,7 +109,7 @@ rule adapter_trimming:
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule aggregate_qc_data:
+rule aggregate_qc_data: # done
     """
     Aggregate QC data to create a single report across our many samples
     """
@@ -134,7 +134,7 @@ rule aggregate_qc_data:
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule mask_beluga_host_genome:
+rule mask_beluga_host_genome: # done
     """
     Mask low-complexity or microbial contaminant regions in a beluga reference sequence, reducing false positives during host read filtering
     """
@@ -158,7 +158,7 @@ rule mask_beluga_host_genome:
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule align_to_beluga_host_genome:
+rule align_to_beluga_host_genome: # done 
     """
     Filter reads against masked beluga reference genome
     """
@@ -197,7 +197,7 @@ rule align_to_beluga_host_genome:
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule split_unmapped_reads_beluga:
+rule split_unmapped_reads_beluga: # done
     """
     Split interleaved reads that did not map to masked beluga reference into separate fastqs
     """
@@ -223,7 +223,7 @@ rule split_unmapped_reads_beluga:
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule mask_human_host_genome:
+rule mask_human_host_genome: # done
     """
     Mask low-complexity or microbial contaminant regions in a human reference sequence, reducing false positives during host read filtering
     """
@@ -249,7 +249,7 @@ rule mask_human_host_genome:
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule align_to_human_host_genome:
+rule align_to_human_host_genome: # done
     """
     Filter reads against masked human reference genome
     """
@@ -288,7 +288,7 @@ rule align_to_human_host_genome:
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule split_unmapped_reads_human:
+rule split_unmapped_reads_human: # done
     """
     Split interleaved reads that did not map to masked human reference into separate fastqs
     """
@@ -314,7 +314,7 @@ rule split_unmapped_reads_human:
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule dedup_reads:
+rule dedup_reads: # done
     """
     Run CD-HIT to deduplicate reads that may have been introduced during NexteraXT PCR amplification
     input:
@@ -340,7 +340,7 @@ rule dedup_reads:
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule master_coassembly_normalization:
+rule master_coassembly_normalization: # test
     """
     Concatenate all forward and reverse PE files into two separate files for co-assembly of all samples.
     Further, normalize these merged PE files to reduce redundancy.
@@ -390,7 +390,7 @@ def indiv_r1(wildcards):
 def indiv_r2(wildcards):
     return sorted(glob.glob(f"results/{wildcards.genera}/1_pre_processing/dedup_reads/{sample}/Sample_{wildcards.individual}_*_host_removed_dedup_R2.fastq"))
 
-rule individual_coassembly_normalization:
+rule individual_coassembly_normalization: # test
     """
     Concatenate all forward and reverse PE files from each individual for co-assembly, then normalize
     """

@@ -39,7 +39,7 @@ rule individual_metagenome_assembly_spades: # done
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule individual_metagenome_assembly_megahit: # done
+rule individual_metagenome_assembly_megahit: # test
     """
     Assemble contigs from individual samples with Megahit
     """
@@ -66,7 +66,7 @@ rule individual_metagenome_assembly_megahit: # done
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule master_metagenome_coassembly_spades: # done
+rule master_metagenome_coassembly_spades: # test
     """
     Generate a master co-assembly from merged PE files of all samples using SPAdes
     """
@@ -95,7 +95,7 @@ rule master_metagenome_coassembly_spades: # done
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule master_metagenome_coassembly_megahit: # done
+rule master_metagenome_coassembly_megahit: # test
     """
     Generate a co-assembly from merged PE files of all samples using Megahit
     """
@@ -132,7 +132,7 @@ def indiv_r1(wildcards):
 def indiv_r2(wildcards):
     return sorted(glob.glob(f"results/{wildcards.genera}/1_pre_processing/dedup_reads/{sample}/Sample_{wildcards.individual}_*_host_removed_dedup_R2.fastq"))
 
-rule individual_metagenome_coassembly_spades: # done
+rule individual_metagenome_coassembly_spades: # test
     """
     Generate a co-assembly using spades per individual
     """
@@ -161,7 +161,7 @@ rule individual_metagenome_coassembly_spades: # done
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule indvidual_metagenome_coassembly_megahit: # done
+rule indvidual_metagenome_coassembly_megahit: # test
     """
     Generate a co-assembly using megahit per individual
     """
@@ -188,7 +188,7 @@ rule indvidual_metagenome_coassembly_megahit: # done
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule deduplicate_contigs: # done 
+rule deduplicate_contigs: # test 
     """
     Run CD-HIT to deduplicate overrepresented contigs that may have been introduced during metagenome assembly
     """
@@ -265,46 +265,111 @@ rule deduplicate_contigs: # done
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule align_reads_to_contigs_spades:
+rule align_reads_to_contigs_spades: # test
     """
-    Align raw reads back to assembled contigs to assess coverage, assembly quality, and obtain BAM files for binning from SPAdes assembly
+    Align raw reads back to assembled contigs to assess coverage, assembly quality, and obtain BAM files for binning from SPAdes assembly.
+    BAM files will consist of read alignments to individual sample assemblies and co-assemblies. 
     """
     input:
-        contigs = "results/{genera}/2_assembly/dedup_contigs_spades/{sample}/{sample}_DEDUP95.fasta",
-        r1 = "results/{genera}/2_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
-        r2 = "results/{genera}/2_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
+        # 1. Individual metagenome assemblies
+        c1 = "results/{genera}/2_assembly/dedup_contigs_spades/{sample}/{sample}_DEDUP95.fasta",
+        r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
+        r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq",
+
+        # 2. Per whale metagenome co-assemblies
+        c2 = "results/{genera}/2_assembly/dedup_contigs/SPAdes_whales/{sample}/{sample}_DEDUP95.fasta",
+        r3 = "results/{genera}/1_pre_processing/individual_coassembly_normalization/{individual}_ME_R1_norm.fq.gz",
+        r4 = "results/{genera}/1_pre_processing/individual_coassembly_normalization/{individual}_ME_R2_norm.fq.gz",
+
+        # 3. Master co-assembly
+        c3 = "results/{genera}/2_assembly/SPAdes/master_metagenome_coassembly/{sample}/contigs.fasta",
+        r5 = "results/{genera}/1_pre_processing/master_coassembly_normalization/all_samples_ME_R1_norm.fq.gz",
+        r6 = "results/{genera}/1_pre_processing/master_coassembly_normalization/all_samples_ME_R2_norm.fq.gz"
     output:
-        "results/{genera}/2_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.1.bt2",
-        "results/{genera}/2_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.2.bt2",
-        "results/{genera}/2_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.3.bt2",
-        "results/{genera}/2_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.4.bt2",
-        "results/{genera}/2_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.rev.1.bt2",
-        "results/{genera}/2_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.rev.2.bt2",
-        "results/{genera}/2_assembly/contig_read_alignment_spades/{sample}_aligned_sorted.bam"
+        # 1. Individual metagenome assemblies
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.1.bt2",
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.2.bt2",
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.3.bt2",
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.4.bt2",
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.rev.1.bt2",
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.rev.2.bt2",
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_read_alignment_spades/{sample}_aligned_sorted.bam",
+
+        # 2. Per whale metagenome co-assemblies
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_per_whale_coassemblies/{sample}/{sample}_indexed_contig.1.bt2",
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_per_whale_coassemblies/{sample}/{sample}_indexed_contig.2.bt2",
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_per_whale_coassemblies/{sample}/{sample}_indexed_contig.3.bt2",
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_per_whale_coassemblies/{sample}/{sample}_indexed_contig.4.bt2",
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_per_whale_coassemblies/{sample}/{sample}_indexed_contig.rev.1.bt2",
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_per_whale_coassemblies/{sample}/{sample}_indexed_contig.rev.2.bt2",
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_per_whale_coassemblies/{sample}_aligned_sorted.bam",
+
+        # 3. Master co-assembly
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_master_coassemblies/{sample}/{sample}_indexed_contig.1.bt2",
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_master_coassemblies/{sample}/{sample}_indexed_contig.2.bt2",
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_master_coassemblies/{sample}/{sample}_indexed_contig.3.bt2",
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_master_coassemblies/{sample}/{sample}_indexed_contig.4.bt2",
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_master_coassemblies/{sample}/{sample}_indexed_contig.rev.1.bt2",
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_master_coassemblies/{sample}/{sample}_indexed_contig.rev.2.bt2",
+        "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_master_coassemblies/{sample}_aligned_sorted.bam"
     params:
         genera=config["genera"],
-        outdir = "results/{genera}/2_assembly/contig_index_spades/{sample}"
+        outdir1 = "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}",
+        outdir2 = "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_per_whale_coassemblies/{sample}",
+        outdir3 = "results/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_master_coassemblies/{sample}"
     log:
-        stdout = "logs/{genera}/2_assembly/contig_read_alignment_spades/{sample}_aln.out",
-        stderr = "logs/{genera}/2_assembly/contig_read_alignment_spades/{sample}_aln.err"
+        stdout1 = "logs/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}_aln.out",
+        stderr1 = "logs/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}_aln.err",
+
+        stdout2 = "logs/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_per_whale_coassemblies/{sample}_aln.out",
+        stderr2 = "logs/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_per_whale_coassemblies/{sample}_aln.err",
+
+        stdout3 = "logs/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_master_coassemblies/{sample}_aln.out",
+        stderr3 = "logs/{genera}/2_assembly/align_reads_to_contigs/contig_index_spades_master_coassemblies/{sample}_aln.err"
     shell:
         """
         module unload miniconda 
         module load Bowtie2/2.5.1-GCC-12.2.0
         module load SAMtools/1.21-GCC-12.2.0
 
-        # 1. Build contig index
-        bowtie2-build \
-        -f {input.contigs} {params.outdir}/{wildcards.sample}_indexed_contig \
-        1>> {log.stdout} 2>> {log.stderr}
+        # 1. Individual metagenome assemblies
 
-        # 2. Align reads back to assembled contigs
+        # a. Build contig index
+        bowtie2-build \
+        -f {input.c1} {params.outdir1}/{wildcards.sample}_indexed_contig \
+        1>> {log.stdout1} 2>> {log.stderr1}
+
+        # b. Align reads back to assembled contigs
         bowtie2 \
-        -x {params.outdir}/{wildcards.sample}_indexed_contig -1 {input.r1} -2 {input.r2} | samtools view -b -F 4 -F 2048 | samtools sort -o {output[6]} \
-        1>> {log.stdout} 2>> {log.stderr}
+        -x {params.outdir1}/{wildcards.sample}_indexed_contig -1 {input.r1} -2 {input.r2} | samtools view -b -F 4 -F 2048 | samtools sort -o {output[6]} \
+        1>> {log.stdout1} 2>> {log.stderr1}
+
+        # 2. Per whale metagenome co-assemblies
+
+        # a. Build contig index
+        bowtie2-build \
+        -f {input.c2} {params.outdir2}/{wildcards.sample}_indexed_contig \
+        1>> {log.stdout2} 2>> {log.stderr2}
+
+        # b. Align reads back to assembled contigs
+        bowtie2 \
+        -x {params.outdir2}/{wildcards.sample}_indexed_contig -1 {input.r3} -2 {input.r4} | samtools view -b -F 4 -F 2048 | samtools sort -o {output[13]} \
+        1>> {log.stdout2} 2>> {log.stderr2}
+
+        # 3. Master co-assembly
+
+        # a. Build contig index
+        bowtie2-build \
+        -f {input.c3} {params.outdir3}/{wildcards.sample}_indexed_contig \
+        1>> {log.stdout3} 2>> {log.stderr3}
+
+        # b. Align reads back to assembled contigs
+        bowtie2 \
+        -x {params.outdir3}/{wildcards.sample}_indexed_contig -1 {input.r5} -2 {input.r6} | samtools view -b -F 4 -F 2048 | samtools sort -o {output[20]} \
+        1>> {log.stdout3} 2>> {log.stderr3}
         """
 
-rule align_reads_to_contigs_megahit:
+rule align_reads_to_contigs_megahit: # test
     """
     Align raw reads back to assembled contigs to assess coverage, assembly quality, and obtain BAM files for binning from megahit assembly
     """
