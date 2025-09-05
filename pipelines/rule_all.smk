@@ -10,7 +10,7 @@ READS = {row.sample_id: {"r1": row.r1, "r2": row.r2} for row in samples_df.itert
 
 rule all:
     input:
-        # 1. QC pipeline results 
+        # 1. Read pre-processing pipeline results 
         expand("results/{genera}/1_pre_processing/adapter_trimming/{sample}/{sample}_val_1.fq.gz", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/1_pre_processing/adapter_trimming/{sample}/{sample}_val_2.fq.gz", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/1_pre_processing/adapter_trimming/{sample}/{sample}_val_1_fastqc.html", sample=SAMPLES, genera=config["genera"]),
@@ -33,7 +33,7 @@ rule all:
         expand("results/{genera}/1_pre_processing/co_assembly_reads/all_samples_R1_norm.fq", genera=config["genera"]),
         expand("results/{genera}/1_pre_processing/co_assembly_reads/all_samples_R2_norm.fq", genera=config["genera"]),
 
-        # 2. Assembly pipeline results 
+        # 2. Metagenome assembly pipeline results 
         expand("results/{genera}/2_assembly/metagenome_assembly/{sample}/contigs.fasta", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/2_assembly/metagenome_assembly_megahit/{sample}/final.contigs.fa", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/2_assembly/dedup_contigs_spades/{sample}/{sample}_DEDUP95.fasta", sample=SAMPLES, genera=config["genera"]),
@@ -80,8 +80,10 @@ rule all:
         expand("results/{genera}/3_binning/semibin2/train_model/{sample}/model.pt", genera=config["genera"], sample=SAMPLES),
         expand("results/{genera}/3_binning/semibin2/bin/{sample}/bin.*.fa", genera=config["genera"], sample=SAMPLES)
 
-include: "pipelines/pre_processing.smk"
-include: "pipelines/assembly.smk"
-include: "pipelines/binning.smk"
+include: "pipelines/1_pre_processing.smk"
+include: "pipelines/2_assembly.smk"
+include: "pipelines/3_dedup_contigs.smk"
+include: "pipelines/4_align_reads_to_contigs.smk"
+include: "pipelines/5_binning.smk"
 #include: pipelines/taxonomic_classification.smk
 #include: pipelines/virome_characterization.smk
