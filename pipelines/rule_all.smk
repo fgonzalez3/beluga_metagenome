@@ -85,5 +85,5 @@ include: "pipelines/2_assembly.smk"
 include: "pipelines/3_dedup_contigs.smk"
 include: "pipelines/4_align_reads_to_contigs.smk"
 include: "pipelines/5_binning.smk"
-#include: pipelines/taxonomic_classification.smk
+#include: pipelines/6_taxonomic_classification.smk
 #include: pipelines/virome_characterization.smk
