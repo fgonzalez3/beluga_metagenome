@@ -88,7 +88,7 @@ rule metaquast_individual_assemblies: # test
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule filter_master_coassemblies:
+rule filter_master_coassemblies: # test
     """
     Filter for contigs that are a minimum 1.5kb in length. 
     This is the standard length for binning, so we'll evaluate them at this length prior to binning.
@@ -99,15 +99,15 @@ rule filter_master_coassemblies:
         c2 = "results/{genera}/3_dedup_contigs/dedup_contigs/megahit_master/DEDUP95.fasta"
     output:
         # List of filtered contigs 
-        SPAdes_filter = "results/{genera}/5_evaluate_assemblies/filter_master_assemblies/metaspades_assembly_DEDUP95_m1500.fasta",
-        Megahit_filter = "results/{genera}/5_evaluate_assemblies/filter_master_assemblies/megahit_assembly_DEDUP95_m1500.fasta"
+        SPAdes_filter = "results/{genera}/5_evaluate_assemblies/filter_master_coassemblies/metaspades_assembly_DEDUP95_m1500.fasta",
+        Megahit_filter = "results/{genera}/5_evaluate_assemblies/filter_master_coassemblies/megahit_assembly_DEDUP95_m1500.fasta"
     params:
         len = 1500,
         threads = 4,
-        outdir = "results/{genera}/5_evaluate_assemblies/filter_master_assemblies",
+        outdir = "results/{genera}/5_evaluate_assemblies/filter_master_coassemblies",
     log:
-        stdout = "logs/{genera}/5_evaluate_assemblies/filter_master_assemblies/filter_assemblies.out",
-        stderr = "logs/{genera}/5_evaluate_assemblies/filter_master_assemblies/filter_assemblies.err"
+        stdout = "logs/{genera}/5_evaluate_assemblies/filter_master_coassemblies/filter_assemblies.out",
+        stderr = "logs/{genera}/5_evaluate_assemblies/filter_master_coassemblies/filter_assemblies.err"
     shell:
         """
         module unload miniconda
@@ -129,13 +129,13 @@ rule filter_master_coassemblies:
         echo "Running stats.sh..." 1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule metaquast_master_coassemblies:
+rule metaquast_master_coassemblies: # test
     """
     Run MetaQUAST on all filtered assemblies from all samples for a global comparison.
     """
     input:
-        c1 = expand("results/{genera}/5_evaluate_assemblies/filter_master_assemblies/metaspades_assembly_DEDUP95_m1500.fasta", sample=SAMPLES, genera=config["genera"]),
-        c2 = expand("results/{genera}/5_evaluate_assemblies/filter_master_assemblies/megahit_assembly_DEDUP95_m1500.fasta", sample=SAMPLES, genera=config["genera"])
+        c1 = expand("results/{genera}/5_evaluate_assemblies/filter_master_coassemblies/metaspades_assembly_DEDUP95_m1500.fasta", genera=config["genera"]),
+        c2 = expand("results/{genera}/5_evaluate_assemblies/filter_master_coassemblies/megahit_assembly_DEDUP95_m1500.fasta", genera=config["genera"])
     output:
         whole_assembly_stats = "results/{genera}/5_evaluate_assemblies/master_assembly_eval/assembly_stats.csv",
         report = "results/{genera}/5_evaluate_assemblies/master_assembly_eval/report.html"
@@ -176,26 +176,26 @@ rule metaquast_master_coassemblies:
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule filter_whale_coassemblies:
+rule filter_whale_coassemblies: # test
     """
     Filter for contigs that are a minimum 1.5kb in length. 
     This is the standard length for binning, so we'll evaluate them at this length prior to binning.
     """
     input:
         # SPAdes assemblies 
-        c1 = "results/{genera}/3_dedup_contigs/dedup_contigs/SPAdes_master/DEDUP95.fasta",
-        c2 = "results/{genera}/3_dedup_contigs/dedup_contigs/megahit_master/DEDUP95.fasta"
+        c1 = "results/{genera}/3_dedup_contigs/SPAdes_whales/{individual}/{individual}_DEDUP95.fasta",
+        c2 = "results/{genera}/3_dedup_contigs/megahit_whales/{individual}/{individual}_DEDUP95.fasta"
     output:
         # List of filtered contigs 
-        SPAdes_filter = "results/{genera}/5_evaluate_assemblies/filter_master_assemblies/metaspades_assembly_DEDUP95_m1500.fasta",
-        Megahit_filter = "results/{genera}/5_evaluate_assemblies/filter_master_assemblies/megahit_assembly_DEDUP95_m1500.fasta"
+        SPAdes_filter = "results/{genera}/5_evaluate_assemblies/filter_whale_coassemblies/{individual}/{individual}_metaspades_assembly_DEDUP95_m1500.fasta",
+        Megahit_filter = "results/{genera}/5_evaluate_assemblies/filter_whale_coassemblies/{individual}/{individual}_megahit_assembly_DEDUP95_m1500.fasta"
     params:
         len = 1500,
         threads = 4,
-        outdir = "results/{genera}/5_evaluate_assemblies/filter_master_assemblies",
+        outdir = "results/{genera}/5_evaluate_assemblies/filter_whale_coassemblies/{individual}",
     log:
-        stdout = "logs/{genera}/5_evaluate_assemblies/filter_master_assemblies/filter_assemblies.out",
-        stderr = "logs/{genera}/5_evaluate_assemblies/filter_master_assemblies/filter_assemblies.err"
+        stdout = "logs/{genera}/5_evaluate_assemblies/filter_whale_coassemblies/{individual}/filter_assemblies.out",
+        stderr = "logs/{genera}/5_evaluate_assemblies/filter_whale_coassemblies/{individual}/filter_assemblies.err"
     shell:
         """
         module unload miniconda
@@ -217,13 +217,21 @@ rule filter_whale_coassemblies:
         echo "Running stats.sh..." 1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule metaquast_whale_coassemblies:
+INDIVIDUALS = ["JUNO", "KELA", "NATTY"]
+
+def indiv_r1(wildcards):
+    return sorted(glob.glob(f"results/{wildcards.genera}/1_pre_processing/dedup_reads/{sample}/Sample_{wildcards.individual}_*_host_removed_dedup_R1.fastq"))
+
+def indiv_r2(wildcards):
+    return sorted(glob.glob(f"results/{wildcards.genera}/1_pre_processing/dedup_reads/{sample}/Sample_{wildcards.individual}_*_host_removed_dedup_R2.fastq"))
+
+rule metaquast_whale_coassemblies: # working on this 
     """
     Run MetaQUAST on all filtered assemblies from all samples for a global comparison.
     """
     input:
-        c1 = expand("results/{genera}/5_evaluate_assemblies/filter_master_assemblies/metaspades_assembly_DEDUP95_m1500.fasta", sample=SAMPLES, genera=config["genera"]),
-        c2 = expand("results/{genera}/5_evaluate_assemblies/filter_master_assemblies/megahit_assembly_DEDUP95_m1500.fasta", sample=SAMPLES, genera=config["genera"])
+        c1 = expand("results/{genera}/5_evaluate_assemblies/filter_whale_coassemblies/{individual}/{individual}_metaspades_assembly_DEDUP95_m1500.fasta"),
+        c2 = expand("results/{genera}/5_evaluate_assemblies/filter_whale_coassemblies/{individual}/{individual}_megahit_assembly_DEDUP95_m1500.fasta")
     output:
         whole_assembly_stats = "results/{genera}/5_evaluate_assemblies/master_assembly_eval/assembly_stats.csv",
         report = "results/{genera}/5_evaluate_assemblies/master_assembly_eval/report.html"
