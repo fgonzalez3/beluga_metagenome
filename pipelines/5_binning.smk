@@ -1,7 +1,12 @@
-import os
-import glob
-import pandas as pd
-
+# This pipeline goes through the following steps - 
+    # 1. Binning of contigs with Concoct
+    # 2. Binning of contigs with Metabat2
+    # 3. Collection of depth file required for MaxBin2 from BAM files produced in prior pipeline
+    # 4. Binning of contigs with MaxBin2
+    # 5. Model procurement and binning with Semibin2
+    # 6. Bin correction and convergence with DasTool
+    # 7. Bin quality check with CheckM2
+       
 rule concoct_bin: #done
     """
     Group assembled contigs into bins that represent individual genomes or closely related organisms using Concoct
@@ -10,8 +15,8 @@ rule concoct_bin: #done
     for contigs at minimum of 1.5kb anyways. This should match the eval length in the last rule of assembly.smk.*
     """
     input:
-        contigs = "results/{genera}/1_assembly/dedup_contigs/{sample}/{sample}_DEDUP95.fasta",
-        bams = "results/{genera}/1_assembly/contig_read_alignment/{sample}_aligned_sorted.bam"
+        contigs = "results/{genera}/3_dedup_contigs/{sample}/{sample}_DEDUP95.fasta",
+        bams = "results/{genera}/4_align_reads_to_contigs/{sample}_aligned_sorted.bam"
     output:
         bins = "results/{genera}/3_binning/concoct/{sample}/CONCOCT.*.fa",
         csv = "results/{genera}/3_binning/concoct/{sample}/concoct_output/clustering_merged.csv"
@@ -422,50 +427,4 @@ rule bin_quality_check:
         {input.concoct_bins} {input.semibin_bins} {input.dastool_bins} \
         --output_directory {params.outdir} \
         1>> {log.stdout} 2>> {log.stderr}
-        """
-
-rule individual_coassembly_normalization:
-    """
-    Concatenate all forward and reverse PE files from each individual into three separate for co-assembly. 
-    Further, normalize these merged PE files to reduce redundancy.
-    """
-    input:
-        r1 = "results/{genera}/1_assembly/map_human/{sample}/unmapped_R1.fq",
-        r2 = "results/{genera}/1_assembly/map_human/{sample}/unmapped_R2.fq"
-    output:
-        r1 = "results/{genera}/1_assembly/co_assembly_reads/all_samples_R1.fq",
-        r2 = "results/{genera}/1_assembly/co_assembly_reads/all_samples_R2.fq",
-        norm1 = "results/{genera}/1_assembly/co_assembly_reads/all_samples_R1_norm.fq",
-        norm2 = "results/{genera}/1_assembly/co_assembly_reads/all_samples_R2_norm.fq"
-    params:
-        genera=config["genera"],
-        target=70,
-        mindepth=2,
-        threads=4,
-        prefilter="t"
-    log:
-        stdout = "logs/{genera}/1_assembly/normalization/{sample}/dedup_reads.out",
-        stderr = "logs/{genera}/1_assembly/normalization/{sample}/dedup_reads.err"
-    shell:
-        """
-        module unload miniconda 
-        module load BBMap/38.90-GCCcore-10.2.0
-
-        # Merge all raw reads by sample into three individual co-assemblies and normalize
-        for indiv in JUNO KELA NATTY
-        do
-            echo "Merging R1 for $indiv"
-            cat */Sample_${indiv}_*_R1_combined.fastq.gz > ${indiv}_ME_R1.fastq.gz
-
-            echo "Merging R2 for $indiv"
-            cat */Sample_${indiv}_*_R2_combined.fastq.gz > ${indiv}_ME_R2.fastq.gz
-
-            # Normalize
-            bbnorm.sh in=${indiv}_ME_R1.fastq.gz in2=${indiv}_ME_R2.fastq.gz \
-            out={output.norm1} out2={output.norm2} \
-            target={params.target} mindepth={params.mindepth} \
-            threads={params.threads} prefilter={params.prefilter} \
-            1>> {log.stdout} 2>> {log.stderr}
-
-        done
         """

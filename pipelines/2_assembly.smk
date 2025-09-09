@@ -115,7 +115,7 @@ rule master_metagenome_coassembly_megahit: # test
     params:
         genera=config["genera"],
         preset="meta-large"
-        outdir = "results/{genera}/megahit/2_assembly/master_metagenome_coassembly"
+        outdir = "results/{genera}/2_assembly/megahit/master_metagenome_coassembly"
     log:
         stdout = "logs/{genera}/2_assembly/megahit/master_metagenome_coassembly/assembly.out",
         stderr = "logs/{genera}/2_assembly/megahit/master_metagenome_coassembly/assembly.err"

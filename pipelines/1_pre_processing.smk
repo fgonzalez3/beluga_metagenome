@@ -1,3 +1,10 @@
+# This pipeline goes through the following steps - 
+    # 1. Adapter and low read quality trimming
+    # 2. Aggregation of quality reports produced from step 1 where you can view and compare all reports for PE read file
+    # 3-6. Masking of both human and beluga whale reference genomes, as well as PE read alignment to masked genomes to filter out host reads
+    # 7. Deduplication of PE read files 
+    # 8. Normalization of PE read files for PE reads that will undergo co-assembly of any kind
+
 rule adapter_trimming: # done 
     """
     Trim adapters and low-quality reads
