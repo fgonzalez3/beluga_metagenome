@@ -520,21 +520,50 @@ rule semibin2_features_and_model_megahit: # test
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule semibin2_train_model: # done
+rule semibin2_train_model_spades: # test
     """
     Train ML model on previously curated SemiBin2 feature data
     """
     input:
-        split = "results/{genera}/3_binning/semibin2/features_and_model/{sample}/data_split.csv",
-        csv = "results/{genera}/3_binning/semibin2/features_and_model/{sample}/data.csv"
+        split = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/data_split.csv",
+        csv = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/data.csv"
     output:
-        model = "results/{genera}/3_binning/semibin2/train_model/{sample}/model.pt"
+        model = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/train_model/{sample}/model.pt"
     params:
-        outdir = "results/{genera}/3_binning/semibin2/train_model/{sample}",
+        outdir = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/train_model/{sample}",
         threads = 4
     log:
-        stdout = "logs/{genera}/3_binning/semibin2/train_model/{sample}/ML_train.out",
-        stderr = "logs/{genera}/3_binning/semibin2/train_model/{sample}/ML_train.err"
+        stdout = "logs/{genera}/3_binning/semibin2/SPAdes_individual_assembly/train_model/{sample}/ML_train.out",
+        stderr = "logs/{genera}/3_binning/semibin2/SPAdes_individual_assembly/train_model/{sample}/ML_train.err"
+    shell:
+        """
+        module unload miniconda
+        source activate /vast/palmer/pi/turner/flg9/conda_envs/semibin
+
+        # Train model
+        SemiBin2 train_self \
+        --data {output.csv} \
+        --data-split {output.split} \
+        -o {params.outdir} \
+        -t {params.threads} \
+        1>> {log.stdout} 2>> {log.stderr}
+        """
+
+rule semibin2_train_model_megahit: # test
+    """
+    Train ML model on previously curated SemiBin2 feature data
+    """
+    input:
+        split = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/data_split.csv",
+        csv = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/data.csv"
+    output:
+        model = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/train_model/{sample}/model.pt"
+    params:
+        outdir = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/train_model/{sample}",
+        threads = 4
+    log:
+        stdout = "logs/{genera}/3_binning/semibin2/megahit_individual_assembly/train_model/{sample}/ML_train.out",
+        stderr = "logs/{genera}/3_binning/semibin2/megahit_individual_assembly/train_model/{sample}/ML_train.err"
     shell:
         """
         module unload miniconda
