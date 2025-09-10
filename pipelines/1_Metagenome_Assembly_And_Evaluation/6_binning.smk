@@ -268,7 +268,7 @@ rule maxbin2_depth_megahit: # test
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule maxbin2_bin_spades: # done
+rule maxbin2_bin_spades: # test
     """
     Bin contigs using MaxBin and previously generated depth file
     """
@@ -300,7 +300,7 @@ rule maxbin2_bin_spades: # done
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule maxbin2_bin_megahit: # done
+rule maxbin2_bin_megahit: # test
     """
     Bin contigs using MaxBin and previously generated depth file
     """
@@ -334,20 +334,44 @@ rule maxbin2_bin_megahit: # done
 
 ##### Semibin - binning multi-sample workflow for individual binning assemblies #####
 
-rule semibin2_generate_concatenated_db: # done
+rule semibin2_generate_concatenated_db_spades: # test
     """
     Generate concatenated FASTA file necessary for SembiBin's multi-sample binning pipeline
     """
     input:
-        contigs = expand("results/{genera}/1_assembly/dedup_contigs/{sample}/{sample}_DEDUP95.fasta", genera=config["genera"], sample=SAMPLES)
+        contigs = expand("results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta", genera=config["genera"], sample=SAMPLES)
     output:
-        "results/{genera}/3_binning/semibin2/generate_concatenated_db/concatenated.fa"
+        "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/generate_concatenated_db/concatenated.fa"
     params:
-        outdir = "results/{genera}/3_binning/semibin2/generate_concatenated_db",
+        outdir = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/generate_concatenated_db",
         threads = 4
     log:
-        stdout = "logs/{genera}/3_binning/semibin2/generate_concatenated_db/concatenate_fa.out",
-        stderr = "logs/{genera}/3_binning/semibin2/generate_concatenated_db/concatenate_fa.err"
+        stdout = "logs/{genera}/3_binning/semibin2/SPAdes_individual_assembly/generate_concatenated_db/concatenate_fa.out",
+        stderr = "logs/{genera}/3_binning/semibin2/SPAdes_individual_assembly/generate_concatenated_db/concatenate_fa.err"
+    shell:
+        """
+        module unload miniconda
+        source activate /vast/palmer/pi/turner/flg9/conda_envs/semibin
+
+        SemiBin2 concatenate_fasta \
+        --input-fasta {input.contigs} \
+        --output {output}
+        """
+
+rule semibin2_generate_concatenated_db_megahit: # test
+    """
+    Generate concatenated FASTA file necessary for SembiBin's multi-sample binning pipeline
+    """
+    input:
+        contigs = expand("results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta", genera=config["genera"], sample=SAMPLES)
+    output:
+        "results/{genera}/3_binning/semibin2/megahit_individual_assembly/generate_concatenated_db/concatenated.fa"
+    params:
+        outdir = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/generate_concatenated_db",
+        threads = 4
+    log:
+        stdout = "logs/{genera}/3_binning/semibin2/megahit_individual_assembly/generate_concatenated_db/concatenate_fa.out",
+        stderr = "logs/{genera}/3_binning/semibin2/megahit_individual_assembly/generate_concatenated_db/concatenate_fa.err"
     shell:
         """
         module unload miniconda
