@@ -460,22 +460,52 @@ rule sembin2_align_to_concatenated_db_megahit: # test
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule semibin2_features_and_model: # done
+rule semibin2_features_and_model_spades: # test
     """
     Generate sequence features and train model for SemiBin2
     """
     input:
-        cat_fa = "results/{genera}/3_binning/semibin2/generate_concatenated_db/concatenated.fa",
-        bams = expand("results/{genera}/3_binning/semibin2/align_to_concatenated_db/{sample}_aligned_sorted.bam", genera=config["genera"], sample=SAMPLES)
+        cat_fa = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/generate_concatenated_db/concatenated.fa",
+        bams = expand("results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}_aligned_sorted.bam", genera=config["genera"], sample=SAMPLES)
     output:
-        split = "results/{genera}/3_binning/semibin2/features_and_model/{sample}/data_split.csv",
-        csv = "results/{genera}/3_binning/semibin2/features_and_model/{sample}/data.csv"
+        split = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/data_split.csv",
+        csv = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/data.csv"
     params:
-        outdir = "results/{genera}/3_binning/semibin2/features_and_model/{sample}",
+        outdir = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}",
         threads = 4
     log:
-        stdout = "logs/{genera}/3_binning/semibin2/features_and_model/{sample}/sequence_features.out",
-        stderr = "logs/{genera}/3_binning/semibin2/features_and_model/{sample}/sequence_features.err"
+        stdout = "logs/{genera}/3_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/sequence_features.out",
+        stderr = "logs/{genera}/3_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/sequence_features.err"
+    shell:
+        """
+        module unload miniconda
+        source activate /vast/palmer/pi/turner/flg9/conda_envs/semibin
+
+        # Generate sequence features data.csv & data_split.csv files
+        SemiBin2 generate_sequence_features_single \
+        -i {input.cat_fa} \
+        -b {input.bams} \
+        -o {params.outdir} \
+        -t {params.threads} \
+        1>> {log.stdout} 2>> {log.stderr}
+        """
+
+rule semibin2_features_and_model_megahit: # test
+    """
+    Generate sequence features and train model for SemiBin2
+    """
+    input:
+        cat_fa = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/generate_concatenated_db/concatenated.fa",
+        bams = expand("results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}_aligned_sorted.bam", genera=config["genera"], sample=SAMPLES)
+    output:
+        split = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/data_split.csv",
+        csv = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/data.csv"
+    params:
+        outdir = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}",
+        threads = 4
+    log:
+        stdout = "logs/{genera}/3_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/sequence_features.out",
+        stderr = "logs/{genera}/3_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/sequence_features.err"
     shell:
         """
         module unload miniconda
