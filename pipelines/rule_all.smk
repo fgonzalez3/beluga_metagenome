@@ -10,7 +10,7 @@ READS = {row.sample_id: {"r1": row.r1, "r2": row.r2} for row in samples_df.itert
 
 rule all:
     input:
-        # 1. Read pre-processing pipeline results 
+        # 1. Read pre-processing pipeline 
         expand("results/{genera}/1_pre_processing/adapter_trimming/{sample}/{sample}_val_1.fq.gz", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/1_pre_processing/adapter_trimming/{sample}/{sample}_val_2.fq.gz", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/1_pre_processing/adapter_trimming/{sample}/{sample}_val_1_fastqc.html", sample=SAMPLES, genera=config["genera"]),
@@ -29,7 +29,7 @@ rule all:
         expand("results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq", sample=SAMPLES, genera=config["genera"]),
 
-        # 2. Metagenome assembly pipeline results 
+        # 2. Metagenome assembly pipeline
         expand("results/{genera}/2_assembly/SPAdes/individual_metagenome_assembly/{sample}/contigs.fasta", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/2_assembly/megahit/individual_metagenome_assembly/{sample}/final.contigs.fa", sample=SAMPLES, genera=config["genera"]),
 
@@ -37,7 +37,7 @@ rule all:
         expand("results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta", sample=SAMPLES, genera=config["genera"]),
 
-        # 4. Align PE reads to assembled contigs 
+        # 4. Align PE reads to assembled contigs
         expand("results/{genera}/4_align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.1.bt2", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/4_align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.2.bt2", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/4_align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.3.bt2", sample=SAMPLES, genera=config["genera"]),
@@ -54,34 +54,65 @@ rule all:
         expand("results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_megahit/{sample}_aligned_sorted.bam", sample=SAMPLES, genera=config["genera"]),
 
         # 5. Evaluate assemblies
-        expand("results/{genera}/2_assembly/assembly_eval/{sample}/metaspades_assembly_DEDUP95_m1500.fasta", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/2_assembly/assembly_eval/{sample}/assembly_stats.csv", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/2_assembly/assembly_eval/{sample}/report.html", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/{sample}/metaspades_assembly_DEDUP95_m1500.fasta", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/{sample}/megahit_assembly_DEDUP95_m1500.fasta", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/5_evaluate_assemblies/individual_assembly_eval/assembly_stats.csv", genera=config["genera"]),
+        expand("results/{genera}/5_evaluate_assemblies/individual_assembly_eval/report.html", genera=config["genera"]),
 
-        # 3. Binning pipeline results 
-        expand("results/{genera}/3_binning/concoct/{sample}/CONCOCT.*.fa", genera=config["genera"], sample=SAMPLES),
-        expand("results/{genera}/3_binning/concoct/{sample}/concoct_output/clustering_merged.csv", genera=config["genera"], sample=SAMPLES),
+        # 6. Binning
+        expand("results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/CONCOCT.*.fa", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/concoct_output/clustering_merged.csv", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/CONCOCT.*.fa", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/concoct_output/clustering_merged.csv", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT.txt", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT.*.fa", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/metabat/megahit_individual_assembly/{sample}/METABAT.txt", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/metabat/megahit_individual_assembly/{sample}/METABAT.*.fa", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/maxbin/SPAdes_individual_assembly/maxbin.txt", genera=config["genera"]),
+        expand("results/{genera}/3_binning/maxbin/megahit_individual_assembly/maxbin.txt", genera=config["genera"]),
+        expand("results/{genera}/3_binning/maxbin/SPAdes_individual_assembly/{sample}/MAXBIN.*.fa", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/maxbin/SPAdes_individual_assembly/{sample}/MAXBIN.summary", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/maxbin/megahit_individual_assembly/{sample}/MAXBIN.*.fa", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/maxbin/megahit_individual_assembly/{sample}/MAXBIN.summary", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/generate_concatenated_db/concatenated.fa", genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/megahit_individual_assembly/generate_concatenated_db/concatenated.fa", genera=config["genera"])
+        expand("results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.1.bt2", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.2.bt2", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.3.bt2", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.4.bt2", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.1.bt2", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.2.bt2", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}_aligned_sorted.bam", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.1.bt2", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.2.bt2", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.3.bt2", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.4.bt2", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.1.bt2", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.2.bt2", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}_aligned_sorted.bam", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/data_split.csv", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/data.csv", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/data_split.csv", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/data.csv", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/train_model/{sample}/model.pt", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/semibin2/megahit_individual_assembly/train_model/{sample}/model.pt", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/SPAdes_individual_assembly/semibin2/bin/{sample}/bin.*.fa", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/megahit_individual_assembly/semibin2/bin/{sample}/bin.*.fa", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/metabat_associations.tsv", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/maxbin_associations.tsv", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/concoct_associations.tsv", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/semibin_associations.tsv", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/DASTOOL.*.fa", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/metabat_associations.tsv", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/maxbin_associations.tsv", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/concoct_associations.tsv", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/semibin_associations.tsv", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/DASTOOL.*.fa", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/SPAdes_individual_assembly/binning_qc/{sample}/quality_report.tsv", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_binning/megahit_individual_assembly/binning_qc/{sample}/quality_report.tsv", sample=SAMPLES, genera=config["genera"])
 
-        expand("results/{genera}/3_binning/metabat/{sample}/METABAT.txt", genera=config["genera"], sample=SAMPLES),
-        expand("results/{genera}/3_binning/metabat/{sample}/METABAT.*.fa", genera=config["genera"], sample=SAMPLES),
 
-        expand("results/{genera}/3_binning/maxbin/maxbin.txt", genera=config["genera"], sample=SAMPLES),
-        expand("results/{genera}/3_binning/maxbin/{sample}/MAXBIN.*.fa", genera=config["genera"], sample=SAMPLES),
-        expand("results/{genera}/3_binning/maxbin/{sample}/MAXBIN.summary", genera=config["genera"], sample=SAMPLES),
-
-        expand("results/{genera}/3_binning/semibin2/generate_concatenated_db/concatenated.fa", genera=config["genera"]),
-        expand("results/{genera}/3_binning/semibin2/align_to_concatenated_db/{sample}/{sample}_indexed_contig.1.bt2", genera=config["genera"], sample=SAMPLES),
-        expand("results/{genera}/3_binning/semibin2/align_to_concatenated_db/{sample}/{sample}_indexed_contig.2.bt2", genera=config["genera"], sample=SAMPLES),
-        expand("results/{genera}/2_binning/semibin2/align_to_concatenated_db/{sample}/{sample}_indexed_contig.3.bt2", genera=config["genera"], sample=SAMPLES),
-        expand("results/{genera}/3_binning/semibin2/align_to_concatenated_db/{sample}/{sample}_indexed_contig.4.bt2", genera=config["genera"], sample=SAMPLES),
-        expand("results/{genera}/3_binning/semibin2/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.1.bt2", genera=config["genera"], sample=SAMPLES),
-        expand("results/{genera}/3_binning/semibin2/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.2.bt2", genera=config["genera"], sample=SAMPLES),
-        expand("results/{genera}/3_binning/semibin2/align_to_concatenated_db/{sample}_aligned_sorted.bam", genera=config["genera"], sample=SAMPLES),
-        expand("results/{genera}/3_binning/semibin2/features_and_model/{sample}/data_split.csv", genera=config["genera"], sample=SAMPLES),
-        expand("results/{genera}/3_binning/semibin2/features_and_model/{sample}/data.csv", genera=config["genera"], sample=SAMPLES),
-        expand("results/{genera}/3_binning/semibin2/train_model/{sample}/model.pt", genera=config["genera"], sample=SAMPLES),
-        expand("results/{genera}/3_binning/semibin2/bin/{sample}/bin.*.fa", genera=config["genera"], sample=SAMPLES)
-
+# Pipelines to call on 
 include: "pipelines/1_Metagenome_Assembly_And_Evaluation/1_pre_processing.smk"
 include: "pipelines/1_Metagenome_Assembly_And_Evaluation/2_assembly.smk"
 include: "pipelines/1_Metagenome_Assembly_And_Evaluation/3_dedup_contigs.smk"
