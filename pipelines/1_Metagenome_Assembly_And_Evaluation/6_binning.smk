@@ -226,17 +226,17 @@ rule metabat2_bin_megahit: #test
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule maxbin2_depth: # done
+rule maxbin2_depth_spades: # test
     """
     Get depth file for MaxBin using previously generated read alignment to contigs
     """
     input:
-        bams = expand("results/{genera}/1_assembly/contig_read_alignment/{sample}_aligned_sorted.bam", genera=config["genera"], sample=SAMPLES)
+        bams = expand("results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam", genera=config["genera"], sample=SAMPLES)
     output:
-        depth_file = "results/{genera}/3_binning/maxbin/maxbin.txt"
+        depth_file = "results/{genera}/3_binning/maxbin/SPAdes_individual_assembly/maxbin.txt"
     log:
-        stdout = "logs/{genera}/3_binning/maxbin/maxbin.out",
-        stderr = "logs/{genera}/3_binning/maxbin/maxbin.err"
+        stdout = "logs/{genera}/3_binning/maxbin/SPAdes_individual_assembly/maxbin.out",
+        stderr = "logs/{genera}/3_binning/maxbin/SPAdes_individual_assembly/maxbin.err"
     shell:
         """
         module unload miniconda
@@ -247,25 +247,78 @@ rule maxbin2_depth: # done
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule maxbin2_bin: # done
+rule maxbin2_depth_megahit: # test
+    """
+    Get depth file for MaxBin using previously generated read alignment to contigs
+    """
+    input:
+        bams = expand("results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_megahit/{sample}_aligned_sorted.bam", genera=config["genera"], sample=SAMPLES)
+    output:
+        depth_file = "results/{genera}/3_binning/maxbin/megahit_individual_assembly/maxbin.txt"
+    log:
+        stdout = "logs/{genera}/3_binning/maxbin/megahit_individual_assembly/maxbin.out",
+        stderr = "logs/{genera}/3_binning/maxbin/megahit_individual_assembly/maxbin.err"
+    shell:
+        """
+        module unload miniconda
+        module load MaxBin/2.2.7-gompi-2020b 
+
+        jgi_summarize_bam_contig_depths \
+        --outputDepth {output.depth_file} {input.bams} \
+        1>> {log.stdout} 2>> {log.stderr}
+        """
+
+rule maxbin2_bin_spades: # done
     """
     Bin contigs using MaxBin and previously generated depth file
     """
     input:
-        contigs = "results/{genera}/1_assembly/dedup_contigs/{sample}/{sample}_DEDUP95.fasta",
-        r1 = "results/{genera}/1_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
-        r2 = "results/{genera}/1_assembly/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq",
-        maxbin_depth_file = "results/{genera}/3_binning/maxbin/maxbin.txt"
+        contigs = "results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta",
+        r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
+        r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq",
+        maxbin_depth_file = "results/{genera}/3_binning/maxbin/SPAdes_individual_assembly/maxbin.txt"
     output:
-        bins = "results/{genera}/3_binning/maxbin/{sample}/MAXBIN.*.fa",
-        summ = "results/{genera}/3_binning/maxbin/{sample}/MAXBIN.summary"
+        bins = "results/{genera}/3_binning/maxbin/SPAdes_individual_assembly/{sample}/MAXBIN.*.fa",
+        summ = "results/{genera}/3_binning/maxbin/SPAdes_individual_assembly/{sample}/MAXBIN.summary"
     params:
         threads=4,
         contig_len = 1500,
-        outdir = "results/{genera}/3_binning/maxbin/{sample}/MAXBIN"
+        outdir = "results/{genera}/3_binning/maxbin/SPAdes_individual_assembly/{sample}/MAXBIN"
     log:
-        stdout = "logs/{genera}/3_binning/maxbin/{sample}/maxbin.out",
-        stderr = "logs/{genera}/3_binning/maxbin/{sample}/maxbin.err"
+        stdout = "logs/{genera}/3_binning/maxbin/SPAdes_individual_assembly/{sample}/maxbin.out",
+        stderr = "logs/{genera}/3_binning/maxbin/SPAdes_individual_assembly/{sample}/maxbin.err"
+    shell:
+        """
+        module unload miniconda
+        module load MaxBin/2.2.7-gompi-2020b 
+
+        run_MaxBin.pl \
+        -thread {params.threads} --min_contig_length {params.contig_len} \
+        -contig {input.contigs} -reads {input.r1} -reads2 {input.r2} \
+        --abund {input.maxbin_depth_file} \
+        -out {params.outdir} \
+        1>> {log.stdout} 2>> {log.stderr}
+        """
+
+rule maxbin2_bin_megahit: # done
+    """
+    Bin contigs using MaxBin and previously generated depth file
+    """
+    input:
+        contigs = "results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta",
+        r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
+        r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq",
+        maxbin_depth_file = "results/{genera}/3_binning/maxbin/megahit_individual_assembly/maxbin.txt"
+    output:
+        bins = "results/{genera}/3_binning/maxbin/megahit_individual_assembly/{sample}/MAXBIN.*.fa",
+        summ = "results/{genera}/3_binning/maxbin/megahit_individual_assembly/{sample}/MAXBIN.summary"
+    params:
+        threads=4,
+        contig_len = 1500,
+        outdir = "results/{genera}/3_binning/maxbin/megahit_individual_assembly/{sample}/MAXBIN"
+    log:
+        stdout = "logs/{genera}/3_binning/maxbin/megahit_individual_assembly/{sample}/maxbin.out",
+        stderr = "logs/{genera}/3_binning/maxbin/megahit_individual_assembly/{sample}/maxbin.err"
     shell:
         """
         module unload miniconda
