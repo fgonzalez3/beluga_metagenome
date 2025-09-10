@@ -782,22 +782,54 @@ rule DASTool_megahit: # test
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule bin_quality_check:
+rule bin_quality_check_spades: # test
     input:
-        maxbin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/maxbin/{wildcards.sample}/MAXBIN.*.fa")),
-        metabat_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/metabat/{wildcards.sample}/METABAT.*.fa")),
-        concoct_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/concoct/{wildcards.sample}/CONCOCT.*.fa")),
-        semibin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/semibin2/bin/{wildcards.sample}/semibin2.*.fa")),
-        dastool_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/aggregate_bins/{wildcards.sample}/DASTOOL.*.fa"))
+        maxbin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/maxbin/SPAdes_individual_assembly/{wildcards.sample}/MAXBIN.*.fa")),
+        metabat_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcard.sgenera}/3_binning/metabat/SPAdes_individual_assembly/{wildcards.sample}/METABAT.*.fa")),
+        concoct_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/concoct/SPAdes_individual_assembly/{wildcards.sample}/CONCOCT.*.fa")),
+        semibin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/SPAdes_individual_assembly/semibin2/bin/{wildcards.sample}/bin.*.fa")),
+        dastool_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{wildcards.sample}/DASTOOL.*.fa"))
     output:
-        "results/{genera}/3_binning/binning_qc/{sample}/quality_report.tsv"
+        "results/{genera}/3_binning/SPAdes_individual_assembly/binning_qc/{sample}/quality_report.tsv"
     params:
         threads=4,
         genera=config["genera"],
-        outdir="results/{genera}/3_binning/binning_qc/{sample}"
+        outdir="results/{genera}/3_binning/SPAdes_individual_assembly/binning_qc/{sample}"
     log:
-        stdout = "logs/{genera}/3_binning/binning_qc/{sample}/checkm2.out",
-        stderr = "logs/{genera}/3_binning/binning_qc/{sample}/checkm2.err"
+        stdout = "logs/{genera}/3_binning/SPAdes_individual_assembly/binning_qc/{sample}/checkm2.out",
+        stderr = "logs/{genera}/3_binning/SPAdes_individual_assembly/binning_qc/{sample}/checkm2.err"
+    shell:
+        """
+        module unload miniconda
+        source activate /home/flg9/.conda/envs/checkm2
+        export CHECKM2DB="/vast/palmer/pi/turner/data/db/CheckM2/CheckM2_database"
+
+        mkdir -p {params.outdir}
+
+        checkm2 predict \
+        --threads {params.threads} \
+        --input {input.maxbin_bins} {input.metabat_bins} \
+        {input.concoct_bins} {input.semibin_bins} {input.dastool_bins} \
+        --output_directory {params.outdir} \
+        1>> {log.stdout} 2>> {log.stderr}
+        """
+
+rule bin_quality_check_megahit: # test
+    input:
+        maxbin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/maxbin/megahit_individual_assembly/{wildcards.sample}/MAXBIN.*.fa")),
+        metabat_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcard.sgenera}/3_binning/metabat/megahit_individual_assembly/{wildcards.sample}/METABAT.*.fa")),
+        concoct_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/concoct/megahit_individual_assembly/{wildcards.sample}/CONCOCT.*.fa")),
+        semibin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/megahit_individual_assembly/semibin2/bin/{wildcards.sample}/bin.*.fa")),
+        dastool_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/megahit_individual_assembly/aggregate_bins/{wildcards.sample}/DASTOOL.*.fa"))
+    output:
+        "results/{genera}/3_binning/megahit_individual_assembly/binning_qc/{sample}/quality_report.tsv"
+    params:
+        threads=4,
+        genera=config["genera"],
+        outdir="results/{genera}/3_binning/megahit_individual_assembly/binning_qc/{sample}"
+    log:
+        stdout = "logs/{genera}/3_binning/megahit_individual_assembly/binning_qc/{sample}/checkm2.out",
+        stderr = "logs/{genera}/3_binning/megahit_individual_assembly/binning_qc/{sample}/checkm2.err"
     shell:
         """
         module unload miniconda
