@@ -16,26 +16,24 @@ rule all:
         expand("results/{genera}/1_pre_processing/adapter_trimming/{sample}/{sample}_val_1_fastqc.html", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/1_pre_processing/adapter_trimming/{sample}/{sample}_val_2_fastqc.html", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/1_pre_processing/aggregate_qc_data/multiqc_report.html", genera=config["genera"]),
-        expand("results/{genera}/1_pre_processing/mask_beluga/beluga_genome_sequence_masked.fa", genera=config["genera"]),
-        expand("results/{genera}/1_pre_processing/map_beluga/{sample}/mapped.fq", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/1_pre_processing/map_beluga/{sample}/unmapped.fq", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/1_pre_processing/map_beluga/{sample}/unmapped_R1.fq", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/1_pre_processing/map_beluga/{sample}/unmapped_R2.fq", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/1_pre_processing/mask_human/human_genome_sequence_masked.fa", genera=config["genera"]),
-        expand("results/{genera}/1_pre_processing/map_human/{sample}/mapped.fq", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/1_pre_processing/map_human/{sample}/unmapped.fq", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/1_pre_processing/map_human/{sample}/unmapped_R1.fq", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/1_pre_processing/map_human/{sample}/unmapped_R2.fq", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/1_pre_processing/mask_beluga_host_genome/beluga_genome_sequence_masked.fa", genera=config["genera"]),
+        expand("results/{genera}/1_pre_processing/align_to_beluga_host_genome/{sample}/mapped.fq", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/1_pre_processing/align_to_beluga_host_genome/{sample}/unmapped.fq", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/1_pre_processing/split_unmapped_reads_beluga/{sample}/unmapped_R1.fq", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/1_pre_processing/split_unmapped_reads_beluga/{sample}/unmapped_R2.fq", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/1_pre_processing/mask_human_host_genome/human_genome_sequence_masked.fa", genera=config["genera"]),
+        expand("results/{genera}/1_pre_processing/align_to_human_host_genome/{sample}/mapped.fq", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/1_pre_processing/align_to_human_host_genome/{sample}/unmapped.fq", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/1_pre_processing/split_unmapped_reads_human/{sample}/unmapped_R1.fq", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/1_pre_processing/split_unmapped_reads_human/{sample}/unmapped_R2.fq", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/1_pre_processing/co_assembly_reads/all_samples_R1.fq", genera=config["genera"]),
-        expand("results/{genera}/1_pre_processing/co_assembly_reads/all_samples_R2.fq", genera=config["genera"]),
-        expand("results/{genera}/1_pre_processing/co_assembly_reads/all_samples_R1_norm.fq", genera=config["genera"]),
-        expand("results/{genera}/1_pre_processing/co_assembly_reads/all_samples_R2_norm.fq", genera=config["genera"]),
 
         # 2. Metagenome assembly pipeline results 
         expand("results/{genera}/2_assembly/metagenome_assembly/{sample}/contigs.fasta", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/2_assembly/metagenome_assembly_megahit/{sample}/final.contigs.fa", sample=SAMPLES, genera=config["genera"]),
+
+        # 3. Deduplicate assembled contigs
         expand("results/{genera}/2_assembly/dedup_contigs_spades/{sample}/{sample}_DEDUP95.fasta", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/2_assembly/dedup_contigs_megahit/{sample}/{sample}_DEDUP95.fasta", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/2_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.1.bt2", sample=SAMPLES, genera=config["genera"]),
@@ -80,10 +78,10 @@ rule all:
         expand("results/{genera}/3_binning/semibin2/train_model/{sample}/model.pt", genera=config["genera"], sample=SAMPLES),
         expand("results/{genera}/3_binning/semibin2/bin/{sample}/bin.*.fa", genera=config["genera"], sample=SAMPLES)
 
-include: "pipelines/1_pre_processing.smk"
-include: "pipelines/2_assembly.smk"
-include: "pipelines/3_dedup_contigs.smk"
-include: "pipelines/4_align_reads_to_contigs.smk"
-include: "pipelines/5_binning.smk"
-#include: pipelines/6_taxonomic_classification.smk
+include: "pipelines/1_Metagenome_Assembly_And_Evaluation/1_pre_processing.smk"
+include: "pipelines/1_Metagenome_Assembly_And_Evaluation/2_assembly.smk"
+include: "pipelines/1_Metagenome_Assembly_And_Evaluation/3_dedup_contigs.smk"
+include: "pipelines/1_Metagenome_Assembly_And_Evaluation/4_align_reads_to_contigs.smk"
+include: "pipelines/1_Metagenome_Assembly_And_Evaluation/5_binning.smk"
+#include: pipelines/2_Taxonomic_Assignment_And_AMR_Surveillance/1_taxonomic_classification.smk
 #include: pipelines/virome_characterization.smk
