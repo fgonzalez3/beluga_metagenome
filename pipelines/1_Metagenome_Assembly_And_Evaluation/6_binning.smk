@@ -382,28 +382,67 @@ rule semibin2_generate_concatenated_db_megahit: # test
         --output {output}
         """
 
-rule sembin2_align_to_concatenated_db: # done
+rule sembin2_align_to_concatenated_db_spades: # test
     """
     Align reads from each sample to our concatenated FASTA db, necessary for SemiBin pipeline
     """
     input:
-        contigs = "results/{genera}/3_binning/semibin2/generate_concatenated_db/concatenated.fa",
-        r1 = "results/{genera}/3_binning/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
-        r2 = "results/{genera}/3_binning/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
+        contigs = "results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta",
+        r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
+        r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
     output:
-        "results/{genera}/3_binning/semibin2/align_to_concatenated_db/{sample}/{sample}_indexed_contig.1.bt2",
-        "results/{genera}/3_binning/semibin2/align_to_concatenated_db/{sample}/{sample}_indexed_contig.2.bt2",
-        "results/{genera}/3_binning/semibin2/align_to_concatenated_db/{sample}/{sample}_indexed_contig.3.bt2",
-        "results/{genera}/3_binning/semibin2/align_to_concatenated_db/{sample}/{sample}_indexed_contig.4.bt2",
-        "results/{genera}/3_binning/semibin2/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.1.bt2",
-        "results/{genera}/3_binning/semibin2/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.2.bt2",
-        "results/{genera}/3_binning/semibin2/align_to_concatenated_db/{sample}_aligned_sorted.bam"
+        "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.1.bt2",
+        "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.2.bt2",
+        "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.3.bt2",
+        "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.4.bt2",
+        "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.1.bt2",
+        "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.2.bt2",
+        "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}_aligned_sorted.bam"
     params:
         genera=config["genera"],
-        outdir = "results/{genera}/3_binning/semibin2/align_to_concatenated_db/{sample}"
+        outdir = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}"
     log:
-        stdout = "logs/{genera}/3_binning/semibin2/align_to_concatenated_db/{sample}_aln.out",
-        stderr = "logs/{genera}/3_binning/semibin2/align_to_concatenated_db/{sample}_aln.err"
+        stdout = "logs/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}_aln.out",
+        stderr = "logs/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}_aln.err"
+    shell:
+        """
+        module unload miniconda 
+        module load Bowtie2/2.5.1-GCC-12.2.0
+        module load SAMtools/1.21-GCC-12.2.0
+
+        # 1. Build db index
+        bowtie2-build \
+        -f {input.contigs} {params.outdir}/{wildcards.sample}_indexed_contig \
+        1>> {log.stdout} 2>> {log.stderr}
+
+        # 2. Align reads back to SemiBin db index
+        bowtie2 \
+        -x {params.outdir}/{wildcards.sample}_indexed_contig -1 {input.r1} -2 {input.r2} | samtools view -b -F 4 -F 2048 | samtools sort -o {output[6]} \
+        1>> {log.stdout} 2>> {log.stderr}
+        """
+
+rule sembin2_align_to_concatenated_db_megahit: # test
+    """
+    Align reads from each sample to our concatenated FASTA db, necessary for SemiBin pipeline
+    """
+    input:
+        contigs = "results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta",
+        r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
+        r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
+    output:
+        "results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.1.bt2",
+        "results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.2.bt2",
+        "results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.3.bt2",
+        "results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.4.bt2",
+        "results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.1.bt2",
+        "results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.2.bt2",
+        "results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}_aligned_sorted.bam"
+    params:
+        genera=config["genera"],
+        outdir = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}"
+    log:
+        stdout = "logs/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}_aln.out",
+        stderr = "logs/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}_aln.err"
     shell:
         """
         module unload miniconda 
