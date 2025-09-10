@@ -7,7 +7,7 @@
     # 6. Bin correction and convergence with DasTool
     # 7. Bin quality check with CheckM2
 
-rule concoct_bin: #done
+rule concoct_bins_spades: #test
     """
     Group assembled contigs into bins that represent individual genomes or closely related organisms using Concoct
 
@@ -15,29 +15,82 @@ rule concoct_bin: #done
     for contigs at minimum of 1.5kb anyways. This should match the eval length in the last rule of assembly.smk.*
     """
     input:
-        SPAdes_contigs = "results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta",
-        SPAdes_bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam",
-
-        megahit_contigs = "results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta",
-        megahit_bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_megahit/{sample}_aligned_sorted.bam"
+        contigs = "results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta",
+        bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam"
     output:
-        SPAdes_bins = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/CONCOCT.*.fa",
-        SPAdes_csv = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/concoct_output/clustering_merged.csv",
-
-        megahit_bins = "results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/CONCOCT.*.fa",
-        megahit_csv = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/concoct_output/clustering_merged.csv"
+        bins = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/CONCOCT.*.fa",
+        csv = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/concoct_output/clustering_merged.csv"
     params:
-        SPAdes_outdir = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}",
-        SPAdes_basename = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/CONCOCT",
-        megahit_outdir = ,
-        megahit_basename = ,
+        outdir = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}",
+        basename = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/CONCOCT"
         threads = 4,
         contig_len = 20000,
         min_len = 1500,
         img = "svg"
     log:
-        stdout = "logs/{genera}/3_binning/concoct/{sample}/concoct.out",
-        stderr = "logs/{genera}/3_binning/concoct/{sample}/concoct.err"
+        stdout = "logs/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/concoct.out",
+        stderr = "logs/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/concoct.err"
+    shell:
+        """
+        module unload minicondasq
+        source activate /home/flg9/.conda/envs/concoct_env
+
+        # 1. Shred contigs into non-overlapping parts of equal length
+        cut_up_fasta.py \
+        {input.contigs} -c {params.contig_len} --merge_last -o 0 \
+        -b {params.outdir}/contigs_20k.bed > {params.outdir}/contigs_20k.fa \
+        1>> {log.stdout} 2>> {log.stderr}
+
+        # 2. Generate input coverage table for CONCOCT using previously curated BED file and BAMs
+        concoct_coverage_table.py \
+        {params.outdir}/contigs_20k.bed {input.bams} > {params.outdir}/coverage_table.tsv \
+        1>> {log.stdout} 2>> {log.stderr}
+ 
+        # 3. Bin
+        concoct \
+        --composition_file {params.outdir}/contigs_20k.fa \
+        --coverage_file {params.outdir}/coverage_table.tsv \
+        -b {params.basename} -t {params.threads} -l {params.min_len} -d \
+        1>> {log.stdout} 2>> {log.stderr}
+
+        # 4. Merge subcontig clustering into original contig clustering
+        merge_cutup_clustering.py \
+        {params.outdir}/clustering_gt20000.csv > {output.csv} \
+        1>> {log.stdout} 2>> {log.stderr}
+
+        # 5. Extract bins as individual FASTAs
+        extract_Fasta_bins.py \
+        {input.contigs} {output.csv} \
+        --output_path {params.outdir} \
+        1>> {log.stdout} 2>> {log.stderr}
+
+        # 6. Generate distance matrix between bins
+        python dnadiff_dist_matrix.py \
+        {params.outdir} {output.bins} \
+        --plot_image_extension {params.img} \
+        1>> {log.stdout} 2>> {log.stderr}
+        """
+
+rule concoct_bins_megahit: #test
+    """
+    Group assembled contigs into bins that represent individual genomes or closely related organisms using Concoct
+    """
+    input:
+        contigs = "results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta",
+        bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_megahit/{sample}_aligned_sorted.bam"
+    output:
+        bins = "results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/CONCOCT.*.fa",
+        csv = "results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/concoct_output/clustering_merged.csv"
+    params:
+        outdir = "results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample},
+        basename = "results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/CONCOCT",
+        threads = 4,
+        contig_len = 20000,
+        min_len = 1500,
+        img = "svg"
+    log:
+        stdout = "logs/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/concoct.err"
+        stderr = "logs/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/concoct.err"
     shell:
         """
         module unload minicondasq
