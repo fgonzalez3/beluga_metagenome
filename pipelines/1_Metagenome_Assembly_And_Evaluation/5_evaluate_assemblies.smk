@@ -225,7 +225,7 @@ def indiv_r1(wildcards):
 def indiv_r2(wildcards):
     return sorted(glob.glob(f"results/{wildcards.genera}/1_pre_processing/dedup_reads/{sample}/Sample_{wildcards.individual}_*_host_removed_dedup_R2.fastq"))
 
-rule metaquast_whale_coassemblies: # working on this 
+rule metaquast_whale_coassemblies: # working on this 09SEP2025
     """
     Run MetaQUAST on all filtered assemblies from all samples for a global comparison.
     """

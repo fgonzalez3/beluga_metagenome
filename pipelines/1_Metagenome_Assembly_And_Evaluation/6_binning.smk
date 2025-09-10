@@ -6,7 +6,7 @@
     # 5. Model procurement and binning with Semibin2
     # 6. Bin correction and convergence with DasTool
     # 7. Bin quality check with CheckM2
-       
+
 rule concoct_bin: #done
     """
     Group assembled contigs into bins that represent individual genomes or closely related organisms using Concoct
@@ -15,14 +15,22 @@ rule concoct_bin: #done
     for contigs at minimum of 1.5kb anyways. This should match the eval length in the last rule of assembly.smk.*
     """
     input:
-        contigs = "results/{genera}/3_dedup_contigs/{sample}/{sample}_DEDUP95.fasta",
-        bams = "results/{genera}/4_align_reads_to_contigs/{sample}_aligned_sorted.bam"
+        SPAdes_contigs = "results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta",
+        SPAdes_bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam",
+
+        megahit_contigs = "results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta",
+        megahit_bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_megahit/{sample}_aligned_sorted.bam"
     output:
-        bins = "results/{genera}/3_binning/concoct/{sample}/CONCOCT.*.fa",
-        csv = "results/{genera}/3_binning/concoct/{sample}/concoct_output/clustering_merged.csv"
+        SPAdes_bins = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/CONCOCT.*.fa",
+        SPAdes_csv = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/concoct_output/clustering_merged.csv",
+
+        megahit_bins = "results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/CONCOCT.*.fa",
+        megahit_csv = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/concoct_output/clustering_merged.csv"
     params:
-        outdir = "results/{genera}/3_binning/concoct/{sample}",
-        basename = "results/{genera}/3_binning/concoct/{sample}/CONCOCT",
+        SPAdes_outdir = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}",
+        SPAdes_basename = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/CONCOCT",
+        megahit_outdir = ,
+        megahit_basename = ,
         threads = 4,
         contig_len = 20000,
         min_len = 1500,
