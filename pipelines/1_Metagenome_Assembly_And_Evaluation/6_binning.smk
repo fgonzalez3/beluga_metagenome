@@ -654,31 +654,95 @@ rule semibin2_bin_megahit: # test
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule DASTool: #done
+rule DASTool_spades: # test
     """
     Calculate an optimized set of bins from multiple binning tools that were previously used
     """
     input:
-        maxbin_contigs = "results/{genera}/3_binning/maxbin/{sample}/MAXBIN.*.fa",
-        concoct_csv = "results/{genera}/3_binning/concoct/{sample}/concoct_output/clustering_merged.csv",
-        metabat_contigs = "results/{genera}/3_binning/metabat/{sample}/METABAT.*.fa",
-        semibin_contigs = "results/{genera}/3_binning/semibin2/bin/{sample}/bin.*.fa",
-        contigs = "results/{genera}/1_assembly/dedup_contigs/{sample}/{sample}_DEDUP95.fasta"
+        maxbin_contigs = "results/{genera}/3_binning/maxbin/SPAdes_individual_assembly/{sample}/MAXBIN.*.fa",
+        concoct_csv = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/concoct_output/clustering_merged.csv",
+        metabat_contigs = "results/{genera}/3_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT.*.fa",
+        semibin_contigs = "results/{genera}/3_binning/SPAdes_individual_assembly/semibin2/bin/{sample}/bin.*.fa",
+        contigs = "results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta"
     output:
-        metabat_summ = "results/{genera}/3_binning/aggregate_bins/{sample}/metabat_associations.tsv",
-        maxbin_summ = "results/{genera}/3_binning/aggregate_bins/{sample}/maxbin_associations.tsv",
-        concoct_summ = "results/{genera}/3_binning/aggregate_bins/{sample}/concoct_associations.tsv",
-        semibin_summ = "results/{genera}/3_binning/aggregate_bins/{sample}/semibin_associations.tsv",
-        bins = "results/{genera}/3_binning/aggregate_bins/{sample}/DASTOOL.*.fa"
+        metabat_summ = "results/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/metabat_associations.tsv",
+        maxbin_summ = "results/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/maxbin_associations.tsv",
+        concoct_summ = "results/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/concoct_associations.tsv",
+        semibin_summ = "results/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/semibin_associations.tsv",
+        bins = "results/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/DASTOOL.*.fa"
     params:
         genera=config["genera"],
         threads = 4,
         engine = "diamond",
         names = "Metabat,Maxbin,Concoct,SemiBin",
-        dastool_outdir = "results/{genera}/3_binning/aggregate_bins/{sample}"
+        dastool_outdir = "results/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}"
     log:
-        stdout = "logs/{genera}/3_binning/aggregate_bins/{sample}/das_tool.out",
-        stderr = "logs/{genera}/3_binning/aggregate_bins/{sample}/das_tool.err"
+        stdout = "logs/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/das_tool.out",
+        stderr = "logs/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/das_tool.err"
+    shell:
+        """
+        module unload miniconda 
+        source activate /vast/palmer/pi/turner/flg9/conda_envs/das_tool
+
+        # 1. Generate reporter file of bins and bin quality as input for DasTool
+
+        # First, Maxbin
+        Fasta_to_Contigs2Bin.sh \
+        -i {input.maxbin_contigs} -e fasta > {output.maxbin_summ} \
+        1>> {log.stdout} 2>> {log.stderr}
+
+        # Second, Concoct
+        perl \
+        -pe "s/,/\tconcoct./g;" {input.concoct_csv} > {output.concoct_summ} \
+        1>> {log.stdout} 2>> {log.stderr}
+
+        # Third, Metabat
+        Fasta_to_Contigs2Bin.sh \
+        -i {input.metabat_contigs} -e fasta > {output.metabat_summ} \
+        1>> {log.stdout} 2>> {log.stderr}
+
+        # Fourth, SemiBin2
+        Fasta_to_Contigs2Bin.sh \
+        -i {input.semibin_contigs} -e fasta > {output.semibin_summ} \
+        1>> {log.stdout} 2>> {log.stderr}
+
+        # 2. Bin de-replication with Das_Tool
+        mkdir -p \
+        {params.dastool_outdir}
+
+        DAS_Tool \
+        -i {output.metabat_summ},{output.maxbin_summ},{output.concoct_summ},{output.semibin_summ} \
+        -l {params.names} -o {params.dastool_outdir} -c {input.contigs} \
+        --write_bin_evals --write_bins --threads {params.threads} --debug \
+        --write_unbinned --write_bins --search_engine {params.engine} \
+        1>> {log.stdout} 2>> {log.stderr}
+        """
+
+rule DASTool_megahit: # test
+    """
+    Calculate an optimized set of bins from multiple binning tools that were previously used
+    """
+    input:
+        maxbin_contigs = "results/{genera}/3_binning/maxbin/megahit_individual_assembly/{sample}/MAXBIN.*.fa",
+        concoct_csv = "results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/concoct_output/clustering_merged.csv",
+        metabat_contigs = "results/{genera}/3_binning/metabat/megahit_individual_assembly/{sample}/METABAT.*.fa",
+        semibin_contigs = "results/{genera}/3_binning/megahit_individual_assembly/semibin2/bin/{sample}/bin.*.fa",
+        contigs = "results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta"
+    output:
+        metabat_summ = "results/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/metabat_associations.tsv",
+        maxbin_summ = "results/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/maxbin_associations.tsv",
+        concoct_summ = "results/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/concoct_associations.tsv",
+        semibin_summ = "results/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/semibin_associations.tsv",
+        bins = "results/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/DASTOOL.*.fa"
+    params:
+        genera=config["genera"],
+        threads = 4,
+        engine = "diamond",
+        names = "Metabat,Maxbin,Concoct,SemiBin",
+        dastool_outdir = "results/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}"
+    log:
+        stdout = "logs/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/das_tool.out",
+        stderr = "logs/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/das_tool.err"
     shell:
         """
         module unload miniconda 
