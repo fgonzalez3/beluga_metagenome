@@ -30,12 +30,14 @@ rule all:
         expand("results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq", sample=SAMPLES, genera=config["genera"]),
 
         # 2. Metagenome assembly pipeline results 
-        expand("results/{genera}/2_assembly/metagenome_assembly/{sample}/contigs.fasta", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/2_assembly/metagenome_assembly_megahit/{sample}/final.contigs.fa", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/2_assembly/SPAdes/individual_metagenome_assembly/{sample}/contigs.fasta", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/2_assembly/megahit/individual_metagenome_assembly/{sample}/final.contigs.fa", sample=SAMPLES, genera=config["genera"]),
 
         # 3. Deduplicate assembled contigs
-        expand("results/{genera}/2_assembly/dedup_contigs_spades/{sample}/{sample}_DEDUP95.fasta", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/2_assembly/dedup_contigs_megahit/{sample}/{sample}_DEDUP95.fasta", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta", sample=SAMPLES, genera=config["genera"]),
+
+        # 4. Align PE reads to assembled contigs 
         expand("results/{genera}/2_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.1.bt2", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/2_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.2.bt2", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/2_assembly/contig_index_spades/{sample}/{sample}_indexed_contig.3.bt2", sample=SAMPLES, genera=config["genera"]),
