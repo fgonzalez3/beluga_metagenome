@@ -132,24 +132,71 @@ rule concoct_bins_megahit: #test
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule metabat2_bin: #done
+rule metabat2_bin_spades: #test
     """
     Group assembled contigs into bins that represent individual genomes or closely related organisms using Metabat
     """
     input:
-        contigs = "results/{genera}/1_assembly/dedup_contigs/{sample}/{sample}_DEDUP95.fasta",
-        bams = "results/{genera}/1_assembly/contig_read_alignment/{sample}_aligned_sorted.bam"
+        contigs = "results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta",
+        bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam"
     output:
-        depth_file = "results/{genera}/3_binning/metabat/{sample}/METABAT.txt",
-        bins = "results/{genera}/3_binning/metabat/{sample}/METABAT.*.fa"
+        depth_file = "results/{genera}/3_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT.txt",
+        bins = "results/{genera}/3_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT.*.fa"
     params:
         genera=config["genera"],
         threads = 4,
         min_size = 1500,
-        outdir = "results/{genera}/3_binning/metabat/{sample}/METABAT"
+        outdir = "results/{genera}/3_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT"
     log:
-        stdout = "logs/{genera}/3_binning/metabat/{sample}/metabat.out",
-        stderr = "logs/{genera}/3_binning/metabat/{sample}/metabat.err"
+        stdout = "logs/{genera}/3_binning/metabat/SPAdes_individual_assembly/{sample}/metabat.out",
+        stderr = "logs/{genera}/3_binning/metabat/SPAdes_individual_assembly/{sample}/metabat.err"
+    shell:
+        """
+        module unload miniconda
+        module load docker/6.0.1
+
+        # 1. Set the work directory to ensure docker starts where it should
+        WORKDIR = $(pwd)
+
+        # 2. Generation of depth files for binning using previously sorted bams
+        docker run --rm \
+        --workdir $WORKDIR \
+        --volume $WORKDIR:$WORKDIR \
+        jgi_summarize_bam_contig_depths \
+        --outputDepth {output.depth_file} {input.bams} \
+        1>> {log.stdout} 2>> {log.stderr}
+
+        # 3. Bin using previously generated contigs and depth file
+        docker run --rm \
+        --workdir $WORKDIR \
+        --volume $WORKDIR:$WORKDIR 
+        metabat/metabat:latest runMetaBat.sh \
+        -t {params.threads} -m {params.min_size} \
+        -i {input.contigs} \
+        -a {output.depth_file} \
+        -o {params.outdir} \
+        --verbose --debug \
+        1>> {log.stdout} 2>> {log.stderr}
+        """
+
+rule metabat2_bin_megahit: #test
+    """
+    Group assembled contigs into bins that represent individual genomes or closely related organisms using Metabat
+    """
+    input:
+        contigs = "results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta",
+        bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_megahit/{sample}_aligned_sorted.bam"
+    output:
+        depth_file = "results/{genera}/3_binning/metabat/megahit_individual_assembly/{sample}/METABAT.txt",
+        bins = "results/{genera}/3_binning/metabat/megahit_individual_assembly/{sample}/METABAT.*.fa"
+    params:
+        genera=config["genera"],
+        threads = 4,
+        min_size = 1500,
+        outdir = "results/{genera}/3_binning/metabat/megahit_individual_assembly/{sample}/METABAT"
+    log:
+        stdout = "logs/{genera}/3_binning/metabat/megahit_individual_assembly/{sample}/metabat.out",
+        stderr = "logs/{genera}/3_binning/metabat/megahit_individual_assembly/{sample}/metabat.err"
     shell:
         """
         module unload miniconda
