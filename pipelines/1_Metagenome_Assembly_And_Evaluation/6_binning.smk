@@ -578,26 +578,64 @@ rule semibin2_train_model_megahit: # test
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule semibin2_bin: # done
+rule semibin2_bin_spades: # test
     """
     Bin contigs using SemiBin's multi-sample binning model for individual binning of samples.
     This method often returns the most bins and is most optimized for complex samples.    
     """
     input:
-        contigs = "results/{genera}/1_assembly/dedup_contigs/{sample}/{sample}_DEDUP95.fasta",
-        csv = "results/{genera}/3_binning/semibin2/features_and_model/{sample}/data.csv",
-        model = "results/{genera}/3_binning/semibin2/train_model/{sample}/model.pt"
+        contigs = "results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta",
+        csv = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/data.csv",
+        model = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/train_model/{sample}/model.pt"
     output:
-        bins = "results/{genera}/3_binning/semibin2/bin/{sample}/bin.*.fa"
+        bins = "results/{genera}/3_binning/SPAdes_individual_assembly/semibin2/bin/{sample}/bin.*.fa"
     params:
-        outdir = "results/{genera}/3_binning/semibin2/bin/{sample}",
+        outdir = "results/{genera}/3_binning/SPAdes_individual_assembly/semibin2/bin/{sample}",
         seq_type = "short_reads",
         GTDB_path = "/vast/palmer/pi/turner/data/db/gtdbtk-2.4.1",
         minlen = "1500",
         threads = 4
     log:
-        stdout = "logs/{genera}/3_binning/semibin2/bin/{sample}/bin.out",
-        stderr = "logs/{genera}/3_binning/semibin2/bin/{sample}/bin.err"
+        stdout = "logs/{genera}/3_binning/SPAdes_individual_assembly/semibin2/bin/{sample}/bin.out",
+        stderr = "logs/{genera}/3_binning/SPAdes_individual_assembly/semibin2/bin/{sample}/bin.err"
+    shell:
+        """
+        module unload miniconda
+        source activate /vast/palmer/pi/turner/flg9/conda_envs/semibin
+
+        # Bin
+        SemiBin2 bin_short \
+        -i {input.contigs} \
+        --model {input.model} \
+        --data {input.csv} \
+        -o {params.outdir} \
+        -t {params.threads} \
+        --sequencing-type={params.seq_type} \
+        --reference-db-data-dir={params.GTDB_path} \
+        --min-len={params.minlen} \
+        1>> {log.stdout} 2>> {log.stderr}
+        """
+
+rule semibin2_bin_megahit: # test
+    """
+    Bin contigs using SemiBin's multi-sample binning model for individual binning of samples.
+    This method often returns the most bins and is most optimized for complex samples.    
+    """
+    input:
+        contigs = "results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta",
+        csv = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/data.csv",
+        model = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/train_model/{sample}/model.pt"
+    output:
+        bins = "results/{genera}/3_binning/megahit_individual_assembly/semibin2/bin/{sample}/bin.*.fa"
+    params:
+        outdir = "results/{genera}/3_binning/megahit_individual_assembly/semibin2/bin/{sample}",
+        seq_type = "short_reads",
+        GTDB_path = "/vast/palmer/pi/turner/data/db/gtdbtk-2.4.1",
+        minlen = "1500",
+        threads = 4
+    log:
+        stdout = "logs/{genera}/3_binning/megahit_individual_assembly/semibin2/bin/{sample}/bin.out",
+        stderr = "logs/{genera}/3_binning/megahit_individual_assembly/semibin2/bin/{sample}/bin.err"
     shell:
         """
         module unload miniconda
