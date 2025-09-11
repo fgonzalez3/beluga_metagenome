@@ -22,7 +22,7 @@ rule concoct_bins_spades: #test
         csv = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/concoct_output/clustering_merged.csv"
     params:
         outdir = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}",
-        basename = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/CONCOCT"
+        basename = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/CONCOCT",
         threads = 4,
         contig_len = 20000,
         min_len = 1500,
@@ -82,14 +82,14 @@ rule concoct_bins_megahit: #test
         bins = "results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/CONCOCT.*.fa",
         csv = "results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/concoct_output/clustering_merged.csv"
     params:
-        outdir = "results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample},
+        outdir = "results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}",
         basename = "results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/CONCOCT",
         threads = 4,
         contig_len = 20000,
         min_len = 1500,
         img = "svg"
     log:
-        stdout = "logs/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/concoct.err"
+        stdout = "logs/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/concoct.err",
         stderr = "logs/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/concoct.err"
     shell:
         """
@@ -542,8 +542,8 @@ rule semibin2_train_model_spades: # test
 
         # Train model
         SemiBin2 train_self \
-        --data {output.csv} \
-        --data-split {output.split} \
+        --data {input.csv} \
+        --data-split {input.split} \
         -o {params.outdir} \
         -t {params.threads} \
         1>> {log.stdout} 2>> {log.stderr}
@@ -571,8 +571,8 @@ rule semibin2_train_model_megahit: # test
 
         # Train model
         SemiBin2 train_self \
-        --data {output.csv} \
-        --data-split {output.split} \
+        --data {input.csv} \
+        --data-split {input.split} \
         -o {params.outdir} \
         -t {params.threads} \
         1>> {log.stdout} 2>> {log.stderr}
@@ -785,7 +785,7 @@ rule DASTool_megahit: # test
 rule bin_quality_check_spades: # test
     input:
         maxbin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/maxbin/SPAdes_individual_assembly/{wildcards.sample}/MAXBIN.*.fa")),
-        metabat_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcard.sgenera}/3_binning/metabat/SPAdes_individual_assembly/{wildcards.sample}/METABAT.*.fa")),
+        metabat_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/metabat/SPAdes_individual_assembly/{wildcards.sample}/METABAT.*.fa")),
         concoct_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/concoct/SPAdes_individual_assembly/{wildcards.sample}/CONCOCT.*.fa")),
         semibin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/SPAdes_individual_assembly/semibin2/bin/{wildcards.sample}/bin.*.fa")),
         dastool_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{wildcards.sample}/DASTOOL.*.fa"))
@@ -817,7 +817,7 @@ rule bin_quality_check_spades: # test
 rule bin_quality_check_megahit: # test
     input:
         maxbin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/maxbin/megahit_individual_assembly/{wildcards.sample}/MAXBIN.*.fa")),
-        metabat_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcard.sgenera}/3_binning/metabat/megahit_individual_assembly/{wildcards.sample}/METABAT.*.fa")),
+        metabat_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/metabat/megahit_individual_assembly/{wildcards.sample}/METABAT.*.fa")),
         concoct_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/concoct/megahit_individual_assembly/{wildcards.sample}/CONCOCT.*.fa")),
         semibin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/megahit_individual_assembly/semibin2/bin/{wildcards.sample}/bin.*.fa")),
         dastool_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/megahit_individual_assembly/aggregate_bins/{wildcards.sample}/DASTOOL.*.fa"))

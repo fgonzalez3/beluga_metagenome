@@ -50,7 +50,7 @@ rule individual_metagenome_assembly_megahit: # test
         "results/{genera}/2_assembly/megahit/individual_metagenome_assembly/{sample}/final.contigs.fa"
     params:
         genera=config["genera"],
-        preset="meta-large"
+        preset="meta-large",
         outdir = "results/{genera}/2_assembly/megahit/individual_metagenome_assembly/{sample}"
     log:
         stdout = "logs/{genera}/2_assembly/megahit/individual_metagenome_assembly/{sample}/assembly.out",

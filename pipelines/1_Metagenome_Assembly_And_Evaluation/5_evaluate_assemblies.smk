@@ -71,10 +71,7 @@ rule metaquast_individual_assemblies: # test
         #1. Generate specific assembly data covering quality of contigs generated
 
         echo "Running stats.sh..." 1>> {log.stdout} 2>> {log.stderr}
-
-        #stats.sh \
-        #in={output.filtered_contigs} out={output.whole_assembly_stats}
-
+        
         statswrapper.sh \
         in={input.c1},{input.c2} out={output.whole_assembly_stats}
 
@@ -83,7 +80,7 @@ rule metaquast_individual_assemblies: # test
         echo "Running metaquast.py..." 1>> {log.stdout} 2>> {log.stderr}
 
         metaquast.py \
-        -t {params.threads} --labels {params.outfile_labels} \
+        -t {params.threads} --labels {params.labels} \
         --output-dir {params.outdir} {output.report} \
         1>> {log.stdout} 2>> {log.stderr}
         """

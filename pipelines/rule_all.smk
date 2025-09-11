@@ -35,7 +35,7 @@ rule all:
 
         # 3. Deduplicate assembled contigs
         expand("results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta", sample=SAMPLES, genera=config["genera"]),
 
         # 4. Align PE reads to assembled contigs
         expand("results/{genera}/4_align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.1.bt2", sample=SAMPLES, genera=config["genera"]),
@@ -75,7 +75,7 @@ rule all:
         expand("results/{genera}/3_binning/maxbin/megahit_individual_assembly/{sample}/MAXBIN.*.fa", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/3_binning/maxbin/megahit_individual_assembly/{sample}/MAXBIN.summary", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/generate_concatenated_db/concatenated.fa", genera=config["genera"]),
-        expand("results/{genera}/3_binning/semibin2/megahit_individual_assembly/generate_concatenated_db/concatenated.fa", genera=config["genera"])
+        expand("results/{genera}/3_binning/semibin2/megahit_individual_assembly/generate_concatenated_db/concatenated.fa", genera=config["genera"]),
         expand("results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.1.bt2", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.2.bt2", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.3.bt2", sample=SAMPLES, genera=config["genera"]),
@@ -116,6 +116,7 @@ include: "pipelines/1_Metagenome_Assembly_And_Evaluation/1_pre_processing.smk"
 include: "pipelines/1_Metagenome_Assembly_And_Evaluation/2_assembly.smk"
 include: "pipelines/1_Metagenome_Assembly_And_Evaluation/3_dedup_contigs.smk"
 include: "pipelines/1_Metagenome_Assembly_And_Evaluation/4_align_reads_to_contigs.smk"
-include: "pipelines/1_Metagenome_Assembly_And_Evaluation/5_binning.smk"
+include: "pipelines/1_Metagenome_Assembly_And_Evaluation/5_evaluate_assemblies.smk"
+include: "pipelines/1_Metagenome_Assembly_And_Evaluation/6_binning.smk"
 #include: pipelines/2_Taxonomic_Assignment_And_AMR_Surveillance/1_taxonomic_classification.smk
 #include: pipelines/virome_characterization.smk

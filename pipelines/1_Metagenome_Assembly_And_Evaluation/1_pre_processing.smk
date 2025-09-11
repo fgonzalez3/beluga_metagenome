@@ -122,7 +122,7 @@ rule align_to_beluga_host_genome: # done
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule split_unmapped_reads_beluga: # done
+rule split_unmapped_reads_beluga:
     """
     Split interleaved reads that did not map to masked beluga reference into separate fastqs
     """
@@ -142,9 +142,7 @@ rule split_unmapped_reads_beluga: # done
         module load BBMap/38.90-GCCcore-10.2.0
 
         reformat.sh \
-        in={input.unmapped} \
-        out1={output.r1} \
-        out2={output.r2} \
+        in={input.unmapped} out1={output.r1} out2={output.r2} \
         1> {log.stdout} 2> {log.stderr}
         """
 
@@ -242,6 +240,7 @@ rule split_unmapped_reads_human: # done
 rule dedup_reads: # done
     """
     Run CD-HIT to deduplicate reads that may have been introduced during NexteraXT PCR amplification
+    """
     input:
         r1 = "results/{genera}/1_pre_processing/align_to_human_host_genome/{sample}/unmapped_R1.fq",
         r2 = "results/{genera}/1_pre_processing/align_to_human_host_genome/{sample}/unmapped_R2.fq"
