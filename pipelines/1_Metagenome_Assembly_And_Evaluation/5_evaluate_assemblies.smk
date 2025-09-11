@@ -1,4 +1,3 @@
-
 rule filter_indivudal_assemblies: # test
     """
     Filter for contigs that are a minimum 1.5kb in length. 
@@ -71,7 +70,7 @@ rule metaquast_individual_assemblies: # test
         #1. Generate specific assembly data covering quality of contigs generated
 
         echo "Running stats.sh..." 1>> {log.stdout} 2>> {log.stderr}
-        
+
         statswrapper.sh \
         in={input.c1},{input.c2} out={output.whole_assembly_stats}
 
