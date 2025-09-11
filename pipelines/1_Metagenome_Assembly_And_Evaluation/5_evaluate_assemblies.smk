@@ -6,9 +6,9 @@ rule filter_indivudal_assemblies: # test
     """
     input:
         # SPAdes assemblies 
-        c1 = "results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta",
+        c1 = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
         # Megahit assemblies
-        c2 = "results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta"
+        c2 = "results/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta"
     output:
         # List of filtered contigs 
         SPAdes_filter = "results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/{sample}/metaspades_assembly_DEDUP95_m1500.fasta",
@@ -49,15 +49,15 @@ rule metaquast_individual_assemblies: # test
         c1 = expand("results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/{sample}/metaspades_assembly_DEDUP95_m1500.fasta", sample=SAMPLES, genera=config["genera"]),
         c2 = expand("results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/{sample}/megahit_assembly_DEDUP95_m1500.fasta", sample=SAMPLES, genera=config["genera"])
     output:
-        whole_assembly_stats = "results/{genera}/5_evaluate_assemblies/individual_assembly_eval/assembly_stats.csv",
-        report = "results/{genera}/5_evaluate_assemblies/individual_assembly_eval/report.html"
+        whole_assembly_stats = "results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/assembly_stats.csv",
+        report = "results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/report.html"
     params:
         outdir = "results/{genera}/5_evaluate_assemblies/indvidual_assembly_eval",
         labels = "SPAdes.individual.m1500,Megahit.individual.m1500",
         threads = 4
     log:
-        stdout = "logs/{genera}/5_evaluate_assemblies/individual_assembly_eval/assembly_eval.out",
-        stderr = "logs/{genera}/5_evaluate_assemblies/individual_assembly_eval/assembly_eval.err"
+        stdout = "logs/{genera}/5_evaluate_assemblies/filter_individual_assemblies/assembly_eval.out",
+        stderr = "logs/{genera}/5_evaluate_assemblies/filter_individual_assemblies/assembly_eval.err"
     shell:
         """
         module unload miniconda

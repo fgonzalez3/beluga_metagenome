@@ -4,7 +4,7 @@ import pandas as pd
 
 configfile: "config/assembly.yaml"
 
-samples_df = pd.read_csv("tsv/beluga_raw_reads.tsv", sep="\t")
+samples_df = pd.read_csv("tsv/test_beluga_raw_reads.tsv", sep="\t")
 SAMPLES = samples_df["sample_id"].tolist()
 READS = {row.sample_id: {"r1": row.r1, "r2": row.r2} for row in samples_df.itertuples()}
 
@@ -19,13 +19,13 @@ rule all:
         expand("results/{genera}/1_pre_processing/mask_beluga_host_genome/beluga_genome_sequence_masked.fa", genera=config["genera"]),
         expand("results/{genera}/1_pre_processing/align_to_beluga_host_genome/{sample}/mapped.fq", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/1_pre_processing/align_to_beluga_host_genome/{sample}/unmapped.fq", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/1_pre_processing/split_unmapped_reads_beluga/{sample}/unmapped_R1.fq", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/1_pre_processing/split_unmapped_reads_beluga/{sample}/unmapped_R2.fq", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/1_pre_processing/align_to_beluga_host_genome/{sample}/unmapped_R1.fq", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/1_pre_processing/align_to_beluga_host_genome/{sample}/unmapped_R2.fq", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/1_pre_processing/mask_human_host_genome/human_genome_sequence_masked.fa", genera=config["genera"]),
         expand("results/{genera}/1_pre_processing/align_to_human_host_genome/{sample}/mapped.fq", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/1_pre_processing/align_to_human_host_genome/{sample}/unmapped.fq", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/1_pre_processing/split_unmapped_reads_human/{sample}/unmapped_R1.fq", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/1_pre_processing/split_unmapped_reads_human/{sample}/unmapped_R2.fq", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/1_pre_processing/align_to_human_host_genome/{sample}/unmapped_R1.fq", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/1_pre_processing/align_to_human_host_genome/{sample}/unmapped_R2.fq", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq", sample=SAMPLES, genera=config["genera"]),
 
@@ -34,7 +34,7 @@ rule all:
         expand("results/{genera}/2_assembly/megahit/individual_metagenome_assembly/{sample}/final.contigs.fa", sample=SAMPLES, genera=config["genera"]),
 
         # 3. Deduplicate assembled contigs
-        expand("results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta", sample=SAMPLES, genera=config["genera"]),
 
         # 4. Align PE reads to assembled contigs
@@ -56,8 +56,8 @@ rule all:
         # 5. Evaluate assemblies
         expand("results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/{sample}/metaspades_assembly_DEDUP95_m1500.fasta", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/{sample}/megahit_assembly_DEDUP95_m1500.fasta", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/5_evaluate_assemblies/individual_assembly_eval/assembly_stats.csv", genera=config["genera"]),
-        expand("results/{genera}/5_evaluate_assemblies/individual_assembly_eval/report.html", genera=config["genera"]),
+        expand("results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/assembly_stats.csv", genera=config["genera"]),
+        expand("results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/report.html", genera=config["genera"]),
 
         # 6. Binning
         expand("results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/CONCOCT.*.fa", sample=SAMPLES, genera=config["genera"]),
@@ -110,7 +110,6 @@ rule all:
         expand("results/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/DASTOOL.*.fa", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/3_binning/SPAdes_individual_assembly/binning_qc/{sample}/quality_report.tsv", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/3_binning/megahit_individual_assembly/binning_qc/{sample}/quality_report.tsv", sample=SAMPLES, genera=config["genera"])
-
 
 # Pipelines to call on 
 include: "pipelines/1_Metagenome_Assembly_And_Evaluation/1_pre_processing.smk"

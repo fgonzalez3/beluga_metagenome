@@ -129,13 +129,13 @@ rule split_unmapped_reads_beluga: # done
     input:
         unmapped = "results/{genera}/1_pre_processing/align_to_beluga_host_genome/{sample}/unmapped.fq"
     output:
-        r1 = "results/{genera}/1_pre_processing/split_unmapped_reads_beluga/{sample}/unmapped_R1.fq",
-        r2 = "results/{genera}/1_pre_processing/split_unmapped_reads_beluga/{sample}/unmapped_R2.fq"
+        r1 = "results/{genera}/1_pre_processing/align_to_beluga_host_genome/{sample}/unmapped_R1.fq",
+        r2 = "results/{genera}/1_pre_processing/align_to_beluga_host_genome/{sample}/unmapped_R2.fq"
     params:
         genera=config["genera"]
     log:
-        stdout = "logs/{genera}/1_pre_processing/split_unmapped_reads_beluga/{sample}/reformat_beluga.out",
-        stderr = "logs/{genera}/1_pre_processing/split_unmapped_reads_beluga/{sample}/reformat_beluga.err"
+        stdout = "logs/{genera}/1_pre_processing/align_to_beluga_host_genome/{sample}/reformat_beluga.out",
+        stderr = "logs/{genera}/1_pre_processing/align_to_beluga_host_genome/{sample}/reformat_beluga.err"
     shell:
         """
         module unload miniconda
@@ -180,8 +180,8 @@ rule align_to_human_host_genome: # done
     """
     input:
         human_ref_masked = "results/{genera}/1_pre_processing/mask_human_host_genome/human_genome_sequence_masked.fa",
-        r1 = "results/{genera}/1_pre_processing/split_unmapped_reads_beluga/{sample}/unmapped_R1.fq",
-        r2 = "results/{genera}/1_pre_processing/split_unmapped_reads_beluga/{sample}/unmapped_R2.fq"
+        r1 = "results/{genera}/1_pre_processing/align_to_beluga_host_genome/{sample}/unmapped_R1.fq",
+        r2 = "results/{genera}/1_pre_processing/align_to_beluga_host_genome/{sample}/unmapped_R2.fq"
     output:
         mapped = "results/{genera}/1_pre_processing/align_to_human_host_genome/{sample}/mapped.fq",
         unmapped = "results/{genera}/1_pre_processing/align_to_human_host_genome/{sample}/unmapped.fq"
@@ -220,13 +220,13 @@ rule split_unmapped_reads_human: # done
     input:
         unmapped = "results/{genera}/1_pre_processing/align_to_human_host_genome/{sample}/unmapped.fq"
     output:
-        r1 = "results/{genera}/1_pre_processing/split_unmapped_reads_human/{sample}/unmapped_R1.fq",
-        r2 = "results/{genera}/1_pre_processing/split_unmapped_reads_human/{sample}/unmapped_R2.fq"
+        r1 = "results/{genera}/1_pre_processing/align_to_human_host_genome/{sample}/unmapped_R1.fq",
+        r2 = "results/{genera}/1_pre_processing/align_to_human_host_genome/{sample}/unmapped_R2.fq"
     params:
         genera=config["genera"]
     log:
-        stdout = "logs/{genera}/1_pre_processing/split_unmapped_reads_human/{sample}/reformat_human.out",
-        stderr = "logs/{genera}/1_pre_processing/split_unmapped_reads_human/{sample}/reformat_human.err"
+        stdout = "logs/{genera}/1_pre_processing/align_to_human_host_genome/{sample}/reformat_human.out",
+        stderr = "logs/{genera}/1_pre_processing/align_to_human_host_genome/{sample}/reformat_human.err"
     shell:
         """
         module unload miniconda
@@ -243,8 +243,8 @@ rule dedup_reads: # done
     """
     Run CD-HIT to deduplicate reads that may have been introduced during NexteraXT PCR amplification
     input:
-        r1 = "results/{genera}/1_pre_processing/split_unmapped_reads_human/{sample}/unmapped_R1.fq",
-        r2 = "results/{genera}/1_pre_processing/split_unmapped_reads_human/{sample}/unmapped_R2.fq"
+        r1 = "results/{genera}/1_pre_processing/align_to_human_host_genome/{sample}/unmapped_R1.fq",
+        r2 = "results/{genera}/1_pre_processing/align_to_human_host_genome/{sample}/unmapped_R2.fq"
     output:
         r1_dedup = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
         r2_dedup = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"

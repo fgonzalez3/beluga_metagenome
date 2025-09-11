@@ -15,7 +15,7 @@ rule concoct_bins_spades: #test
     for contigs at minimum of 1.5kb anyways. This should match the eval length in the last rule of assembly.smk.*
     """
     input:
-        contigs = "results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta",
+        contigs = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
         bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam"
     output:
         bins = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/CONCOCT.*.fa",
@@ -76,7 +76,7 @@ rule concoct_bins_megahit: #test
     Group assembled contigs into bins that represent individual genomes or closely related organisms using Concoct
     """
     input:
-        contigs = "results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta",
+        contigs = "results/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
         bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_megahit/{sample}_aligned_sorted.bam"
     output:
         bins = "results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/CONCOCT.*.fa",
@@ -137,7 +137,7 @@ rule metabat2_bin_spades: #test
     Group assembled contigs into bins that represent individual genomes or closely related organisms using Metabat
     """
     input:
-        contigs = "results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta",
+        contigs = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
         bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam"
     output:
         depth_file = "results/{genera}/3_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT.txt",
@@ -184,7 +184,7 @@ rule metabat2_bin_megahit: #test
     Group assembled contigs into bins that represent individual genomes or closely related organisms using Metabat
     """
     input:
-        contigs = "results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta",
+        contigs = "results/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
         bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_megahit/{sample}_aligned_sorted.bam"
     output:
         depth_file = "results/{genera}/3_binning/metabat/megahit_individual_assembly/{sample}/METABAT.txt",
@@ -273,7 +273,7 @@ rule maxbin2_bin_spades: # test
     Bin contigs using MaxBin and previously generated depth file
     """
     input:
-        contigs = "results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta",
+        contigs = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
         r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
         r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq",
         maxbin_depth_file = "results/{genera}/3_binning/maxbin/SPAdes_individual_assembly/maxbin.txt"
@@ -305,7 +305,7 @@ rule maxbin2_bin_megahit: # test
     Bin contigs using MaxBin and previously generated depth file
     """
     input:
-        contigs = "results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta",
+        contigs = "results/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
         r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
         r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq",
         maxbin_depth_file = "results/{genera}/3_binning/maxbin/megahit_individual_assembly/maxbin.txt"
@@ -339,7 +339,7 @@ rule semibin2_generate_concatenated_db_spades: # test
     Generate concatenated FASTA file necessary for SembiBin's multi-sample binning pipeline
     """
     input:
-        contigs = expand("results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta", genera=config["genera"], sample=SAMPLES)
+        contigs = expand("results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta", genera=config["genera"], sample=SAMPLES)
     output:
         "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/generate_concatenated_db/concatenated.fa"
     params:
@@ -363,7 +363,7 @@ rule semibin2_generate_concatenated_db_megahit: # test
     Generate concatenated FASTA file necessary for SembiBin's multi-sample binning pipeline
     """
     input:
-        contigs = expand("results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta", genera=config["genera"], sample=SAMPLES)
+        contigs = expand("results/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta", genera=config["genera"], sample=SAMPLES)
     output:
         "results/{genera}/3_binning/semibin2/megahit_individual_assembly/generate_concatenated_db/concatenated.fa"
     params:
@@ -387,7 +387,7 @@ rule sembin2_align_to_concatenated_db_spades: # test
     Align reads from each sample to our concatenated FASTA db, necessary for SemiBin pipeline
     """
     input:
-        contigs = "results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta",
+        contigs = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
         r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
         r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
     output:
@@ -426,7 +426,7 @@ rule sembin2_align_to_concatenated_db_megahit: # test
     Align reads from each sample to our concatenated FASTA db, necessary for SemiBin pipeline
     """
     input:
-        contigs = "results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta",
+        contigs = "results/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
         r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
         r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
     output:
@@ -584,7 +584,7 @@ rule semibin2_bin_spades: # test
     This method often returns the most bins and is most optimized for complex samples.    
     """
     input:
-        contigs = "results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta",
+        contigs = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
         csv = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/data.csv",
         model = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/train_model/{sample}/model.pt"
     output:
@@ -622,7 +622,7 @@ rule semibin2_bin_megahit: # test
     This method often returns the most bins and is most optimized for complex samples.    
     """
     input:
-        contigs = "results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta",
+        contigs = "results/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
         csv = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/data.csv",
         model = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/train_model/{sample}/model.pt"
     output:
@@ -663,7 +663,7 @@ rule DASTool_spades: # test
         concoct_csv = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/concoct_output/clustering_merged.csv",
         metabat_contigs = "results/{genera}/3_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT.*.fa",
         semibin_contigs = "results/{genera}/3_binning/SPAdes_individual_assembly/semibin2/bin/{sample}/bin.*.fa",
-        contigs = "results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta"
+        contigs = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta"
     output:
         metabat_summ = "results/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/metabat_associations.tsv",
         maxbin_summ = "results/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/maxbin_associations.tsv",
@@ -727,7 +727,7 @@ rule DASTool_megahit: # test
         concoct_csv = "results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/concoct_output/clustering_merged.csv",
         metabat_contigs = "results/{genera}/3_binning/metabat/megahit_individual_assembly/{sample}/METABAT.*.fa",
         semibin_contigs = "results/{genera}/3_binning/megahit_individual_assembly/semibin2/bin/{sample}/bin.*.fa",
-        contigs = "results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta"
+        contigs = "results/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta"
     output:
         metabat_summ = "results/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/metabat_associations.tsv",
         maxbin_summ = "results/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/maxbin_associations.tsv",

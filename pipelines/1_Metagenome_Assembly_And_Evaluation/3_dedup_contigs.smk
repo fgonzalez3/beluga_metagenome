@@ -11,13 +11,13 @@ rule deduplicate_contigs_single_assemblies_spades: # test
     input:
         SPAdes_single = "results/{genera}/2_assembly/SPAdes/individual_metagenome_assembly/{sample}/contigs.fasta"
     output:
-        SPAdes_single_dedups = "results/{genera}/3_dedup_contigs/SPAdes_single/{sample}/{sample}_DEDUP95.fasta"
+        SPAdes_single_dedups = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta"
     params:
         genera=config["genera"],
-        out = "results/{genera}/3_dedup_contigs/SPAdes_single/{sample}",
+        out = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}",
     log:
-        stdout = "logs/{genera}/3_dedup_contigs/SPAdes_single/{sample}/dedup_contigs.out",
-        stderr = "logs/{genera}/3_dedup_contigs/SPAdes_single/{sample}/dedup_contigs.err"
+        stdout = "logs/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/dedup_contigs.out",
+        stderr = "logs/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/dedup_contigs.err"
     shell:
         """
         module unload miniconda
@@ -39,13 +39,13 @@ rule deduplicate_contigs_single_assemblies_megahit: # test
     input:
         megahit_single = "results/{genera}/2_assembly/megahit/individual_metagenome_assembly/{sample}/final.contigs.fa"
     output:
-        megahit_single_dedups = "results/{genera}/3_dedup_contigs/megahit_single/{sample}/{sample}_DEDUP95.fasta"
+        megahit_single_dedups = "results/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta"
     params:
         genera=config["genera"],
-        out = "results/{genera}/3_dedup_contigs/megahit_single/{sample}"
+        out = "results/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}"
     log:
-        stdout = "logs/{genera}/3_dedup_contigs/megahit_single/{sample}/dedup_contigs.out",
-        stderr = "logs/{genera}/3_dedup_contigs/megahit_single/{sample}/dedup_contigs.err"
+        stdout = "logs/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/dedup_contigs.out",
+        stderr = "logs/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/dedup_contigs.err"
     shell:
         """
         module unload miniconda
