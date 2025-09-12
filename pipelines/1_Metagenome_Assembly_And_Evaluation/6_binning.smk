@@ -7,12 +7,9 @@
     # 6. Bin correction and convergence with DasTool
     # 7. Bin quality check with CheckM2
 
-rule concoct_bins_spades: #test
+rule concoct_bins_spades:
     """
-    Group assembled contigs into bins that represent individual genomes or closely related organisms using Concoct
-
-    *I am supplying the original unfiltered contigs as input for each of my binning tools here, because I am selecting 
-    for contigs at minimum of 1.5kb anyways. This should match the eval length in the last rule of assembly.smk.*
+    Group assembled contigs into bins that represent individual genomes or closely related organisms using Concoct (via Docker)
     """
     input:
         contigs = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
@@ -32,42 +29,46 @@ rule concoct_bins_spades: #test
         stderr = "logs/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/concoct.err"
     shell:
         """
-        module unload minicondasq
-        source activate /home/flg9/.conda/envs/concoct_env
+        module unload miniconda
+        module load docker/6.0.1
 
         # 1. Shred contigs into non-overlapping parts of equal length
-        cut_up_fasta.py \
-        {input.contigs} -c {params.contig_len} --merge_last -o 0 \
+        docker run \
+        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
+        cut_up_fasta.py {input.contigs} -c {params.contig_len} --merge_last -o 0 \
         -b {params.outdir}/contigs_20k.bed > {params.outdir}/contigs_20k.fa \
         1>> {log.stdout} 2>> {log.stderr}
 
-        # 2. Generate input coverage table for CONCOCT using previously curated BED file and BAMs
-        concoct_coverage_table.py \
-        {params.outdir}/contigs_20k.bed {input.bams} > {params.outdir}/coverage_table.tsv \
+        # 2. Generate input coverage table for CONCOCT
+        docker run \
+        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
+        concoct_coverage_table.py {params.outdir}/contigs_20k.bed {input.bams} > {params.outdir}/coverage_table.tsv \
         1>> {log.stdout} 2>> {log.stderr}
- 
+
         # 3. Bin
-        concoct \
-        --composition_file {params.outdir}/contigs_20k.fa \
+        docker run \
+        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
+        concoct --composition_file {params.outdir}/contigs_20k.fa \
         --coverage_file {params.outdir}/coverage_table.tsv \
         -b {params.basename} -t {params.threads} -l {params.min_len} -d \
         1>> {log.stdout} 2>> {log.stderr}
 
         # 4. Merge subcontig clustering into original contig clustering
-        merge_cutup_clustering.py \
-        {params.outdir}/clustering_gt20000.csv > {output.csv} \
+        docker run \
+        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
+        merge_cutup_clustering.py {params.outdir}/clustering_gt20000.csv > {output.csv} \
         1>> {log.stdout} 2>> {log.stderr}
 
         # 5. Extract bins as individual FASTAs
-        extract_Fasta_bins.py \
-        {input.contigs} {output.csv} \
-        --output_path {params.outdir} \
+        docker run \
+        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
+        extract_fasta_bins.py {input.contigs} {output.csv} --output_path {params.outdir} \
         1>> {log.stdout} 2>> {log.stderr}
 
         # 6. Generate distance matrix between bins
-        python dnadiff_dist_matrix.py \
-        {params.outdir} {output.bins} \
-        --plot_image_extension {params.img} \
+        docker run \
+        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
+        python dnadiff_dist_matrix.py {params.outdir} {output.bins} --plot_image_extension {params.img} \
         1>> {log.stdout} 2>> {log.stderr}
         """
 
@@ -94,20 +95,26 @@ rule concoct_bins_megahit: #test
     shell:
         """
         module unload minicondasq
-        source activate /home/flg9/.conda/envs/concoct_env
+        module load docker/6.0.1
 
         # 1. Shred contigs into non-overlapping parts of equal length
+        docker run \
+        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
         cut_up_fasta.py \
         {input.contigs} -c {params.contig_len} --merge_last -o 0 \
         -b {params.outdir}/contigs_20k.bed > {params.outdir}/contigs_20k.fa \
         1>> {log.stdout} 2>> {log.stderr}
 
         # 2. Generate input coverage table for CONCOCT using previously curated BED file and BAMs
+        docker run \
+        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
         concoct_coverage_table.py \
         {params.outdir}/contigs_20k.bed {input.bams} > {params.outdir}/coverage_table.tsv \
         1>> {log.stdout} 2>> {log.stderr}
  
         # 3. Bin
+        docker run \
+        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
         concoct \
         --composition_file {params.outdir}/contigs_20k.fa \
         --coverage_file {params.outdir}/coverage_table.tsv \
@@ -115,17 +122,23 @@ rule concoct_bins_megahit: #test
         1>> {log.stdout} 2>> {log.stderr}
 
         # 4. Merge subcontig clustering into original contig clustering
+        docker run \
+        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
         merge_cutup_clustering.py \
         {params.outdir}/clustering_gt20000.csv > {output.csv} \
         1>> {log.stdout} 2>> {log.stderr}
 
         # 5. Extract bins as individual FASTAs
+        docker run \
+        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
         extract_Fasta_bins.py \
         {input.contigs} {output.csv} \
         --output_path {params.outdir} \
         1>> {log.stdout} 2>> {log.stderr}
 
         # 6. Generate distance matrix between bins
+        docker run \
+        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
         python dnadiff_dist_matrix.py \
         {params.outdir} {output.bins} \
         --plot_image_extension {params.img} \
@@ -780,13 +793,15 @@ rule DASTool_megahit: # test
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule bin_quality_check_spades: # test
+rule bin_quality_check_spades:
     input:
-        maxbin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/6_binning/maxbin/SPAdes_individual_assembly/{wildcards.sample}/MAXBIN.*.fa")),
-        metabat_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/6_binning/metabat/SPAdes_individual_assembly/{wildcards.sample}/METABAT.*.fa")),
-        concoct_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/6_binning/concoct/SPAdes_individual_assembly/{wildcards.sample}/CONCOCT.*.fa")),
-        semibin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/6_binning/SPAdes_individual_assembly/semibin2/bin/{wildcards.sample}/bin.*.fa")),
-        dastool_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/6_binning/SPAdes_individual_assembly/aggregate_bins/{wildcards.sample}/DASTOOL.*.fa"))
+        bins=lambda wildcards: (
+            sorted(glob.glob(f"results/{wildcards.genera}/6_binning/maxbin/SPAdes_individual_assembly/{wildcards.sample}/MAXBIN.*.fa")) +
+            sorted(glob.glob(f"results/{wildcards.genera}/6_binning/metabat/SPAdes_individual_assembly/{wildcards.sample}/METABAT.*.fa")) +
+            sorted(glob.glob(f"results/{wildcards.genera}/6_binning/concoct/SPAdes_individual_assembly/{wildcards.sample}/CONCOCT.*.fa")) +
+            sorted(glob.glob(f"results/{wildcards.genera}/6_binning/SPAdes_individual_assembly/semibin2/bin/{wildcards.sample}/bin.*.fa")) +
+            sorted(glob.glob(f"results/{wildcards.genera}/6_binning/SPAdes_individual_assembly/aggregate_bins/{wildcards.sample}/DASTOOL.*.fa"))
+        )
     output:
         "results/{genera}/6_binning/SPAdes_individual_assembly/binning_qc/{sample}/quality_report.tsv"
     params:
@@ -806,19 +821,20 @@ rule bin_quality_check_spades: # test
 
         checkm2 predict \
         --threads {params.threads} \
-        --input {input.maxbin_bins} {input.metabat_bins} \
-        {input.concoct_bins} {input.semibin_bins} {input.dastool_bins} \
+        --input {input} \
         --output_directory {params.outdir} \
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule bin_quality_check_megahit: # test
+rule bin_quality_check_megahit:
     input:
-        maxbin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/6_binning/maxbin/megahit_individual_assembly/{wildcards.sample}/MAXBIN.*.fa")),
-        metabat_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/6_binning/metabat/megahit_individual_assembly/{wildcards.sample}/METABAT.*.fa")),
-        concoct_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/6_binning/concoct/megahit_individual_assembly/{wildcards.sample}/CONCOCT.*.fa")),
-        semibin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/6_binning/megahit_individual_assembly/semibin2/bin/{wildcards.sample}/bin.*.fa")),
-        dastool_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/6_binning/megahit_individual_assembly/aggregate_bins/{wildcards.sample}/DASTOOL.*.fa"))
+        bins=lambda wildcards: (
+            sorted(glob.glob(f"results/{wildcards.genera}/6_binning/maxbin/megahit_individual_assembly/{wildcards.sample}/MAXBIN.*.fa")) +
+            sorted(glob.glob(f"results/{wildcards.genera}/6_binning/metabat/megahit_individual_assembly/{wildcards.sample}/METABAT.*.fa")) +
+            sorted(glob.glob(f"results/{wildcards.genera}/6_binning/concoct/megahit_individual_assembly/{wildcards.sample}/CONCOCT.*.fa")) +
+            sorted(glob.glob(f"results/{wildcards.genera}/6_binning/megahit_individual_assembly/semibin2/bin/{wildcards.sample}/bin.*.fa")) +
+            sorted(glob.glob(f"results/{wildcards.genera}/6_binning/megahit_individual_assembly/aggregate_bins/{wildcards.sample}/DASTOOL.*.fa"))
+        )
     output:
         "results/{genera}/6_binning/megahit_individual_assembly/binning_qc/{sample}/quality_report.tsv"
     params:
@@ -838,8 +854,7 @@ rule bin_quality_check_megahit: # test
 
         checkm2 predict \
         --threads {params.threads} \
-        --input {input.maxbin_bins} {input.metabat_bins} \
-        {input.concoct_bins} {input.semibin_bins} {input.dastool_bins} \
+        --input {input} \
         --output_directory {params.outdir} \
         1>> {log.stdout} 2>> {log.stderr}
         """
