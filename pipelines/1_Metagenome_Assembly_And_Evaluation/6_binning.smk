@@ -18,18 +18,18 @@ rule concoct_bins_spades: #test
         contigs = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
         bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam"
     output:
-        bins = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/CONCOCT.*.fa",
-        csv = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/concoct_output/clustering_merged.csv"
+        bins = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/CONCOCT.*.fa",
+        csv = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/concoct_output/clustering_merged.csv"
     params:
-        outdir = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}",
-        basename = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/CONCOCT",
+        outdir = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}",
+        basename = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/CONCOCT",
         threads = 4,
         contig_len = 20000,
         min_len = 1500,
         img = "svg"
     log:
-        stdout = "logs/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/concoct.out",
-        stderr = "logs/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/concoct.err"
+        stdout = "logs/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/concoct.out",
+        stderr = "logs/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/concoct.err"
     shell:
         """
         module unload minicondasq
@@ -79,18 +79,18 @@ rule concoct_bins_megahit: #test
         contigs = "results/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
         bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_megahit/{sample}_aligned_sorted.bam"
     output:
-        bins = "results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/CONCOCT.*.fa",
-        csv = "results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/concoct_output/clustering_merged.csv"
+        bins = "results/{genera}/6_binning/concoct/megahit_individual_assembly/{sample}/CONCOCT.*.fa",
+        csv = "results/{genera}/6_binning/concoct/megahit_individual_assembly/{sample}/concoct_output/clustering_merged.csv"
     params:
-        outdir = "results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}",
-        basename = "results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/CONCOCT",
+        outdir = "results/{genera}/6_binning/concoct/megahit_individual_assembly/{sample}",
+        basename = "results/{genera}/6_binning/concoct/megahit_individual_assembly/{sample}/CONCOCT",
         threads = 4,
         contig_len = 20000,
         min_len = 1500,
         img = "svg"
     log:
-        stdout = "logs/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/concoct.err",
-        stderr = "logs/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/concoct.err"
+        stdout = "logs/{genera}/6_binning/concoct/megahit_individual_assembly/{sample}/concoct.err",
+        stderr = "logs/{genera}/6_binning/concoct/megahit_individual_assembly/{sample}/concoct.err"
     shell:
         """
         module unload minicondasq
@@ -140,16 +140,16 @@ rule metabat2_bin_spades:
         contigs = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
         bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam"
     output:
-        depth_file = "results/{genera}/3_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT.txt",
-        bins = "results/{genera}/3_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT.*.fa"
+        depth_file = "results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT.txt",
+        bins = "results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT.*.fa"
     params:
         genera=config["genera"],
         threads = 4,
         min_size = 1500,
-        outdir = "results/{genera}/3_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT"
+        outdir = "results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT"
     log:
-        stdout = "logs/{genera}/3_binning/metabat/SPAdes_individual_assembly/{sample}/metabat.out",
-        stderr = "logs/{genera}/3_binning/metabat/SPAdes_individual_assembly/{sample}/metabat.err"
+        stdout = "logs/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/metabat.out",
+        stderr = "logs/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/metabat.err"
     shell:
         """
         module unload miniconda
@@ -186,16 +186,16 @@ rule metabat2_bin_megahit: #test
         contigs = "results/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
         bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_megahit/{sample}_aligned_sorted.bam"
     output:
-        depth_file = "results/{genera}/3_binning/metabat/megahit_individual_assembly/{sample}/METABAT.txt",
-        bins = "results/{genera}/3_binning/metabat/megahit_individual_assembly/{sample}/METABAT.*.fa"
+        depth_file = "results/{genera}/6_binning/metabat/megahit_individual_assembly/{sample}/METABAT.txt",
+        bins = "results/{genera}/6_binning/metabat/megahit_individual_assembly/{sample}/METABAT.*.fa"
     params:
         genera=config["genera"],
         threads = 4,
         min_size = 1500,
-        outdir = "results/{genera}/3_binning/metabat/megahit_individual_assembly/{sample}/METABAT"
+        outdir = "results/{genera}/6_binning/metabat/megahit_individual_assembly/{sample}/METABAT"
     log:
-        stdout = "logs/{genera}/3_binning/metabat/megahit_individual_assembly/{sample}/metabat.out",
-        stderr = "logs/{genera}/3_binning/metabat/megahit_individual_assembly/{sample}/metabat.err"
+        stdout = "logs/{genera}/6_binning/metabat/megahit_individual_assembly/{sample}/metabat.out",
+        stderr = "logs/{genera}/6_binning/metabat/megahit_individual_assembly/{sample}/metabat.err"
     shell:
         """
         module unload miniconda
@@ -231,10 +231,10 @@ rule maxbin2_depth_spades: # test
     input:
         bams = expand("results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam", genera=config["genera"], sample=SAMPLES)
     output:
-        depth_file = "results/{genera}/3_binning/maxbin/SPAdes_individual_assembly/maxbin.txt"
+        depth_file = "results/{genera}/6_binning/maxbin/SPAdes_individual_assembly/maxbin.txt"
     log:
-        stdout = "logs/{genera}/3_binning/maxbin/SPAdes_individual_assembly/maxbin.out",
-        stderr = "logs/{genera}/3_binning/maxbin/SPAdes_individual_assembly/maxbin.err"
+        stdout = "logs/{genera}/6_binning/maxbin/SPAdes_individual_assembly/maxbin.out",
+        stderr = "logs/{genera}/6_binning/maxbin/SPAdes_individual_assembly/maxbin.err"
     shell:
         """
         module unload miniconda
@@ -252,10 +252,10 @@ rule maxbin2_depth_megahit: # test
     input:
         bams = expand("results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_megahit/{sample}_aligned_sorted.bam", genera=config["genera"], sample=SAMPLES)
     output:
-        depth_file = "results/{genera}/3_binning/maxbin/megahit_individual_assembly/maxbin.txt"
+        depth_file = "results/{genera}/6_binning/maxbin/megahit_individual_assembly/maxbin.txt"
     log:
-        stdout = "logs/{genera}/3_binning/maxbin/megahit_individual_assembly/maxbin.out",
-        stderr = "logs/{genera}/3_binning/maxbin/megahit_individual_assembly/maxbin.err"
+        stdout = "logs/{genera}/6_binning/maxbin/megahit_individual_assembly/maxbin.out",
+        stderr = "logs/{genera}/6_binning/maxbin/megahit_individual_assembly/maxbin.err"
     shell:
         """
         module unload miniconda
@@ -274,17 +274,17 @@ rule maxbin2_bin_spades: # test
         contigs = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
         r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
         r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq",
-        maxbin_depth_file = "results/{genera}/3_binning/maxbin/SPAdes_individual_assembly/maxbin.txt"
+        maxbin_depth_file = "results/{genera}/6_binning/maxbin/SPAdes_individual_assembly/maxbin.txt"
     output:
-        bins = "results/{genera}/3_binning/maxbin/SPAdes_individual_assembly/{sample}/MAXBIN.*.fa",
-        summ = "results/{genera}/3_binning/maxbin/SPAdes_individual_assembly/{sample}/MAXBIN.summary"
+        bins = "results/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/MAXBIN.*.fa",
+        summ = "results/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/MAXBIN.summary"
     params:
         threads=4,
         contig_len = 1500,
-        outdir = "results/{genera}/3_binning/maxbin/SPAdes_individual_assembly/{sample}/MAXBIN"
+        outdir = "results/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/MAXBIN"
     log:
-        stdout = "logs/{genera}/3_binning/maxbin/SPAdes_individual_assembly/{sample}/maxbin.out",
-        stderr = "logs/{genera}/3_binning/maxbin/SPAdes_individual_assembly/{sample}/maxbin.err"
+        stdout = "logs/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/maxbin.out",
+        stderr = "logs/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/maxbin.err"
     shell:
         """
         module unload miniconda
@@ -306,17 +306,17 @@ rule maxbin2_bin_megahit: # test
         contigs = "results/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
         r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
         r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq",
-        maxbin_depth_file = "results/{genera}/3_binning/maxbin/megahit_individual_assembly/maxbin.txt"
+        maxbin_depth_file = "results/{genera}/6_binning/maxbin/megahit_individual_assembly/maxbin.txt"
     output:
-        bins = "results/{genera}/3_binning/maxbin/megahit_individual_assembly/{sample}/MAXBIN.*.fa",
-        summ = "results/{genera}/3_binning/maxbin/megahit_individual_assembly/{sample}/MAXBIN.summary"
+        bins = "results/{genera}/6_binning/maxbin/megahit_individual_assembly/{sample}/MAXBIN.*.fa",
+        summ = "results/{genera}/6_binning/maxbin/megahit_individual_assembly/{sample}/MAXBIN.summary"
     params:
         threads=4,
         contig_len = 1500,
-        outdir = "results/{genera}/3_binning/maxbin/megahit_individual_assembly/{sample}/MAXBIN"
+        outdir = "results/{genera}/6_binning/maxbin/megahit_individual_assembly/{sample}/MAXBIN"
     log:
-        stdout = "logs/{genera}/3_binning/maxbin/megahit_individual_assembly/{sample}/maxbin.out",
-        stderr = "logs/{genera}/3_binning/maxbin/megahit_individual_assembly/{sample}/maxbin.err"
+        stdout = "logs/{genera}/6_binning/maxbin/megahit_individual_assembly/{sample}/maxbin.out",
+        stderr = "logs/{genera}/6_binning/maxbin/megahit_individual_assembly/{sample}/maxbin.err"
     shell:
         """
         module unload miniconda
@@ -339,13 +339,13 @@ rule semibin2_generate_concatenated_db_spades: # test
     input:
         contigs = expand("results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta", genera=config["genera"], sample=SAMPLES)
     output:
-        "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/generate_concatenated_db/concatenated.fa"
+        "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/generate_concatenated_db/concatenated.fa"
     params:
-        outdir = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/generate_concatenated_db",
+        outdir = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/generate_concatenated_db",
         threads = 4
     log:
-        stdout = "logs/{genera}/3_binning/semibin2/SPAdes_individual_assembly/generate_concatenated_db/concatenate_fa.out",
-        stderr = "logs/{genera}/3_binning/semibin2/SPAdes_individual_assembly/generate_concatenated_db/concatenate_fa.err"
+        stdout = "logs/{genera}/6_binning/semibin2/SPAdes_individual_assembly/generate_concatenated_db/concatenate_fa.out",
+        stderr = "logs/{genera}/6_binning/semibin2/SPAdes_individual_assembly/generate_concatenated_db/concatenate_fa.err"
     shell:
         """
         module unload miniconda
@@ -363,13 +363,13 @@ rule semibin2_generate_concatenated_db_megahit: # test
     input:
         contigs = expand("results/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta", genera=config["genera"], sample=SAMPLES)
     output:
-        "results/{genera}/3_binning/semibin2/megahit_individual_assembly/generate_concatenated_db/concatenated.fa"
+        "results/{genera}/6_binning/semibin2/megahit_individual_assembly/generate_concatenated_db/concatenated.fa"
     params:
-        outdir = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/generate_concatenated_db",
+        outdir = "results/{genera}/6_binning/semibin2/megahit_individual_assembly/generate_concatenated_db",
         threads = 4
     log:
-        stdout = "logs/{genera}/3_binning/semibin2/megahit_individual_assembly/generate_concatenated_db/concatenate_fa.out",
-        stderr = "logs/{genera}/3_binning/semibin2/megahit_individual_assembly/generate_concatenated_db/concatenate_fa.err"
+        stdout = "logs/{genera}/6_binning/semibin2/megahit_individual_assembly/generate_concatenated_db/concatenate_fa.out",
+        stderr = "logs/{genera}/6_binning/semibin2/megahit_individual_assembly/generate_concatenated_db/concatenate_fa.err"
     shell:
         """
         module unload miniconda
@@ -389,19 +389,19 @@ rule sembin2_align_to_concatenated_db_spades: # test
         r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
         r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
     output:
-        "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.1.bt2",
-        "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.2.bt2",
-        "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.3.bt2",
-        "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.4.bt2",
-        "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.1.bt2",
-        "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.2.bt2",
-        "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}_aligned_sorted.bam"
+        "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.1.bt2",
+        "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.2.bt2",
+        "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.3.bt2",
+        "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.4.bt2",
+        "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.1.bt2",
+        "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.2.bt2",
+        "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}_aligned_sorted.bam"
     params:
         genera=config["genera"],
-        outdir = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}"
+        outdir = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}"
     log:
-        stdout = "logs/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}_aln.out",
-        stderr = "logs/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}_aln.err"
+        stdout = "logs/{genera}/6_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}_aln.out",
+        stderr = "logs/{genera}/6_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}_aln.err"
     shell:
         """
         module unload miniconda 
@@ -428,19 +428,19 @@ rule sembin2_align_to_concatenated_db_megahit: # test
         r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
         r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
     output:
-        "results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.1.bt2",
-        "results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.2.bt2",
-        "results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.3.bt2",
-        "results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.4.bt2",
-        "results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.1.bt2",
-        "results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.2.bt2",
-        "results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}_aligned_sorted.bam"
+        "results/{genera}/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.1.bt2",
+        "results/{genera}/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.2.bt2",
+        "results/{genera}/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.3.bt2",
+        "results/{genera}/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.4.bt2",
+        "results/{genera}/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.1.bt2",
+        "results/{genera}/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.2.bt2",
+        "results/{genera}/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}_aligned_sorted.bam"
     params:
         genera=config["genera"],
-        outdir = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}"
+        outdir = "results/{genera}/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}"
     log:
-        stdout = "logs/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}_aln.out",
-        stderr = "logs/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}_aln.err"
+        stdout = "logs/{genera}/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}_aln.out",
+        stderr = "logs/{genera}/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}_aln.err"
     shell:
         """
         module unload miniconda 
@@ -463,17 +463,17 @@ rule semibin2_features_and_model_spades: # test
     Generate sequence features and train model for SemiBin2
     """
     input:
-        cat_fa = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/generate_concatenated_db/concatenated.fa",
-        bams = expand("results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}_aligned_sorted.bam", genera=config["genera"], sample=SAMPLES)
+        cat_fa = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/generate_concatenated_db/concatenated.fa",
+        bams = expand("results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/align_to_concatenated_db/{sample}_aligned_sorted.bam", genera=config["genera"], sample=SAMPLES)
     output:
-        split = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/data_split.csv",
-        csv = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/data.csv"
+        split = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/data_split.csv",
+        csv = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/data.csv"
     params:
-        outdir = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}",
+        outdir = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}",
         threads = 4
     log:
-        stdout = "logs/{genera}/3_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/sequence_features.out",
-        stderr = "logs/{genera}/3_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/sequence_features.err"
+        stdout = "logs/{genera}/6_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/sequence_features.out",
+        stderr = "logs/{genera}/6_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/sequence_features.err"
     shell:
         """
         module unload miniconda
@@ -493,17 +493,17 @@ rule semibin2_features_and_model_megahit: # test
     Generate sequence features and train model for SemiBin2
     """
     input:
-        cat_fa = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/generate_concatenated_db/concatenated.fa",
-        bams = expand("results/{genera}/3_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}_aligned_sorted.bam", genera=config["genera"], sample=SAMPLES)
+        cat_fa = "results/{genera}/6_binning/semibin2/megahit_individual_assembly/generate_concatenated_db/concatenated.fa",
+        bams = expand("results/{genera}/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}_aligned_sorted.bam", genera=config["genera"], sample=SAMPLES)
     output:
-        split = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/data_split.csv",
-        csv = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/data.csv"
+        split = "results/{genera}/6_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/data_split.csv",
+        csv = "results/{genera}/6_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/data.csv"
     params:
-        outdir = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}",
+        outdir = "results/{genera}/6_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}",
         threads = 4
     log:
-        stdout = "logs/{genera}/3_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/sequence_features.out",
-        stderr = "logs/{genera}/3_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/sequence_features.err"
+        stdout = "logs/{genera}/6_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/sequence_features.out",
+        stderr = "logs/{genera}/6_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/sequence_features.err"
     shell:
         """
         module unload miniconda
@@ -523,16 +523,16 @@ rule semibin2_train_model_spades: # test
     Train ML model on previously curated SemiBin2 feature data
     """
     input:
-        split = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/data_split.csv",
-        csv = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/data.csv"
+        split = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/data_split.csv",
+        csv = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/data.csv"
     output:
-        model = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/train_model/{sample}/model.pt"
+        model = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/train_model/{sample}/model.pt"
     params:
-        outdir = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/train_model/{sample}",
+        outdir = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/train_model/{sample}",
         threads = 4
     log:
-        stdout = "logs/{genera}/3_binning/semibin2/SPAdes_individual_assembly/train_model/{sample}/ML_train.out",
-        stderr = "logs/{genera}/3_binning/semibin2/SPAdes_individual_assembly/train_model/{sample}/ML_train.err"
+        stdout = "logs/{genera}/6_binning/semibin2/SPAdes_individual_assembly/train_model/{sample}/ML_train.out",
+        stderr = "logs/{genera}/6_binning/semibin2/SPAdes_individual_assembly/train_model/{sample}/ML_train.err"
     shell:
         """
         module unload miniconda
@@ -552,16 +552,16 @@ rule semibin2_train_model_megahit: # test
     Train ML model on previously curated SemiBin2 feature data
     """
     input:
-        split = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/data_split.csv",
-        csv = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/data.csv"
+        split = "results/{genera}/6_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/data_split.csv",
+        csv = "results/{genera}/6_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/data.csv"
     output:
-        model = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/train_model/{sample}/model.pt"
+        model = "results/{genera}/6_binning/semibin2/megahit_individual_assembly/train_model/{sample}/model.pt"
     params:
-        outdir = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/train_model/{sample}",
+        outdir = "results/{genera}/6_binning/semibin2/megahit_individual_assembly/train_model/{sample}",
         threads = 4
     log:
-        stdout = "logs/{genera}/3_binning/semibin2/megahit_individual_assembly/train_model/{sample}/ML_train.out",
-        stderr = "logs/{genera}/3_binning/semibin2/megahit_individual_assembly/train_model/{sample}/ML_train.err"
+        stdout = "logs/{genera}/6_binning/semibin2/megahit_individual_assembly/train_model/{sample}/ML_train.out",
+        stderr = "logs/{genera}/6_binning/semibin2/megahit_individual_assembly/train_model/{sample}/ML_train.err"
     shell:
         """
         module unload miniconda
@@ -583,19 +583,19 @@ rule semibin2_bin_spades: # test
     """
     input:
         contigs = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
-        csv = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/data.csv",
-        model = "results/{genera}/3_binning/semibin2/SPAdes_individual_assembly/train_model/{sample}/model.pt"
+        csv = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/features_and_model/{sample}/data.csv",
+        model = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/train_model/{sample}/model.pt"
     output:
-        bins = "results/{genera}/3_binning/SPAdes_individual_assembly/semibin2/bin/{sample}/bin.*.fa"
+        bins = "results/{genera}/6_binning/SPAdes_individual_assembly/semibin2/bin/{sample}/bin.*.fa"
     params:
-        outdir = "results/{genera}/3_binning/SPAdes_individual_assembly/semibin2/bin/{sample}",
+        outdir = "results/{genera}/6_binning/SPAdes_individual_assembly/semibin2/bin/{sample}",
         seq_type = "short_reads",
         GTDB_path = "/vast/palmer/pi/turner/data/db/gtdbtk-2.4.1",
         minlen = "1500",
         threads = 4
     log:
-        stdout = "logs/{genera}/3_binning/SPAdes_individual_assembly/semibin2/bin/{sample}/bin.out",
-        stderr = "logs/{genera}/3_binning/SPAdes_individual_assembly/semibin2/bin/{sample}/bin.err"
+        stdout = "logs/{genera}/6_binning/SPAdes_individual_assembly/semibin2/bin/{sample}/bin.out",
+        stderr = "logs/{genera}/6_binning/SPAdes_individual_assembly/semibin2/bin/{sample}/bin.err"
     shell:
         """
         module unload miniconda
@@ -621,19 +621,19 @@ rule semibin2_bin_megahit: # test
     """
     input:
         contigs = "results/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
-        csv = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/data.csv",
-        model = "results/{genera}/3_binning/semibin2/megahit_individual_assembly/train_model/{sample}/model.pt"
+        csv = "results/{genera}/6_binning/semibin2/megahit_individual_assembly/features_and_model/{sample}/data.csv",
+        model = "results/{genera}/6_binning/semibin2/megahit_individual_assembly/train_model/{sample}/model.pt"
     output:
-        bins = "results/{genera}/3_binning/megahit_individual_assembly/semibin2/bin/{sample}/bin.*.fa"
+        bins = "results/{genera}/6_binning/megahit_individual_assembly/semibin2/bin/{sample}/bin.*.fa"
     params:
-        outdir = "results/{genera}/3_binning/megahit_individual_assembly/semibin2/bin/{sample}",
+        outdir = "results/{genera}/6_binning/megahit_individual_assembly/semibin2/bin/{sample}",
         seq_type = "short_reads",
         GTDB_path = "/vast/palmer/pi/turner/data/db/gtdbtk-2.4.1",
         minlen = "1500",
         threads = 4
     log:
-        stdout = "logs/{genera}/3_binning/megahit_individual_assembly/semibin2/bin/{sample}/bin.out",
-        stderr = "logs/{genera}/3_binning/megahit_individual_assembly/semibin2/bin/{sample}/bin.err"
+        stdout = "logs/{genera}/6_binning/megahit_individual_assembly/semibin2/bin/{sample}/bin.out",
+        stderr = "logs/{genera}/6_binning/megahit_individual_assembly/semibin2/bin/{sample}/bin.err"
     shell:
         """
         module unload miniconda
@@ -657,26 +657,26 @@ rule DASTool_spades: # test
     Calculate an optimized set of bins from multiple binning tools that were previously used
     """
     input:
-        maxbin_contigs = "results/{genera}/3_binning/maxbin/SPAdes_individual_assembly/{sample}/MAXBIN.*.fa",
-        concoct_csv = "results/{genera}/3_binning/concoct/SPAdes_individual_assembly/{sample}/concoct_output/clustering_merged.csv",
-        metabat_contigs = "results/{genera}/3_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT.*.fa",
-        semibin_contigs = "results/{genera}/3_binning/SPAdes_individual_assembly/semibin2/bin/{sample}/bin.*.fa",
+        maxbin_contigs = "results/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/MAXBIN.*.fa",
+        concoct_csv = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/concoct_output/clustering_merged.csv",
+        metabat_contigs = "results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT.*.fa",
+        semibin_contigs = "results/{genera}/6_binning/SPAdes_individual_assembly/semibin2/bin/{sample}/bin.*.fa",
         contigs = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta"
     output:
-        metabat_summ = "results/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/metabat_associations.tsv",
-        maxbin_summ = "results/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/maxbin_associations.tsv",
-        concoct_summ = "results/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/concoct_associations.tsv",
-        semibin_summ = "results/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/semibin_associations.tsv",
-        bins = "results/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/DASTOOL.*.fa"
+        metabat_summ = "results/{genera}/6_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/metabat_associations.tsv",
+        maxbin_summ = "results/{genera}/6_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/maxbin_associations.tsv",
+        concoct_summ = "results/{genera}/6_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/concoct_associations.tsv",
+        semibin_summ = "results/{genera}/6_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/semibin_associations.tsv",
+        bins = "results/{genera}/6_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/DASTOOL.*.fa"
     params:
         genera=config["genera"],
         threads = 4,
         engine = "diamond",
         names = "Metabat,Maxbin,Concoct,SemiBin",
-        dastool_outdir = "results/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}"
+        dastool_outdir = "results/{genera}/6_binning/SPAdes_individual_assembly/aggregate_bins/{sample}"
     log:
-        stdout = "logs/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/das_tool.out",
-        stderr = "logs/{genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/das_tool.err"
+        stdout = "logs/{genera}/6_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/das_tool.out",
+        stderr = "logs/{genera}/6_binning/SPAdes_individual_assembly/aggregate_bins/{sample}/das_tool.err"
     shell:
         """
         module unload miniconda 
@@ -721,26 +721,26 @@ rule DASTool_megahit: # test
     Calculate an optimized set of bins from multiple binning tools that were previously used
     """
     input:
-        maxbin_contigs = "results/{genera}/3_binning/maxbin/megahit_individual_assembly/{sample}/MAXBIN.*.fa",
-        concoct_csv = "results/{genera}/3_binning/concoct/megahit_individual_assembly/{sample}/concoct_output/clustering_merged.csv",
-        metabat_contigs = "results/{genera}/3_binning/metabat/megahit_individual_assembly/{sample}/METABAT.*.fa",
-        semibin_contigs = "results/{genera}/3_binning/megahit_individual_assembly/semibin2/bin/{sample}/bin.*.fa",
+        maxbin_contigs = "results/{genera}/6_binning/maxbin/megahit_individual_assembly/{sample}/MAXBIN.*.fa",
+        concoct_csv = "results/{genera}/6_binning/concoct/megahit_individual_assembly/{sample}/concoct_output/clustering_merged.csv",
+        metabat_contigs = "results/{genera}/6_binning/metabat/megahit_individual_assembly/{sample}/METABAT.*.fa",
+        semibin_contigs = "results/{genera}/6_binning/megahit_individual_assembly/semibin2/bin/{sample}/bin.*.fa",
         contigs = "results/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta"
     output:
-        metabat_summ = "results/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/metabat_associations.tsv",
-        maxbin_summ = "results/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/maxbin_associations.tsv",
-        concoct_summ = "results/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/concoct_associations.tsv",
-        semibin_summ = "results/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/semibin_associations.tsv",
-        bins = "results/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/DASTOOL.*.fa"
+        metabat_summ = "results/{genera}/6_binning/megahit_individual_assembly/aggregate_bins/{sample}/metabat_associations.tsv",
+        maxbin_summ = "results/{genera}/6_binning/megahit_individual_assembly/aggregate_bins/{sample}/maxbin_associations.tsv",
+        concoct_summ = "results/{genera}/6_binning/megahit_individual_assembly/aggregate_bins/{sample}/concoct_associations.tsv",
+        semibin_summ = "results/{genera}/6_binning/megahit_individual_assembly/aggregate_bins/{sample}/semibin_associations.tsv",
+        bins = "results/{genera}/6_binning/megahit_individual_assembly/aggregate_bins/{sample}/DASTOOL.*.fa"
     params:
         genera=config["genera"],
         threads = 4,
         engine = "diamond",
         names = "Metabat,Maxbin,Concoct,SemiBin",
-        dastool_outdir = "results/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}"
+        dastool_outdir = "results/{genera}/6_binning/megahit_individual_assembly/aggregate_bins/{sample}"
     log:
-        stdout = "logs/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/das_tool.out",
-        stderr = "logs/{genera}/3_binning/megahit_individual_assembly/aggregate_bins/{sample}/das_tool.err"
+        stdout = "logs/{genera}/6_binning/megahit_individual_assembly/aggregate_bins/{sample}/das_tool.out",
+        stderr = "logs/{genera}/6_binning/megahit_individual_assembly/aggregate_bins/{sample}/das_tool.err"
     shell:
         """
         module unload miniconda 
@@ -782,20 +782,20 @@ rule DASTool_megahit: # test
 
 rule bin_quality_check_spades: # test
     input:
-        maxbin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/maxbin/SPAdes_individual_assembly/{wildcards.sample}/MAXBIN.*.fa")),
-        metabat_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/metabat/SPAdes_individual_assembly/{wildcards.sample}/METABAT.*.fa")),
-        concoct_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/concoct/SPAdes_individual_assembly/{wildcards.sample}/CONCOCT.*.fa")),
-        semibin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/SPAdes_individual_assembly/semibin2/bin/{wildcards.sample}/bin.*.fa")),
-        dastool_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/SPAdes_individual_assembly/aggregate_bins/{wildcards.sample}/DASTOOL.*.fa"))
+        maxbin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/6_binning/maxbin/SPAdes_individual_assembly/{wildcards.sample}/MAXBIN.*.fa")),
+        metabat_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/6_binning/metabat/SPAdes_individual_assembly/{wildcards.sample}/METABAT.*.fa")),
+        concoct_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/6_binning/concoct/SPAdes_individual_assembly/{wildcards.sample}/CONCOCT.*.fa")),
+        semibin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/6_binning/SPAdes_individual_assembly/semibin2/bin/{wildcards.sample}/bin.*.fa")),
+        dastool_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/6_binning/SPAdes_individual_assembly/aggregate_bins/{wildcards.sample}/DASTOOL.*.fa"))
     output:
-        "results/{genera}/3_binning/SPAdes_individual_assembly/binning_qc/{sample}/quality_report.tsv"
+        "results/{genera}/6_binning/SPAdes_individual_assembly/binning_qc/{sample}/quality_report.tsv"
     params:
         threads=4,
         genera=config["genera"],
-        outdir="results/{genera}/3_binning/SPAdes_individual_assembly/binning_qc/{sample}"
+        outdir="results/{genera}/6_binning/SPAdes_individual_assembly/binning_qc/{sample}"
     log:
-        stdout = "logs/{genera}/3_binning/SPAdes_individual_assembly/binning_qc/{sample}/checkm2.out",
-        stderr = "logs/{genera}/3_binning/SPAdes_individual_assembly/binning_qc/{sample}/checkm2.err"
+        stdout = "logs/{genera}/6_binning/SPAdes_individual_assembly/binning_qc/{sample}/checkm2.out",
+        stderr = "logs/{genera}/6_binning/SPAdes_individual_assembly/binning_qc/{sample}/checkm2.err"
     shell:
         """
         module unload miniconda
@@ -814,20 +814,20 @@ rule bin_quality_check_spades: # test
 
 rule bin_quality_check_megahit: # test
     input:
-        maxbin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/maxbin/megahit_individual_assembly/{wildcards.sample}/MAXBIN.*.fa")),
-        metabat_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/metabat/megahit_individual_assembly/{wildcards.sample}/METABAT.*.fa")),
-        concoct_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/concoct/megahit_individual_assembly/{wildcards.sample}/CONCOCT.*.fa")),
-        semibin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/megahit_individual_assembly/semibin2/bin/{wildcards.sample}/bin.*.fa")),
-        dastool_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/3_binning/megahit_individual_assembly/aggregate_bins/{wildcards.sample}/DASTOOL.*.fa"))
+        maxbin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/6_binning/maxbin/megahit_individual_assembly/{wildcards.sample}/MAXBIN.*.fa")),
+        metabat_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/6_binning/metabat/megahit_individual_assembly/{wildcards.sample}/METABAT.*.fa")),
+        concoct_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/6_binning/concoct/megahit_individual_assembly/{wildcards.sample}/CONCOCT.*.fa")),
+        semibin_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/6_binning/megahit_individual_assembly/semibin2/bin/{wildcards.sample}/bin.*.fa")),
+        dastool_bins = lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/6_binning/megahit_individual_assembly/aggregate_bins/{wildcards.sample}/DASTOOL.*.fa"))
     output:
-        "results/{genera}/3_binning/megahit_individual_assembly/binning_qc/{sample}/quality_report.tsv"
+        "results/{genera}/6_binning/megahit_individual_assembly/binning_qc/{sample}/quality_report.tsv"
     params:
         threads=4,
         genera=config["genera"],
-        outdir="results/{genera}/3_binning/megahit_individual_assembly/binning_qc/{sample}"
+        outdir="results/{genera}/6_binning/megahit_individual_assembly/binning_qc/{sample}"
     log:
-        stdout = "logs/{genera}/3_binning/megahit_individual_assembly/binning_qc/{sample}/checkm2.out",
-        stderr = "logs/{genera}/3_binning/megahit_individual_assembly/binning_qc/{sample}/checkm2.err"
+        stdout = "logs/{genera}/6_binning/megahit_individual_assembly/binning_qc/{sample}/checkm2.out",
+        stderr = "logs/{genera}/6_binning/megahit_individual_assembly/binning_qc/{sample}/checkm2.err"
     shell:
         """
         module unload miniconda
