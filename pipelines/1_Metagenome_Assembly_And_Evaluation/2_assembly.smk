@@ -51,6 +51,7 @@ rule individual_metagenome_assembly_megahit: # test
     params:
         genera=config["genera"],
         preset="meta-large",
+        prefix = "final",
         outdir = "results/{genera}/2_assembly/megahit/individual_metagenome_assembly/{sample}"
     log:
         stdout = "logs/{genera}/2_assembly/megahit/individual_metagenome_assembly/{sample}/assembly.out",
@@ -61,7 +62,7 @@ rule individual_metagenome_assembly_megahit: # test
         source activate /home/flg9/.conda/envs/megahit
 
         megahit \
-        -1 {input.r1} -2 {input.r2} -o {params.outdir} \
-        --presets {params.preset} \
+        -1 {input.r1} -2 {input.r2} -o {params.outdir} --verbose \
+        --presets {params.preset} --out-prefix {params.prefix} --continue \
         1> {log.stdout} 2> {log.stderr}
         """

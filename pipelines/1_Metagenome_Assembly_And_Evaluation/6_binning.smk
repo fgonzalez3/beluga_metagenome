@@ -132,9 +132,9 @@ rule concoct_bins_megahit: #test
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule metabat2_bin_spades: #test
+rule metabat2_bin_spades:
     """
-    Group assembled contigs into bins that represent individual genomes or closely related organisms using Metabat
+    Group assembled contigs into bins that represent individual genomes or closely related organisms using Metabat2 (via Docker)
     """
     input:
         contigs = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
@@ -155,28 +155,27 @@ rule metabat2_bin_spades: #test
         module unload miniconda
         module load docker/6.0.1
 
-        # 1. Set the work directory to ensure docker starts where it should
-        WORKDIR = $(pwd)
-
-        # 2. Generation of depth files for binning using previously sorted bams
+        # Generate depth file
         docker run --rm \
-        --workdir $WORKDIR \
-        --volume $WORKDIR:$WORKDIR \
-        jgi_summarize_bam_contig_depths \
-        --outputDepth {output.depth_file} {input.bams} \
-        1>> {log.stdout} 2>> {log.stderr}
+            --workdir $(pwd) \
+            --volume $(pwd):$(pwd) \
+            metabat/metabat:latest \
+            jgi_summarize_bam_contig_depths \
+            --outputDepth {output.depth_file} {input.bams} \
+            1>> {log.stdout} 2>> {log.stderr}
 
-        # 3. Bin using previously generated contigs and depth file
+        # Run MetaBAT2
         docker run --rm \
-        --workdir $WORKDIR \
-        --volume $WORKDIR:$WORKDIR 
-        metabat/metabat:latest runMetaBat.sh \
-        -t {params.threads} -m {params.min_size} \
-        -i {input.contigs} \
-        -a {output.depth_file} \
-        -o {params.outdir} \
-        --verbose --debug \
-        1>> {log.stdout} 2>> {log.stderr}
+            --workdir $(pwd) \
+            --volume $(pwd):$(pwd) \
+            metabat/metabat:latest \
+            runMetaBat.sh \
+            -t {params.threads} -m {params.min_size} \
+            -i {input.contigs} \
+            -a {output.depth_file} \
+            -o {params.outdir} \
+            --verbose --debug \
+            1>> {log.stdout} 2>> {log.stderr}
         """
 
 rule metabat2_bin_megahit: #test
@@ -202,28 +201,27 @@ rule metabat2_bin_megahit: #test
         module unload miniconda
         module load docker/6.0.1
 
-        # 1. Set the work directory to ensure docker starts where it should
-        WORKDIR = $(pwd)
-
-        # 2. Generation of depth files for binning using previously sorted bams
+        # Generate depth file
         docker run --rm \
-        --workdir $WORKDIR \
-        --volume $WORKDIR:$WORKDIR \
-        jgi_summarize_bam_contig_depths \
-        --outputDepth {output.depth_file} {input.bams} \
-        1>> {log.stdout} 2>> {log.stderr}
+            --workdir $(pwd) \
+            --volume $(pwd):$(pwd) \
+            metabat/metabat:latest \
+            jgi_summarize_bam_contig_depths \
+            --outputDepth {output.depth_file} {input.bams} \
+            1>> {log.stdout} 2>> {log.stderr}
 
-        # 3. Bin using previously generated contigs and depth file
+        # Run MetaBAT2
         docker run --rm \
-        --workdir $WORKDIR \
-        --volume $WORKDIR:$WORKDIR 
-        metabat/metabat:latest runMetaBat.sh \
-        -t {params.threads} -m {params.min_size} \
-        -i {input.contigs} \
-        -a {output.depth_file} \
-        -o {params.outdir} \
-        --verbose --debug \
-        1>> {log.stdout} 2>> {log.stderr}
+            --workdir $(pwd) \
+            --volume $(pwd):$(pwd) \
+            metabat/metabat:latest \
+            runMetaBat.sh \
+            -t {params.threads} -m {params.min_size} \
+            -i {input.contigs} \
+            -a {output.depth_file} \
+            -o {params.outdir} \
+            --verbose --debug \
+            1>> {log.stdout} 2>> {log.stderr}
         """
 
 rule maxbin2_depth_spades: # test
