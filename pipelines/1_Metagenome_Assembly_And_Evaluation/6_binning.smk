@@ -366,7 +366,7 @@ rule semibin2_generate_concatenated_db_spades: # test
 
         SemiBin2 concatenate_fasta \
         --input-fasta {input.contigs} \
-        --output {output}
+        --output {params.outdir} --compression=none
         """
 
 rule semibin2_generate_concatenated_db_megahit: # test
@@ -390,7 +390,7 @@ rule semibin2_generate_concatenated_db_megahit: # test
 
         SemiBin2 concatenate_fasta \
         --input-fasta {input.contigs} \
-        --output {output}
+        --output {params.outdir} --compression=none
         """
 
 rule sembin2_align_to_concatenated_db_spades: # test
