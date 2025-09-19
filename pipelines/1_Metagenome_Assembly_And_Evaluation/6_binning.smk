@@ -789,7 +789,7 @@ rule bin_quality_check_spades:
 
         checkm2 predict \
         --threads {params.threads} \
-        --input {input} \
+        --input {input.bins} \
         --output_directory {params.outdir} \
         1>> {log.stdout} 2>> {log.stderr}
         """
@@ -822,7 +822,7 @@ rule bin_quality_check_megahit:
 
         checkm2 predict \
         --threads {params.threads} \
-        --input {input} \
+        --input {input.bins} \
         --output_directory {params.outdir} \
         1>> {log.stdout} 2>> {log.stderr}
         """
