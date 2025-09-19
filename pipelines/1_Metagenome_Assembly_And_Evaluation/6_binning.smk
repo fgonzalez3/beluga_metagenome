@@ -216,7 +216,7 @@ rule maxbin2_depth_spades: # test
     Get depth file for MaxBin using previously generated read alignment to contigs
     """
     input:
-        bams = expand("results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam", genera=config["genera"], sample=SAMPLES)
+        metabat_txt = "results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT.txt"
     output:
         depth_file = "results/{genera}/6_binning/maxbin/SPAdes_individual_assembly/maxbin.txt"
     log:
@@ -224,11 +224,8 @@ rule maxbin2_depth_spades: # test
         stderr = "logs/{genera}/6_binning/maxbin/SPAdes_individual_assembly/maxbin.err"
     shell:
         """
-        module unload miniconda
-        module load MaxBin/2.2.7-gompi-2020b 
-
-        jgi_summarize_bam_contig_depths \
-        --outputDepth {output.depth_file} {input.bams} \
+        cut \
+        -f1,4,6,8,10 {input.metabat_txt} > {output.depth_file} \
         1>> {log.stdout} 2>> {log.stderr}
         """
 
@@ -237,7 +234,7 @@ rule maxbin2_depth_megahit: # test
     Get depth file for MaxBin using previously generated read alignment to contigs
     """
     input:
-        bams = expand("results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_megahit/{sample}_aligned_sorted.bam", genera=config["genera"], sample=SAMPLES)
+        metabat_txt = "results/{genera}/6_binning/metabat/megahit_individual_assembly/{sample}/METABAT.txt"
     output:
         depth_file = "results/{genera}/6_binning/maxbin/megahit_individual_assembly/maxbin.txt"
     log:
@@ -245,11 +242,8 @@ rule maxbin2_depth_megahit: # test
         stderr = "logs/{genera}/6_binning/maxbin/megahit_individual_assembly/maxbin.err"
     shell:
         """
-        module unload miniconda
-        module load MaxBin/2.2.7-gompi-2020b 
-
-        jgi_summarize_bam_contig_depths \
-        --outputDepth {output.depth_file} {input.bams} \
+        cut \
+        -f1,4,6,8,10 {input.metabat_txt} > {output.depth_file} \
         1>> {log.stdout} 2>> {log.stderr}
         """
 
