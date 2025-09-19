@@ -18,7 +18,8 @@ rule align_reads_to_contigs_spades_individual_assemblies:
         "results/{genera}/4_align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.4.bt2",
         "results/{genera}/4_align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.rev.1.bt2",
         "results/{genera}/4_align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.rev.2.bt2",
-        "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam"
+        "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam",
+        "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam.bai"
     params:
         genera=config["genera"],
         outdir = "results/{genera}/4_align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}"
@@ -40,6 +41,11 @@ rule align_reads_to_contigs_spades_individual_assemblies:
         bowtie2 \
         -x {params.outdir}/{wildcards.sample}_indexed_contig -1 {input.r1} -2 {input.r2} | samtools view -b -F 4 -F 2048 | samtools sort -o {output[6]} \
         1>> {log.stdout} 2>> {log.stderr}
+
+        # 3. Index BAM files to produce the bam.bai file that concoct requires later open
+        samtools index \
+        {output[6]} -o {output[7]} \
+        1>> {log.stdout} 2>> {log.stderr}
         """
 
 rule align_reads_to_contigs_megahit_individual_assemblies:
@@ -58,7 +64,8 @@ rule align_reads_to_contigs_megahit_individual_assemblies:
         "results/{genera}/4_align_reads_to_contigs/contig_index_megahit_individual_assemblies/{sample}/{sample}_indexed_contig.4.bt2",
         "results/{genera}/4_align_reads_to_contigs/contig_index_megahit_individual_assemblies/{sample}/{sample}_indexed_contig.rev.1.bt2",
         "results/{genera}/4_align_reads_to_contigs/contig_index_megahit_individual_assemblies/{sample}/{sample}_indexed_contig.rev.2.bt2",
-        "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_megahit/{sample}_aligned_sorted.bam"
+        "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_megahit/{sample}_aligned_sorted.bam",
+        "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_megahit/{sample}_aligned_sorted.bam.bai"
     params:
         genera=config["genera"],
         outdir = "results/{genera}/4_align_reads_to_contigs/contig_index_megahit_individual_assemblies/{sample}"
@@ -79,5 +86,10 @@ rule align_reads_to_contigs_megahit_individual_assemblies:
         # 2. Align reads back to assembled contigs
         bowtie2 \
         -x {params.outdir}/{wildcards.sample}_indexed_contig -1 {input.r1} -2 {input.r2} | samtools view -b -F 4 -F 2048 | samtools sort -o {output[6]} \
+        1>> {log.stdout} 2>> {log.stderr}
+
+        # 3. Index BAM files to produce the bam.bai file that concoct requires later open
+        samtools index \
+        {output[6]} -o {output[7]} \
         1>> {log.stdout} 2>> {log.stderr}
         """

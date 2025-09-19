@@ -13,7 +13,8 @@ rule concoct_bins_spades:
     """
     input:
         contigs = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
-        bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam"
+        bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam",
+        bai "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam.bai"
     output:
         bins = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/CONCOCT.*.fa",
         csv = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/concoct_output/clustering_merged.csv"
@@ -30,44 +31,37 @@ rule concoct_bins_spades:
     shell:
         """
         module unload miniconda
-        module load docker/6.0.1
 
         # 1. Shred contigs into non-overlapping parts of equal length
-        docker run \
-        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
+        apptainer exec containers/concoct-1.1.0.sif \
         cut_up_fasta.py {input.contigs} -c {params.contig_len} --merge_last -o 0 \
         -b {params.outdir}/contigs_20k.bed > {params.outdir}/contigs_20k.fa \
         1>> {log.stdout} 2>> {log.stderr}
 
         # 2. Generate input coverage table for CONCOCT
-        docker run \
-        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
+        apptainer exec containers/concoct-1.1.0.sif \
         concoct_coverage_table.py {params.outdir}/contigs_20k.bed {input.bams} > {params.outdir}/coverage_table.tsv \
         1>> {log.stdout} 2>> {log.stderr}
 
         # 3. Bin
-        docker run \
-        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
+        apptainer exec containers/concoct-1.1.0.sif \
         concoct --composition_file {params.outdir}/contigs_20k.fa \
         --coverage_file {params.outdir}/coverage_table.tsv \
         -b {params.basename} -t {params.threads} -l {params.min_len} -d \
         1>> {log.stdout} 2>> {log.stderr}
 
         # 4. Merge subcontig clustering into original contig clustering
-        docker run \
-        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
+        apptainer exec containers/concoct-1.1.0.sif \
         merge_cutup_clustering.py {params.outdir}/clustering_gt20000.csv > {output.csv} \
         1>> {log.stdout} 2>> {log.stderr}
 
         # 5. Extract bins as individual FASTAs
-        docker run \
-        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
+        apptainer exec containers/concoct-1.1.0.sif \
         extract_fasta_bins.py {input.contigs} {output.csv} --output_path {params.outdir} \
         1>> {log.stdout} 2>> {log.stderr}
 
         # 6. Generate distance matrix between bins
-        docker run \
-        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
+        apptainer exec containers/concoct-1.1.0.sif \
         python dnadiff_dist_matrix.py {params.outdir} {output.bins} --plot_image_extension {params.img} \
         1>> {log.stdout} 2>> {log.stderr}
         """
@@ -78,7 +72,8 @@ rule concoct_bins_megahit: #test
     """
     input:
         contigs = "results/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
-        bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_megahit/{sample}_aligned_sorted.bam"
+        bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_megahit/{sample}_aligned_sorted.bam",
+        bai "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_megahit/{sample}_aligned_sorted.bam.bai"
     output:
         bins = "results/{genera}/6_binning/concoct/megahit_individual_assembly/{sample}/CONCOCT.*.fa",
         csv = "results/{genera}/6_binning/concoct/megahit_individual_assembly/{sample}/concoct_output/clustering_merged.csv"
@@ -95,26 +90,22 @@ rule concoct_bins_megahit: #test
     shell:
         """
         module unload minicondasq
-        module load docker/6.0.1
 
         # 1. Shred contigs into non-overlapping parts of equal length
-        docker run \
-        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
+        apptainer exec containers/concoct-1.1.0.sif \
         cut_up_fasta.py \
         {input.contigs} -c {params.contig_len} --merge_last -o 0 \
         -b {params.outdir}/contigs_20k.bed > {params.outdir}/contigs_20k.fa \
         1>> {log.stdout} 2>> {log.stderr}
 
         # 2. Generate input coverage table for CONCOCT using previously curated BED file and BAMs
-        docker run \
-        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
+        apptainer exec containers/concoct-1.1.0.sif \
         concoct_coverage_table.py \
         {params.outdir}/contigs_20k.bed {input.bams} > {params.outdir}/coverage_table.tsv \
         1>> {log.stdout} 2>> {log.stderr}
  
         # 3. Bin
-        docker run \
-        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
+        apptainer exec containers/concoct-1.1.0.sif \
         concoct \
         --composition_file {params.outdir}/contigs_20k.fa \
         --coverage_file {params.outdir}/coverage_table.tsv \
@@ -122,23 +113,20 @@ rule concoct_bins_megahit: #test
         1>> {log.stdout} 2>> {log.stderr}
 
         # 4. Merge subcontig clustering into original contig clustering
-        docker run \
-        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
+        apptainer exec containers/concoct-1.1.0.sif \
         merge_cutup_clustering.py \
         {params.outdir}/clustering_gt20000.csv > {output.csv} \
         1>> {log.stdout} 2>> {log.stderr}
 
         # 5. Extract bins as individual FASTAs
-        docker run \
-        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
+        apptainer exec containers/concoct-1.1.0.sif \
         extract_Fasta_bins.py \
         {input.contigs} {output.csv} \
         --output_path {params.outdir} \
         1>> {log.stdout} 2>> {log.stderr}
 
         # 6. Generate distance matrix between bins
-        docker run \
-        --rm -v $(pwd):/data -w /data binpro/concoct_latest \
+        apptainer exec containers/concoct-1.1.0.sif \
         python dnadiff_dist_matrix.py \
         {params.outdir} {output.bins} \
         --plot_image_extension {params.img} \
@@ -166,29 +154,22 @@ rule metabat2_bin_spades:
     shell:
         """
         module unload miniconda
-        module load docker/6.0.1
 
         # Generate depth file
-        docker run --rm \
-            --workdir $(pwd) \
-            --volume $(pwd):$(pwd) \
-            metabat/metabat:latest \
-            jgi_summarize_bam_contig_depths \
-            --outputDepth {output.depth_file} {input.bams} \
-            1>> {log.stdout} 2>> {log.stderr}
+        apptainer exec containers/metabat2-2.15.sif \
+        jgi_summarize_bam_contig_depths \
+        --outputDepth {output.depth_file} {input.bams} \
+        1>> {log.stdout} 2>> {log.stderr}
 
         # Run MetaBAT2
-        docker run --rm \
-            --workdir $(pwd) \
-            --volume $(pwd):$(pwd) \
-            metabat/metabat:latest \
-            runMetaBat.sh \
-            -t {params.threads} -m {params.min_size} \
-            -i {input.contigs} \
-            -a {output.depth_file} \
-            -o {params.outdir} \
-            --verbose --debug \
-            1>> {log.stdout} 2>> {log.stderr}
+        apptainer exec containers/metabat2-2.15.sif \
+        runMetaBat.sh \
+        -t {params.threads} -m {params.min_size} \
+        -i {input.contigs} \
+        -a {output.depth_file} \
+        -o {params.outdir} \
+        --verbose --debug \
+        1>> {log.stdout} 2>> {log.stderr}
         """
 
 rule metabat2_bin_megahit: #test
@@ -212,29 +193,22 @@ rule metabat2_bin_megahit: #test
     shell:
         """
         module unload miniconda
-        module load docker/6.0.1
 
         # Generate depth file
-        docker run --rm \
-            --workdir $(pwd) \
-            --volume $(pwd):$(pwd) \
-            metabat/metabat:latest \
-            jgi_summarize_bam_contig_depths \
-            --outputDepth {output.depth_file} {input.bams} \
-            1>> {log.stdout} 2>> {log.stderr}
+        apptainer exec containers/metabat2-2.15.sif \
+        jgi_summarize_bam_contig_depths \
+        --outputDepth {output.depth_file} {input.bams} \
+        1>> {log.stdout} 2>> {log.stderr}
 
         # Run MetaBAT2
-        docker run --rm \
-            --workdir $(pwd) \
-            --volume $(pwd):$(pwd) \
-            metabat/metabat:latest \
-            runMetaBat.sh \
-            -t {params.threads} -m {params.min_size} \
-            -i {input.contigs} \
-            -a {output.depth_file} \
-            -o {params.outdir} \
-            --verbose --debug \
-            1>> {log.stdout} 2>> {log.stderr}
+        apptainer exec containers/metabat2-2.15.sif \
+        runMetaBat.sh \
+        -t {params.threads} -m {params.min_size} \
+        -i {input.contigs} \
+        -a {output.depth_file} \
+        -o {params.outdir} \
+        --verbose --debug \
+        1>> {log.stdout} 2>> {log.stderr}
         """
 
 rule maxbin2_depth_spades: # test

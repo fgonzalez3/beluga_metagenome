@@ -63,6 +63,6 @@ rule individual_metagenome_assembly_megahit: # test
 
         megahit \
         -1 {input.r1} -2 {input.r2} -o {params.outdir} --verbose \
-        --presets {params.preset} --out-prefix {params.prefix} --continue \
+        --presets {params.preset} --out-prefix {params.prefix} --continue --force \
         1> {log.stdout} 2> {log.stderr}
         """
