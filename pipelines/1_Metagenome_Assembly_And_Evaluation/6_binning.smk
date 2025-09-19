@@ -147,13 +147,16 @@ rule metabat2_bin_spades:
         genera=config["genera"],
         threads = 4,
         min_size = 1500,
-        outdir = "results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT"
+        outdir = "results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT",
+        dir = "results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}"
     log:
         stdout = "logs/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/metabat.out",
         stderr = "logs/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/metabat.err"
     shell:
         """
         module unload miniconda
+
+        mkdir -p {params.dir}
 
         # Generate depth file
         apptainer exec containers/metabat2-2.15.sif \
@@ -186,13 +189,16 @@ rule metabat2_bin_megahit: #test
         genera=config["genera"],
         threads = 4,
         min_size = 1500,
-        outdir = "results/{genera}/6_binning/metabat/megahit_individual_assembly/{sample}/METABAT"
+        outdir = "results/{genera}/6_binning/metabat/megahit_individual_assembly/{sample}/METABAT",
+        dir = "results/{genera}/6_binning/metabat/megahit_individual_assembly/{sample}"
     log:
         stdout = "logs/{genera}/6_binning/metabat/megahit_individual_assembly/{sample}/metabat.out",
         stderr = "logs/{genera}/6_binning/metabat/megahit_individual_assembly/{sample}/metabat.err"
     shell:
         """
         module unload miniconda
+
+        mkdir -p {params.dir}
 
         # Generate depth file
         apptainer exec containers/metabat2-2.15.sif \
