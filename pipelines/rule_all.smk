@@ -36,8 +36,12 @@ rule all:
         expand("results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq", sample=SAMPLES, genera=config["genera"]),
 
         # 2. Metagenome assembly pipeline
-        expand("results/{genera}/2_assembly/{assembler}/individual_metagenome_assembly/{sample}/contigs.fasta", sample=SAMPLES, genera=config["genera"], assembler=ASSEMBLERS,
-        contigs=[ASSEMBLER_CONTIGS[a] for a in ASSEMBLERS for s in SAMPLES])
+        expand("results/{genera}/2_assembly/SPAdes/individual_metagenome_assembly/{sample}/contigs.fasta", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/2_assembly/megahit/individual_metagenome_assembly/{sample}/final.contigs.fa", sample=SAMPLES, genera=config["genera"]),
+
+        # 3. Deduplicate assembled contigs
+        expand("results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta", sample=SAMPLES, genera=config["genera"]),
 
         # 3. Deduplicate assembled contigs
         expand("results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta", sample=SAMPLES, genera=config["genera"]),
