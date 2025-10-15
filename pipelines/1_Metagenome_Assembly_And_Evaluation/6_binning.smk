@@ -293,3 +293,92 @@ def get_semibin2_bin_spades(wc):
     import os, glob
     bins_dir = ckpt.output.outdir
     return sorted(glob.glob(os.path.join(bins_dir, "*.fa")))
+
+rule prep_DASTool_input:
+    """
+    Create tab separated files of contig IDs and bin IDs required for DASTool input
+    """
+    input:
+        semibin_bins = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/binning/{sample}/output_bins",
+        concoct_bins = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/fasta_bins",
+        maxbin_bins = "results/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/bins",
+        metabat_bins = "results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/bins"
+    output:
+        semibin_prep = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/contigs2bin/{sample}.semibin.contigs2bin.tsv",
+        concoct_prep = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/contigs2bin/{sample}.concoct.contigs2bin.tsv",
+        maxbin_prep = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/contigs2bin/{sample}.maxbin.contigs2bin.tsv",
+        metabat_prep = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/contigs2bin/{sample}.metabat.contigs2bin.tsv"
+    params:
+        ext1 = "fa",
+        ext2 = "fasta"
+    shell:
+        """
+        # SemiBin
+        scripts/Fasta_to_Contig2Bin.sh \
+        -i {input.semibin_bins} -e {params.ext1} > {output.semibin_prep}
+
+        # Concoct
+        scripts/Fasta_to_Contig2Bin.sh \
+        -i {input.concoct_bins} -e {params.ext1} > {output.concoct_prep}
+
+        # MaxBin
+        scripts/Fasta_to_Contig2Bin.sh \
+        -i {input.maxbin_bins} -e {params.ext2} > {output.maxbin_prep}
+
+        # Metabat
+        scripts/Fasta_to_Contig2Bin.sh \
+        -i {input.metabat_bins} -e {params.ext1} > {output.metabat_prep}
+        """
+
+checkpoint DASTool_bin_refinement:
+    """
+    Refine bins using DASTool
+    """
+    input:
+        contigs = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
+        input1 = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/contigs2bin/{sample}.semibin.contigs2bin.tsv",
+        input2 = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/contigs2bin/{sample}.concoct.contigs2bin.tsv",
+        input3 = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/contigs2bin/{sample}.maxbin.contigs2bin.tsv",
+        input4 = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/contigs2bin/{sample}.metabat.contigs2bin.tsv"
+    output:
+        outdir = directory("results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/DASTool_bins"),
+        check = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/check.tsv"
+    params:
+        names = "SemiBin,Concoct,MaxBin,MetaBat",
+        outdir = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}",
+        bins_outdir = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/DASTool_bins",
+        basename = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/",
+        engine = "diamond",
+        threads = 2
+    log:
+        stdout = "logs/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/das_tool.out",
+        stderr = "logs/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/das_tool.err"
+    shell:
+        """
+        module unload miniconda
+        source activate /vast/palmer/pi/turner/flg9/conda_envs/das_tool
+
+        mkdir -p \
+        {params.outdir}
+
+        DAS_Tool \
+        -i {input.input1},{input.input2},{input.input3},{input.input4} \
+        -l {params.names} \
+        -c {input.contigs} \
+        -o {params.basename} \
+        --search_engine {params.engine} \
+        -t {params.threads} \
+        --write_bin_evals \
+        --write_bins \
+        --write_unbinned \
+        --debug \
+        1>> {log.stdout} 2>> {log.stderr}
+
+        ls {params.bins_outdir}/*.fa > {output.check}
+        """
+
+def get_DASTool_bins_spades(wc):
+    ckpt = checkpoints.DASTool_bin_refinement.get(genera=wc.genera, sample=wc.sample)
+    import os, glob
+    bins_dir = ckpt.output.outdir
+    return sorted(glob.glob(os.path.join(bins_dir, "*.fa")))
