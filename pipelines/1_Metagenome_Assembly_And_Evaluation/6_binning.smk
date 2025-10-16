@@ -341,12 +341,12 @@ checkpoint DASTool_bin_refinement:
         input3 = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/contigs2bin/{sample}.maxbin.contigs2bin.tsv",
         input4 = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/contigs2bin/{sample}.metabat.contigs2bin.tsv"
     output:
-        outdir = directory("results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/DASTool_bins"),
+        outdir = directory("results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/_DASTool_bins"),
         check = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/check.tsv"
     params:
         names = "SemiBin,Concoct,MaxBin,MetaBat",
         outdir = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}",
-        bins_outdir = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/DASTool_bins",
+        bins_outdir = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/_DASTool_bins",
         basename = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/",
         engine = "diamond",
         threads = 2
@@ -382,3 +382,92 @@ def get_DASTool_bins_spades(wc):
     import os, glob
     bins_dir = ckpt.output.outdir
     return sorted(glob.glob(os.path.join(bins_dir, "*.fa")))
+
+rule CheckM:
+    """
+    Check bin quality with CheckM
+    """
+    input:
+        semibin_bins = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/binning/{sample}/output_bins",
+        concoct_bins = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/fasta_bins",
+        maxbin_bins = "results/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/bins",
+        metabat_bins = "results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/bins",
+        dastool_bins = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/_DASTool_bins"
+    output:
+        lineage = "results/{genera}/6_binning/CheckM/SPAdes_individual_assembly/{sample}/lineage.ms",
+        out1 = "results/{genera}/6_binning/CheckM/SPAdes_individual_assembly/{sample}/lineage_results.tsv",
+        out2 = "results/{genera}/6_binning/CheckM/SPAdes_individual_assembly/{sample}/qa_results.tsv"
+    params:
+        threads = 1,
+        ext = "fa",
+        format = 2,
+        outdir="results/{genera}/6_binning/CheckM/SPAdes_individual_assembly/{sample}"
+    log:
+        stdout = "logs/{genera}/6_binning/CheckM/SPAdes_individual_assembly/{sample}/CheckM.out",
+        stderr = "logs/{genera}/6_binning/CheckM/SPAdes_individual_assembly/{sample}/CheckM.err"
+    shell:
+        """
+        module unload miniconda
+        source activate /home/flg9/.conda/envs/CheckM
+        checkm data setRoot /vast/palmer/pi/turner/data/db/CheckM/checkm_data_2015_01_16
+
+        mkdir -p \
+        {params.outdir}
+
+        # 1. Assess bins using lineage-specific gene marker sets
+        checkm lineage_wf \
+        {input.dastool_bins} {params.outdir} \
+        -t {params.threads} \
+        -x {params.ext} \
+        --tab_table \
+        -f {output.out1} \
+        1>> {log.stdout} 2>> {log.stderr}
+
+        # 2. Produce a detailed report regarding completeness and contamination of our bins
+        checkm qa \
+        {output.lineage} {params.outdir} \
+        -o {params.format} \
+        -t {params.threads} \
+        -f {output.out2} \
+        --tab_table \
+        1>> {log.stdout} 2>> {log.stderr}
+        """
+
+rule CheckM2:
+    """
+    Check the quality of our bins with CheckM2
+    """
+    input:
+        semibin_bins = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/binning/{sample}/output_bins",
+        concoct_bins = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/fasta_bins",
+        maxbin_bins = "results/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/bins",
+        metabat_bins = "results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/bins",
+        dastool_bins = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/_DASTool_bins"
+    output:
+        "results/{genera}/6_binning/CheckM2/SPAdes_individual_assembly/{sample}/quality_report.tsv"
+    params:
+        outdir = "results/{genera}/6_binning/CheckM2/SPAdes_individual_assembly/{sample}/",
+        ext = ".fa",
+        threads = 2
+    log:
+        stdout = "logs/{genera}/6_binning/CheckM2/SPAdes_individual_assembly/{sample}/checkm2.out",
+        stderr = "logs/{genera}/6_binning/CheckM2/SPAdes_individual_assembly/{sample}/checkm2.err"
+    shell:
+        """
+        module unload miniconda
+        source activate /home/flg9/.conda/envs/checkm2
+        export CHECKM2DB=/vast/palmer/pi/turner/data/db/CheckM2/CheckM2_database/uniref100.KO.1.dmnd
+
+        mkdir -p \
+        {params.outdir}
+
+        checkm2 predict \
+        --input {input.dastool_bins} \
+        --output-directory {params.outdir}\
+        --threads {params.threads} \
+        -x {params.ext} \
+        --allmodels \
+        --force \
+        --debug \
+        1>> {log.stdout} 2>> {log.stderr}
+        """
