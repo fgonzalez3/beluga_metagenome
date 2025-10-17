@@ -471,3 +471,39 @@ rule CheckM2:
         --debug \
         1>> {log.stdout} 2>> {log.stderr}
         """
+
+rule GUNC: 
+    """
+    Visualize chimerism and contamination of MAGs
+    """
+    input:
+        dastool_bins = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/_DASTool_bins"
+    output:
+        "results/{genera}/6_binning/GUNC/SPAdes_individual_assembly/{sample}/check.txt"
+    params:
+        db = "/vast/palmer/pi/turner/flg9/TLab/Projects/Beluga_Metagenome_Assembly_Testing/db/gunc_db_progenomes2.1.dmnd",
+        tmp = "results/{genera}/6_binning/GUNC/SPAdes_individual_assembly/{sample}/tmp",
+        outdir = "results/{genera}/6_binning/GUNC/SPAdes_individual_assembly/{sample}/output",
+        suffix = ".fa",
+        threads = 1
+    log:
+        stdout = "logs/{genera}/6_binning/GUNC/SPAdes_individual_assembly/{sample}/gunc.out",
+        stderr = "logs/{genera}/6_binning/GUNC/SPAdes_individual_assembly/{sample}/gunc.err"
+    shell:
+        """
+        mkdir -p {params.outdir} {params.tmp}
+
+        apptainer exec containers/gunc-1.0.6.sif \
+        gunc run \
+        --input_dir {input.dastool_bins} \
+        --db_file {params.db} \
+        --file_suffix {params.suffix} \
+        --threads {params.threads} \
+        --temp_dir {params.tmp} \
+        --out_dir {params.outdir} \
+        --detailed_output \
+        --contig_taxonomy_output \
+        1>> {log.stdout} 2>> {log.stderr}
+
+        touch {output}
+        """
