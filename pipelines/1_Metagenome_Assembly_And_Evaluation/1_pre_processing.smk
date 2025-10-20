@@ -5,7 +5,7 @@
     # 7. Deduplication of PE read files 
     # 8. Normalization of PE read files for PE reads that will undergo co-assembly of any kind
 
-rule adapter_trimming: # done 
+rule adapter_trimming:
     """
     Trim adapters and low-quality reads
     """
@@ -34,7 +34,7 @@ rule adapter_trimming: # done
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule aggregate_qc_data: # done
+rule aggregate_qc_data:
     """
     Aggregate QC data to create a single report across our many samples
     """
@@ -59,7 +59,7 @@ rule aggregate_qc_data: # done
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule mask_beluga_host_genome: # done
+rule mask_beluga_host_genome:
     """
     Mask low-complexity or microbial contaminant regions in a beluga reference sequence, reducing false positives during host read filtering
     """
@@ -83,7 +83,7 @@ rule mask_beluga_host_genome: # done
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule align_to_beluga_host_genome: # done 
+rule align_to_beluga_host_genome:
     """
     Filter reads against masked beluga reference genome
     """
@@ -146,7 +146,7 @@ rule split_unmapped_reads_beluga:
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule mask_human_host_genome: # done
+rule mask_human_host_genome:
     """
     Mask low-complexity or microbial contaminant regions in a human reference sequence, reducing false positives during host read filtering
     """
@@ -172,7 +172,7 @@ rule mask_human_host_genome: # done
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule align_to_human_host_genome: # done
+rule align_to_human_host_genome:
     """
     Filter reads against masked human reference genome
     """
@@ -211,7 +211,7 @@ rule align_to_human_host_genome: # done
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule split_unmapped_reads_human: # done
+rule split_unmapped_reads_human:
     """
     Split interleaved reads that did not map to masked human reference into separate fastqs
     """
@@ -237,7 +237,7 @@ rule split_unmapped_reads_human: # done
         1> {log.stdout} 2> {log.stderr}
         """
 
-rule dedup_reads: # done
+rule dedup_reads:
     """
     Run CD-HIT to deduplicate reads that may have been introduced during NexteraXT PCR amplification
     """
