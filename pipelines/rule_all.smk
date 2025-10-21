@@ -29,6 +29,30 @@ def contig_deduplication_outputs():
                 outputs.append(f"results/{config["genera"]}/testing/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta")
     return outputs
 
+def align_reads_to_individual_assemblies():
+    outputs=[]
+    for assembler in config["assembler"]:
+        for sample in SAMPLES:
+            if assembler == "spades":
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.1.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.2.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.3.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.4.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.rev.1.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.rev.2.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam.bai")
+            elif assembler == "megahit":
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.1.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.2.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.3.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.4.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.rev.1.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.rev.2.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam.bai")
+    return outputs
+
 rule all:
     input:
         # 1. Read pre-processing pipeline 
@@ -57,27 +81,10 @@ rule all:
         contig_deduplication_outputs(),
 
         # 4. Align PE reads to assembled contigs
-        expand("results/{genera}/4_align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.1.bt2", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/4_align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.2.bt2", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/4_align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.3.bt2", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/4_align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.4.bt2", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/4_align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.rev.1.bt2", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/4_align_reads_to_contigs/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.rev.2.bt2", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam.bai", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/4_align_reads_to_contigs/contig_index_megahit_individual_assemblies/{sample}/{sample}_indexed_contig.1.bt2", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/4_align_reads_to_contigs/contig_index_megahit_individual_assemblies/{sample}/{sample}_indexed_contig.2.bt2", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/4_align_reads_to_contigs/contig_index_megahit_individual_assemblies/{sample}/{sample}_indexed_contig.3.bt2", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/4_align_reads_to_contigs/contig_index_megahit_individual_assemblies/{sample}/{sample}_indexed_contig.4.bt2", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/4_align_reads_to_contigs/contig_index_megahit_individual_assemblies/{sample}/{sample}_indexed_contig.rev.1.bt2", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/4_align_reads_to_contigs/contig_index_megahit_individual_assemblies/{sample}/{sample}_indexed_contig.rev.2.bt2", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_megahit/{sample}_aligned_sorted.bam", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_megahit/{sample}_aligned_sorted.bam.bai", sample=SAMPLES, genera=config["genera"]),
+        align_reads_to_individual_assemblies(),
 
         # 5. Evaluate assemblies
-        #expand("results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/{sample}/metaspades_assembly_DEDUP95_m1500.fasta", sample=SAMPLES, genera=config["genera"]),
-        #expand("results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/{sample}/megahit_assembly_DEDUP95_m1500.fasta", sample=SAMPLES, genera=config["genera"]),
-        #expand("results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/report.html", genera=config["genera"]),
+       # evaluate_individual_assemblies(),
 
         # 6. Binning
 
@@ -128,13 +135,11 @@ rule all:
         expand("results/{genera}/6_binning/CheckM2/SPAdes_individual_assembly/{sample}/quality_report.tsv", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/6_binning/GUNC/SPAdes_individual_assembly/{sample}/check.txt", sample=SAMPLES, genera=config["genera"])
 
-
-
 # Pipelines to call on 
 include: "pipelines/1_Metagenome_Assembly_And_Evaluation/1_pre_processing.smk"
 include: "pipelines/1_Metagenome_Assembly_And_Evaluation/2_assembly.smk"
 include: "pipelines/1_Metagenome_Assembly_And_Evaluation/3_dedup_contigs.smk"
-#include: "pipelines/1_Metagenome_Assembly_And_Evaluation/4_align_reads_to_contigs.smk"
+include: "pipelines/1_Metagenome_Assembly_And_Evaluation/4_align_reads_to_contigs.smk"
 #include: "pipelines/1_Metagenome_Assembly_And_Evaluation/5_evaluate_assemblies.smk"
 #include: "pipelines/1_Metagenome_Assembly_And_Evaluation/6_binning.smk"
 #include: pipelines/2_Taxonomic_Assignment_And_AMR_Surveillance/1_taxonomic_classification.smk
