@@ -1,24 +1,20 @@
-rule filter_indivudal_assemblies: # test
+rule filter_individual_assemblies:
     """
-    Filter for contigs that are a minimum 1.5kb in length. 
-    This is the standard length for binning, so we'll evaluate them at this length prior to binning.
+    Filter contigs that are a minimum of 1.5kb in length.
+    This is the standard length for binning, but it can be iterative
+    and we can change this length if needed.
     """
     input:
-        # SPAdes assemblies 
-        c1 = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
-        # Megahit assemblies
-        c2 = "results/{genera}/3_dedup_contigs/megahit/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta"
+        contigs = "results/{genera}/testing/3_dedup_contigs/{assembler}/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta"
     output:
-        # List of filtered contigs 
-        SPAdes_filter = "results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/{sample}/metaspades_assembly_DEDUP95_m1500.fasta",
-        Megahit_filter = "results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/{sample}/megahit_assembly_DEDUP95_m1500.fasta"
+        "results/{genera}/testing/5_evaluate_assemblies/{assembler}/filter_individual_assemblies/{sample}/assembly_DEDUP95_m1500.fasta"
     params:
         len = 1500,
         threads = 4,
-        outdir = "results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/{sample}",
+        outdir = "results/{genera}/testing/5_evaluate_assemblies/{assembler}/filter_individual_assemblies/{sample}"
     log:
-        stdout = "logs/{genera}/5_evaluate_assemblies/filter_individual_assemblies/{sample}/filter_assemblies.out",
-        stderr = "logs/{genera}/5_evaluate_assemblies/filter_individual_assemblies/{sample}/filter_assemblies.err"
+        stdout = "logs/{genera}/testing/5_evaluate_assemblies/{assembler}/filter_individual_assemblies/{sample}/filter_assemblies.out",
+        stderr = "logs/{genera}/testing/5_evaluate_assemblies/{assembler}/filter_individual_assemblies/{sample}/filter_assemblies.err"
     shell:
         """
         module unload miniconda
@@ -27,36 +23,34 @@ rule filter_indivudal_assemblies: # test
         # 1. Create outdir
         mkdir -p {params.outdir}
 
+        # 2. Filter out contigs <1.5kb
         set -x
         echo "Running seqkit..." 1>> {log.stdout} 2>> {log.stderr}
 
-        # 2. Filter out contigs <1.5kb
         seqkit seq \
-        {input.c1} --min-len {params.len} --threads {params.threads} -o {output.SPAdes_filter} 
-
-        seqkit seq \
-        {input.c2} --min-len {params.len} --threads {params.threads} -o {output.Megahit_filter} 
-
-        echo "Running stats.sh..." 1>> {log.stdout} 2>> {log.stderr}
+        {input.contigs} --min-len {params.len} --threads {params.threads} -o {output} 
         """
 
-rule metaquast_individual_assemblies: # test
-    """
-    Run MetaQUAST on all filtered assemblies from all samples for a global comparison.
-    """
+rule evaluate_individual_assemblies:
     input:
-        c1 = expand("results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/{sample}/metaspades_assembly_DEDUP95_m1500.fasta", sample=SAMPLES, genera=config["genera"]),
-        c2 = expand("results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/{sample}/megahit_assembly_DEDUP95_m1500.fasta", sample=SAMPLES, genera=config["genera"])
+        expand(
+            "results/{genera}/testing/5_evaluate_assemblies/{assembler}/filter_individual_assemblies/{sample}/assembly_DEDUP95_m1500.fasta",
+            sample=SAMPLES,
+            genera=config["genera"],
+            assembler=config["assembler"]
+        )
     output:
-        whole_assembly_stats = "results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/assembly_stats.csv",
-        report = "results/{genera}/5_evaluate_assemblies/filter_individual_assemblies/report.html"
+        "results/{genera}/testing/5_evaluate_assemblies/QUAST/report.html"
     params:
-        outdir = "results/{genera}/5_evaluate_assemblies/indvidual_assembly_eval",
-        labels = "SPAdes.individual.m1500,Megahit.individual.m1500",
+        outdir = "results/{genera}/testing/5_evaluate_assemblies/QUAST",
+        labels = lambda wildcards, input: ",".join([
+            f"{path.split('/')[-4]}.{path.split('/')[-2]}.individual.m1500"
+            for path in input
+        ]),
         threads = 4
     log:
-        stdout = "logs/{genera}/5_evaluate_assemblies/filter_individual_assemblies/assembly_eval.out",
-        stderr = "logs/{genera}/5_evaluate_assemblies/filter_individual_assemblies/assembly_eval.err"
+        stdout = "logs/{genera}/5_evaluate_assemblies/QUAST/assembly_eval.out",
+        stderr = "logs/{genera}/5_evaluate_assemblies/QUAST/assembly_eval.err"
     shell:
         """
         module unload miniconda
@@ -65,21 +59,15 @@ rule metaquast_individual_assemblies: # test
 
         mkdir -p {params.outdir}
 
-        set -x
-
-        #1. Generate specific assembly data covering quality of contigs generated
-
         echo "Running stats.sh..." 1>> {log.stdout} 2>> {log.stderr}
 
-        statswrapper.sh \
-        in={input.c1},{input.c2} out={output.whole_assembly_stats}
-
-        # 2. Generate comprehensive evaluation of assembly data using metaquast
+        statswrapper.sh in={input}
 
         echo "Running metaquast.py..." 1>> {log.stdout} 2>> {log.stderr}
 
         metaquast.py \
-        -t {params.threads} --labels {params.labels} \
-        --output-dir {params.outdir} {output.report} \
+        -t {params.threads} \
+        --labels {params.labels} \
+        --output-dir {params.outdir} {input} \
         1>> {log.stdout} 2>> {log.stderr}
         """
