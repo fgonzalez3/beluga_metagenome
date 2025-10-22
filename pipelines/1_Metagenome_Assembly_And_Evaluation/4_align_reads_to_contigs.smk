@@ -17,8 +17,8 @@ rule align_reads_to_individual_assemblies:
         "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.4.bt2",
         "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.rev.1.bt2",
         "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.rev.2.bt2",
-        "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam",
-        "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam.bai"
+        "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_read_alignment_individual_assemblies/{sample}_aligned_sorted.bam",
+        "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_read_alignment_individual_assemblies/{sample}_aligned_sorted.bam.bai"
     params:
         outdir = "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_index_spades_individual_assemblies/{sample}"
     log:

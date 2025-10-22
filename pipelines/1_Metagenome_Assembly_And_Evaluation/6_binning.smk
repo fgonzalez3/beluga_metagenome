@@ -1,44 +1,45 @@
-import os, glob
-
-rule concoct_cut_spades:
+rule concoct_cut:
     """
     Split contigs into sizes appropriate for binning
     """
     input:
-        contigs = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta"
+        contigs = "results/{genera}/testing/3_dedup_contigs/{assembler}/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta"
     output:
-        contigs_bed  = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/contigs_20k.bed",
-        contigs_fa   = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/contigs_20k.fa"
+        contigs_bed  = "results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/contigs_20k.bed",
+        contigs_fa   = "results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/contigs_20k.fa"
     params:
-        outdir = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}",
+        outdir = "results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}",
         contig_len = 20000,
         overlap = 0
     log:
-        stdout = "logs/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/cut.out",
-        stderr = "logs/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/cut.err"
+        stdout = "logs/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/cut.out",
+        stderr = "logs/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/cut.err"
     shell:
         """
         module unload miniconda
         mkdir -p {params.outdir}
 
         apptainer exec containers/concoct-1.1.0.sif \
-        cut_up_fasta.py {input.contigs} -c {params.contig_len} -o {params.overlap} --merge_last \
+        cut_up_fasta.py {input.contigs} \
+        -c {params.contig_len} \
+        -o {params.overlap} \
+        --merge_last \
         -b {output.contigs_bed} \
         2>> {log.stderr} | tee {output.contigs_fa} >> {log.stdout}
         """
 
-rule concoct_coverage_spades:
+rule concoct_coverage:
     """
     Generate table with coverage depth information per sample and subcontig
     """
     input:
-        contigs_bed = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/contigs_20k.bed",
-        bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam"
+        contigs_bed = "results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/contigs_20k.bed",
+        bams = "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_read_alignment_individual_assemblies/{sample}_aligned_sorted.bam"
     output:
-        coverage_tsv = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/coverage_table.tsv"
+        coverage_tsv = "results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/coverage_table.tsv"
     log:
-        stdout = "logs/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/coverage.out",
-        stderr = "logs/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/coverage.err"
+        stdout = "logs/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/coverage.out",
+        stderr = "logs/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/coverage.err"
     shell:
         """
         module unload miniconda
@@ -48,22 +49,22 @@ rule concoct_coverage_spades:
         2>> {log.stderr} | tee {output.coverage_tsv} >> {log.stdout}
         """
 
-rule concoct_bin_spades:
+rule concoct_bin:
     """
-    Bin using CONCOCT (checkpoint because number of bin FASTAs is dynamic)
+    Bin using CONCOCT
     """
     input:
-        contigs_fa   = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/contigs_20k.fa",
-        coverage_tsv = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/coverage_table.tsv"
+        contigs_fa   = "results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/contigs_20k.fa",
+        coverage_tsv = "results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/coverage_table.tsv"
     output:
-        clustering = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/bins/clustering.csv"
+        clustering = "results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/bins/clustering.csv"
     params:
         threads = 4,
         min_len = 1500,
-        outdir  = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/bins"
+        outdir  = "results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/bins"
     log:
-        stdout = "logs/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/binning.out",
-        stderr = "logs/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/binning.err"
+        stdout = "logs/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/binning.out",
+        stderr = "logs/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/binning.err"
     shell:
         """
         module unload miniconda
@@ -72,24 +73,26 @@ rule concoct_bin_spades:
         apptainer exec containers/concoct-1.1.0.sif \
         concoct --composition_file {input.contigs_fa} \
         --coverage_file {input.coverage_tsv} \
-        -b {params.outdir}/ -t {params.threads} -l {params.min_len} \
+        -b {params.outdir}/ \
+        -t {params.threads} \
+        -l {params.min_len} \
         1>> {log.stdout} 2>> {log.stderr}
 
         mv {params.outdir}/clustering_gt{params.min_len}.csv {output.clustering}
         """
 
-rule concoct_merge_spades:
+rule concoct_merge:
     """
     Merge subcontig clustering into original contig clustering
     """
     input:
-        clustering = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/bins/clustering.csv"
+        clustering = "results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/bins/clustering.csv"
     output:
-        csv = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/bins/clustering_merged.csv"
+        csv = "results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/bins/clustering_merged.csv"
     params:
     log:
-        stdout = "logs/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/merge.out",
-        stderr = "logs/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/merge.err"
+        stdout = "logs/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/merge.out",
+        stderr = "logs/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/merge.err"
     shell:
         """
         module unload miniconda
@@ -99,28 +102,29 @@ rule concoct_merge_spades:
         2>> {log.stderr} | tee {output.csv} >> {log.stdout} 
         """
 
-checkpoint concoct_extract_bins_spades:
+checkpoint concoct_extract_bins:
     """
     Extract bins as individual FASTAs
     """
     input:
-        contigs = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
-        csv = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/bins/clustering_merged.csv"
+        contigs = "results/{genera}/testing/3_dedup_contigs/{assembler}/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
+        csv = "results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/bins/clustering_merged.csv"
     output:
-        binsdir = directory("results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/fasta_bins"),
-        manifest  = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/fasta_bins/manifest.txt"
+        binsdir = directory("results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/fasta_bins"),
+        manifest  = "results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/fasta_bins/manifest.txt"
     params:
-        outdir = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/fasta_bins",
+        outdir = "results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/fasta_bins",
     log:
-        stdout = "logs/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/extract_fa.out",
-        stderr = "logs/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/extract_fa.err"
+        stdout = "logs/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/extract_fa.out",
+        stderr = "logs/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/extract_fa.err"
     shell:
         """
         module unload miniconda 
         mkdir -p {params.outdir}
 
         apptainer exec containers/concoct-1.1.0.sif \
-        extract_fasta_bins.py {input.contigs} {input.csv} --output_path {params.outdir} \
+        extract_fasta_bins.py {input.contigs} {input.csv} \
+        --output_path {params.outdir} \
         1>> {log.stdout} 2>> {log.stderr}
 
         ls {params.outdir}/*.fa > {output.manifest}
@@ -132,16 +136,16 @@ def get_concoct_bins_spades(wc):
     bins_dir = ckpt.output.binsdir
     return sorted(glob.glob(os.path.join(bins_dir, "*.fa")))
 
-rule metabat2_depth_spades:
+rule metabat2_depth:
     input:
-        bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam"
+        bams = "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_read_alignment_individual_assemblies/{sample}_aligned_sorted.bam"
     output:
-        depth_file = "results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT.txt"
+        depth_file = "results/{genera}/testing/6_binning/metabat/{assembler}_individual_assembly/{sample}/METABAT.txt"
     params:
-        dir = "results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}"
+        dir = "results/{genera}/testing/6_binning/metabat/{assembler}_individual_assembly/{sample}"
     log:
-        stdout = "logs/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/depth.out",
-        stderr = "logs/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/depth.err"
+        stdout = "logs/{genera}/testing/6_binning/metabat/{assembler}_individual_assembly/{sample}/depth.out",
+        stderr = "logs/{genera}/testing/6_binning/metabat/{assembler}_individual_assembly/{sample}/depth.err"
     shell:
         """
         mkdir -p {params.dir}
@@ -155,21 +159,21 @@ rule metabat2_depth_spades:
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-checkpoint metabat2_bin_spades:
+checkpoint metabat2_bin:
     input:
-        contigs = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
-        depth_file = "results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT.txt"
+        contigs = "results/{genera}/testing/3_dedup_contigs/{assembler}/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
+        depth_file = "results/{genera}/testing/6_binning/metabat/{assembler}_individual_assembly/{sample}/METABAT.txt"
     output:
-        directory("results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/bins"),
-        check = "results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/bins/check.txt"
+        directory("results/{genera}/testing/6_binning/metabat/{assembler}_individual_assembly/{sample}/bins"),
+        check = "results/{genera}/testing/6_binning/metabat/{assembler}_individual_assembly/{sample}/bins/check.txt"
     params:
         threads = 4,
         min_size = 1500,
-        basename = "results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/bins/METABAT",
-        outdir="results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/bins"
+        basename = "results/{genera}/testing/6_binning/metabat/{assembler}_individual_assembly/{sample}/bins/METABAT",
+        outdir="results/{genera}/testing/6_binning/metabat/{assembler}_individual_assembly/{sample}/bins"
     log:
-        stdout = "logs/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/metabat.out",
-        stderr = "logs/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/metabat.err"
+        stdout = "logs/{genera}/testing/6_binning/metabat/{assembler}_individual_assembly/{sample}/metabat.out",
+        stderr = "logs/{genera}/testing/6_binning/metabat/{assembler}_individual_assembly/{sample}/metabat.err"
     shell:
         """
         apptainer exec containers/metabat2-2.15.sif \
@@ -190,17 +194,17 @@ def get_metabat_bins_spades(wc):
     bins_dir = ckpt.output.outdir
     return sorted(glob.glob(os.path.join(bins_dir, "*.fa")))
 
-rule maxbin2_depth_spades: # test
+rule maxbin2_depth:
     """
     Get depth file for MaxBin using previously generated read alignment to contigs
     """
     input:
-        metabat_txt = "results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/METABAT.txt"
+        metabat_txt = "results/{genera}/testing/6_binning/metabat/{assembler}_individual_assembly/{sample}/METABAT.txt"
     output:
-        depth_file = "results/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/maxbin.txt"
+        depth_file = "results/{genera}/testing/6_binning/maxbin/{assembler}_individual_assembly/{sample}/maxbin.txt"
     log:
-        stdout = "logs/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/maxbin_depth.out",
-        stderr = "logs/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/maxbin_depth.err"
+        stdout = "logs/{genera}/testing/6_binning/maxbin/{assembler}_individual_assembly/{sample}/maxbin_depth.out",
+        stderr = "logs/{genera}/testing/6_binning/maxbin/{assembler}_individual_assembly/{sample}/maxbin_depth.err"
     shell:
         """
         cut \
@@ -208,26 +212,26 @@ rule maxbin2_depth_spades: # test
         2>> {log.stderr} | tee {output.depth_file} 1>> {log.stdout}
         """
 
-checkpoint maxbin2_bin_spades: # test
+checkpoint maxbin2_bin:
     """
     Bin contigs using MaxBin and previously generated depth file
     """
     input:
-        contigs = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
+        contigs = "results/{genera}/testing/3_dedup_contigs/{assembler}/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
         r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
         r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq",
-        maxbin_depth_file = "results/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/maxbin.txt"
+        maxbin_depth_file = "results/{genera}/testing/6_binning/maxbin/{assembler}_individual_assembly/{sample}/maxbin.txt"
     output:
-        directory("results/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/bins"),
-        check = "results/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/bins/check.txt"
+        directory("results/{genera}/testing/6_binning/maxbin/{assembler}_individual_assembly/{sample}/bins"),
+        check = "results/{genera}/testing/6_binning/maxbin/{assembler}_individual_assembly/{sample}/bins/check.txt"
     params:
         threads=4,
         contig_len = 1500,
-        basename = "results/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/bins/MAXBIN",
-        outdir = "results/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/bins"
+        basename = "results/{genera}/testing/6_binning/maxbin/{assembler}_individual_assembly/{sample}/bins/MAXBIN",
+        outdir = "results/{genera}/testing/6_binning/maxbin/{assembler}_individual_assembly/{sample}/bins"
     log:
-        stdout = "logs/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/maxbin.out",
-        stderr = "logs/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/maxbin.err"
+        stdout = "logs/{genera}/testing/6_binning/maxbin/{assembler}_individual_assembly/{sample}/maxbin.out",
+        stderr = "logs/{genera}/testing/6_binning/maxbin/{assembler}_individual_assembly/{sample}/maxbin.err"
     shell:
         """
         module unload miniconda
@@ -236,8 +240,10 @@ checkpoint maxbin2_bin_spades: # test
         mkdir -p {params.outdir}
 
         run_MaxBin.pl \
-        -thread {params.threads} -min_contig_length {params.contig_len} \
-        -contig {input.contigs} -reads {input.r1} -reads2 {input.r2} \
+        -thread {params.threads} \
+        -min_contig_length {params.contig_len} \
+        -contig {input.contigs} \
+        -reads {input.r1} -reads2 {input.r2} \
         -abund {input.maxbin_depth_file} \
         -out {params.basename} \
         1>> {log.stdout} 2>> {log.stderr}
@@ -256,20 +262,20 @@ checkpoint easy_single_bin:
     Run Semibin2 on easy single binning mode
     """
     input:
-        fa = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
-        bams = "results/{genera}/4_align_reads_to_contigs/contig_read_alignment_individual_assemblies_spades/{sample}_aligned_sorted.bam"
+        fa = "results/{genera}/testing/3_dedup_contigs/{assembler}/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
+        bams = "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_read_alignment_individual_assemblies/{sample}_aligned_sorted.bam"
     output:
-        outdir = directory("results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/binning/{sample}/output_bins"),
-        check = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/binning/{sample}/check.tsv"
+        outdir = directory("results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/binning/{sample}/output_bins"),
+        check = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/binning/{sample}/check.tsv"
     params:
-        base = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/binning/{sample}",
-        outdir = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/binning/{sample}/output_bins",
+        base = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/binning/{sample}",
+        outdir = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/binning/{sample}/output_bins",
         compress = "none",
         minlen = 1500,
         threads = 1
     log:
-        stdout = "logs/{genera}/6_binning/semibin2/SPAdes_individual_assembly/binning/{sample}/single_binning.out",
-        stderr = "logs/{genera}/6_binning/semibin2/SPAdes_individual_assembly/binning/{sample}/single_binning.err"
+        stdout = "logs/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/binning/{sample}/single_binning.out",
+        stderr = "logs/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/binning/{sample}/single_binning.err"
     shell:
         """
         module unload miniconda 
@@ -299,15 +305,15 @@ rule prep_DASTool_input:
     Create tab separated files of contig IDs and bin IDs required for DASTool input
     """
     input:
-        semibin_bins = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/binning/{sample}/output_bins",
-        concoct_bins = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/fasta_bins",
-        maxbin_bins = "results/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/bins",
-        metabat_bins = "results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/bins"
+        semibin_bins = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/binning/{sample}/output_bins",
+        concoct_bins = "results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/fasta_bins",
+        maxbin_bins = "results/{genera}/testing/6_binning/maxbin/{assembler}_individual_assembly/{sample}/bins",
+        metabat_bins = "results/{genera}/testing/6_binning/metabat/{assembler}_individual_assembly/{sample}/bins"
     output:
-        semibin_prep = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/contigs2bin/{sample}.semibin.contigs2bin.tsv",
-        concoct_prep = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/contigs2bin/{sample}.concoct.contigs2bin.tsv",
-        maxbin_prep = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/contigs2bin/{sample}.maxbin.contigs2bin.tsv",
-        metabat_prep = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/contigs2bin/{sample}.metabat.contigs2bin.tsv"
+        semibin_prep = "results/{genera}/testing/6_binning/DASTool/{assembler}_individual_assembly/contigs2bin/{sample}.semibin.contigs2bin.tsv",
+        concoct_prep = "results/{genera}/testing/6_binning/DASTool/{assembler}_individual_assembly/contigs2bin/{sample}.concoct.contigs2bin.tsv",
+        maxbin_prep = "results/{genera}/testing/6_binning/DASTool/{assembler}_individual_assembly/contigs2bin/{sample}.maxbin.contigs2bin.tsv",
+        metabat_prep = "results/{genera}/testing/6_binning/DASTool/{assembler}_individual_assembly/contigs2bin/{sample}.metabat.contigs2bin.tsv"
     params:
         ext1 = "fa",
         ext2 = "fasta"
@@ -335,24 +341,24 @@ checkpoint DASTool_bin_refinement:
     Refine bins using DASTool
     """
     input:
-        contigs = "results/{genera}/3_dedup_contigs/SPAdes/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
-        input1 = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/contigs2bin/{sample}.semibin.contigs2bin.tsv",
-        input2 = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/contigs2bin/{sample}.concoct.contigs2bin.tsv",
-        input3 = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/contigs2bin/{sample}.maxbin.contigs2bin.tsv",
-        input4 = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/contigs2bin/{sample}.metabat.contigs2bin.tsv"
+        contigs = "results/{genera}/testing/3_dedup_contigs/{assembler}/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
+        input1 = "results/{genera}/testing/6_binning/DASTool/{assembler}_individual_assembly/contigs2bin/{sample}.semibin.contigs2bin.tsv",
+        input2 = "results/{genera}/testing/6_binning/DASTool/{assembler}_individual_assembly/contigs2bin/{sample}.concoct.contigs2bin.tsv",
+        input3 = "results/{genera}/testing/6_binning/DASTool/{assembler}_individual_assembly/contigs2bin/{sample}.maxbin.contigs2bin.tsv",
+        input4 = "results/{genera}/testing/6_binning/DASTool/{assembler}_individual_assembly/contigs2bin/{sample}.metabat.contigs2bin.tsv"
     output:
-        outdir = directory("results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/_DASTool_bins"),
-        check = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/check.tsv"
+        outdir = directory("results/{genera}/testing/6_binning/DASTool/{assembler}_individual_assembly/refined_bins/{sample}/_DASTool_bins"),
+        check = "results/{genera}/testing/6_binning/DASTool/{assembler}_individual_assembly/refined_bins/{sample}/check.tsv"
     params:
         names = "SemiBin,Concoct,MaxBin,MetaBat",
-        outdir = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}",
-        bins_outdir = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/_DASTool_bins",
-        basename = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/",
+        outdir = "results/{genera}/testing/6_binning/DASTool/{assembler}_individual_assembly/refined_bins/{sample}",
+        bins_outdir = "results/{genera}/testing/6_binning/DASTool/{assembler}_individual_assembly/refined_bins/{sample}/_DASTool_bins",
+        basename = "results/{genera}/testing/6_binning/DASTool/{assembler}_individual_assembly/refined_bins/{sample}/",
         engine = "diamond",
         threads = 2
     log:
-        stdout = "logs/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/das_tool.out",
-        stderr = "logs/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/das_tool.err"
+        stdout = "logs/{genera}/testing/6_binning/DASTool/{assembler}_individual_assembly/refined_bins/{sample}/das_tool.out",
+        stderr = "logs/{genera}/testing/6_binning/DASTool/{assembler}_individual_assembly/refined_bins/{sample}/das_tool.err"
     shell:
         """
         module unload miniconda
@@ -388,23 +394,23 @@ rule CheckM:
     Check bin quality with CheckM
     """
     input:
-        semibin_bins = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/binning/{sample}/output_bins",
-        concoct_bins = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/fasta_bins",
-        maxbin_bins = "results/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/bins",
-        metabat_bins = "results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/bins",
-        dastool_bins = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/_DASTool_bins"
+        semibin_bins = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/binning/{sample}/output_bins",
+        concoct_bins = "results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/fasta_bins",
+        maxbin_bins = "results/{genera}/testing/6_binning/maxbin/{assembler}_individual_assembly/{sample}/bins",
+        metabat_bins = "results/{genera}/testing/6_binning/metabat/{assembler}_individual_assembly/{sample}/bins",
+        dastool_bins = "results/{genera}/testing/6_binning/DASTool/{assembler}_individual_assembly/refined_bins/{sample}/_DASTool_bins"
     output:
-        lineage = "results/{genera}/6_binning/CheckM/SPAdes_individual_assembly/{sample}/lineage.ms",
-        out1 = "results/{genera}/6_binning/CheckM/SPAdes_individual_assembly/{sample}/lineage_results.tsv",
-        out2 = "results/{genera}/6_binning/CheckM/SPAdes_individual_assembly/{sample}/qa_results.tsv"
+        lineage = "results/{genera}/testing/6_binning/CheckM/{assembler}_individual_assembly/{sample}/lineage.ms",
+        out1 = "results/{genera}/testing/6_binning/CheckM/{assembler}_individual_assembly/{sample}/lineage_results.tsv",
+        out2 = "results/{genera}/testing/6_binning/CheckM/{assembler}_individual_assembly/{sample}/qa_results.tsv"
     params:
         threads = 1,
         ext = "fa",
         format = 2,
-        outdir="results/{genera}/6_binning/CheckM/SPAdes_individual_assembly/{sample}"
+        outdir="results/{genera}/testing/6_binning/CheckM/{assembler}_individual_assembly/{sample}"
     log:
-        stdout = "logs/{genera}/6_binning/CheckM/SPAdes_individual_assembly/{sample}/CheckM.out",
-        stderr = "logs/{genera}/6_binning/CheckM/SPAdes_individual_assembly/{sample}/CheckM.err"
+        stdout = "logs/{genera}/testing/6_binning/CheckM/{assembler}_individual_assembly/{sample}/CheckM.out",
+        stderr = "logs/{genera}/testing/6_binning/CheckM/{assembler}_individual_assembly/{sample}/CheckM.err"
     shell:
         """
         module unload miniconda
@@ -438,20 +444,20 @@ rule CheckM2:
     Check the quality of our bins with CheckM2
     """
     input:
-        semibin_bins = "results/{genera}/6_binning/semibin2/SPAdes_individual_assembly/binning/{sample}/output_bins",
-        concoct_bins = "results/{genera}/6_binning/concoct/SPAdes_individual_assembly/{sample}/fasta_bins",
-        maxbin_bins = "results/{genera}/6_binning/maxbin/SPAdes_individual_assembly/{sample}/bins",
-        metabat_bins = "results/{genera}/6_binning/metabat/SPAdes_individual_assembly/{sample}/bins",
-        dastool_bins = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/_DASTool_bins"
+        semibin_bins = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/binning/{sample}/output_bins",
+        concoct_bins = "results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/fasta_bins",
+        maxbin_bins = "results/{genera}/testing/6_binning/maxbin/{assembler}_individual_assembly/{sample}/bins",
+        metabat_bins = "results/{genera}/testing/6_binning/metabat/{assembler}_individual_assembly/{sample}/bins",
+        dastool_bins = "results/{genera}/testing/6_binning/DASTool/{assembler}_individual_assembly/refined_bins/{sample}/_DASTool_bins"
     output:
-        "results/{genera}/6_binning/CheckM2/SPAdes_individual_assembly/{sample}/quality_report.tsv"
+        "results/{genera}/testing/6_binning/CheckM2/{assembler}_individual_assembly/{sample}/quality_report.tsv"
     params:
-        outdir = "results/{genera}/6_binning/CheckM2/SPAdes_individual_assembly/{sample}/",
+        outdir = "results/{genera}/testing/6_binning/CheckM2/{assembler}_individual_assembly/{sample}/",
         ext = ".fa",
         threads = 2
     log:
-        stdout = "logs/{genera}/6_binning/CheckM2/SPAdes_individual_assembly/{sample}/checkm2.out",
-        stderr = "logs/{genera}/6_binning/CheckM2/SPAdes_individual_assembly/{sample}/checkm2.err"
+        stdout = "logs/{genera}/testing/6_binning/CheckM2/{assembler}_individual_assembly/{sample}/checkm2.out",
+        stderr = "logs/{genera}/testing/6_binning/CheckM2/{assembler}_individual_assembly/{sample}/checkm2.err"
     shell:
         """
         module unload miniconda
@@ -472,23 +478,23 @@ rule CheckM2:
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule GUNC: 
+rule GUNC_run: 
     """
     Visualize chimerism and contamination of MAGs
     """
     input:
-        dastool_bins = "results/{genera}/6_binning/DASTool/SPAdes_individual_assembly/refined_bins/{sample}/_DASTool_bins"
+        dastool_bins = "results/{genera}/testing/6_binning/DASTool/{assembler}_individual_assembly/refined_bins/{sample}/_DASTool_bins"
     output:
-        "results/{genera}/6_binning/GUNC/SPAdes_individual_assembly/{sample}/check.txt"
+        "results/{genera}/testing/6_binning/GUNC/{assembler}_individual_assembly/{sample}/check.txt"
     params:
         db = "/vast/palmer/pi/turner/flg9/TLab/Projects/Beluga_Metagenome_Assembly_Testing/db/gunc_db_progenomes2.1.dmnd",
-        tmp = "results/{genera}/6_binning/GUNC/SPAdes_individual_assembly/{sample}/tmp",
-        outdir = "results/{genera}/6_binning/GUNC/SPAdes_individual_assembly/{sample}/output",
+        tmp = "results/{genera}/testing/6_binning/GUNC/{assembler}_individual_assembly/{sample}/tmp",
+        outdir = "results/{genera}/testing/6_binning/GUNC/{assembler}_individual_assembly/{sample}/output",
         suffix = ".fa",
         threads = 1
     log:
-        stdout = "logs/{genera}/6_binning/GUNC/SPAdes_individual_assembly/{sample}/gunc.out",
-        stderr = "logs/{genera}/6_binning/GUNC/SPAdes_individual_assembly/{sample}/gunc.err"
+        stdout = "logs/{genera}/testing/6_binning/GUNC/{assembler}_individual_assembly/{sample}/gunc.out",
+        stderr = "logs/{genera}/testing/6_binning/GUNC/{assembler}_individual_assembly/{sample}/gunc.err"
     shell:
         """
         mkdir -p {params.outdir} {params.tmp}
