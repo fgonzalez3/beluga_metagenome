@@ -11,19 +11,19 @@ rule align_reads_to_individual_assemblies:
         r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
         r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
     output:
-        "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.1.bt2",
-        "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.2.bt2",
-        "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.3.bt2",
-        "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.4.bt2",
-        "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.rev.1.bt2",
-        "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.rev.2.bt2",
+        "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_index_individual_assemblies/{sample}/{sample}_indexed_contig.1.bt2",
+        "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_index_individual_assemblies/{sample}/{sample}_indexed_contig.2.bt2",
+        "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_index_individual_assemblies/{sample}/{sample}_indexed_contig.3.bt2",
+        "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_index_individual_assemblies/{sample}/{sample}_indexed_contig.4.bt2",
+        "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_index_individual_assemblies/{sample}/{sample}_indexed_contig.rev.1.bt2",
+        "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_index_individual_assemblies/{sample}/{sample}_indexed_contig.rev.2.bt2",
         "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_read_alignment_individual_assemblies/{sample}_aligned_sorted.bam",
         "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_read_alignment_individual_assemblies/{sample}_aligned_sorted.bam.bai"
     params:
-        outdir = "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_index_spades_individual_assemblies/{sample}"
+        outdir = "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_index_individual_assemblies/{sample}"
     log:
-        stdout = "logs/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_read_alignment_individual_assemblies_spades/{sample}_aln.out",
-        stderr = "logs/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_read_alignment_individual_assemblies_spades/{sample}_aln.err"
+        stdout = "logs/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_read_alignment_individual_assemblies/{sample}_aln.out",
+        stderr = "logs/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_read_alignment_individual_assemblies/{sample}_aln.err"
     shell:
         """
         module unload miniconda 
