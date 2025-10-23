@@ -20,7 +20,8 @@ rule align_reads_to_individual_assemblies:
         "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_read_alignment_individual_assemblies/{sample}_aligned_sorted.bam",
         "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_read_alignment_individual_assemblies/{sample}_aligned_sorted.bam.bai"
     params:
-        outdir = "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_index_individual_assemblies/{sample}"
+        outdir = "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_index_individual_assemblies/{sample}",
+        genera=config["genera"]
     log:
         stdout = "logs/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_read_alignment_individual_assemblies/{sample}_aln.out",
         stderr = "logs/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_read_alignment_individual_assemblies/{sample}_aln.err"

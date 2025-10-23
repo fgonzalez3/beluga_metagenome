@@ -34,21 +34,22 @@ def align_reads_to_individual_assemblies():
     for assembler in config["assembler"]:
         for sample in SAMPLES:
             if assembler == "spades":
-                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.1.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.2.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.3.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.4.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.rev.1.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.rev.2.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_index_individual_assemblies/{sample}/{sample}_indexed_contig.1.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_index_individual_assemblies/{sample}/{sample}_indexed_contig.2.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_index_individual_assemblies/{sample}/{sample}_indexed_contig.3.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_index_individual_assemblies/{sample}/{sample}_indexed_contig.4.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_index_individual_assemblies/{sample}/{sample}_indexed_contig.rev.1.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_index_individual_assemblies/{sample}/{sample}_indexed_contig.rev.2.bt2"),
                 outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_read_alignment_individual_assemblies/{sample}_aligned_sorted.bam"),
                 outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/spades/contig_read_alignment_individual_assemblies/{sample}_aligned_sorted.bam.bai")
+
             elif assembler == "megahit":
-                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.1.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.2.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.3.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.4.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.rev.1.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_index_spades_individual_assemblies/{sample}/{sample}_indexed_contig.rev.2.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_index_individual_assemblies/{sample}/{sample}_indexed_contig.1.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_index_individual_assemblies/{sample}/{sample}_indexed_contig.2.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_index_individual_assemblies/{sample}/{sample}_indexed_contig.3.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_index_individual_assemblies/{sample}/{sample}_indexed_contig.4.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_index_individual_assemblies/{sample}/{sample}_indexed_contig.rev.1.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_index_individual_assemblies/{sample}/{sample}_indexed_contig.rev.2.bt2"),
                 outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_read_alignment_individual_assemblies/{sample}_aligned_sorted.bam"),
                 outputs.append(f"results/{config["genera"]}/testing/4_align_reads_to_contigs/megahit/contig_read_alignment_individual_assemblies/{sample}_aligned_sorted.bam.bai")
     return outputs
@@ -88,7 +89,15 @@ def binning_individual_assemblies():
                 outputs.append(f"results/{config["genera"]}/testing/6_binning/maxbin/spades_individual_assembly/{sample}/bins/check.txt"),
 
                 # SemiBin Outputs
-                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/spades_individual_assembly/binning/{sample}/check.tsv"),
+                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/individual_metagenome_assembly/generate_concatenated_db/concatenated.fa"),
+                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/spades_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.1.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/spades_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.2.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/spades_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.3.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/spades_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.4.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/spades_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.1.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/spades_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.2.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/spades_individual_assembly/align_to_concatenated_db/{sample}_aligned_sorted.bam"),
+                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/individual_metagenome_assembly/binning/check.tsv"),
 
                 # DASTool Outputs
                 outputs.append(f"results/{config["genera"]}/testing/6_binning/DASTool/spades_individual_assembly/contigs2bin/{sample}.metabat.contigs2bin.tsv"),
@@ -125,7 +134,16 @@ def binning_individual_assemblies():
                 outputs.append(f"results/{config["genera"]}/testing/6_binning/maxbin/megahit_individual_assembly/{sample}/bins/check.txt"),
 
                 # SemiBin Outputs
+                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/individual_metagenome_assembly/generate_concatenated_db/concatenated.fa"),
+                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.1.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.2.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.3.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.4.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.1.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.2.bt2"),
+                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}_aligned_sorted.bam"),
                 outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/megahit_individual_assembly/binning/{sample}/check.tsv"),
+                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/individual_metagenome_assembly/binning/check.tsv"),
 
                 # DASTool Outputs
                 outputs.append(f"results/{config["genera"]}/testing/6_binning/DASTool/megahit_individual_assembly/contigs2bin/{sample}.metabat.contigs2bin.tsv"),
