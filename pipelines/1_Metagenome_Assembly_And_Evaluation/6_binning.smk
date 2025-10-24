@@ -266,19 +266,20 @@ rule semibin_generate_concatenated_db:
     Generate concatenated FASTA file necessary for SembiBin's multi-sample binning pipeline
     """
     input:
-        fa = expand("results/{genera}/testing/3_dedup_contigs/{assembler}/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta", 
-        genera=config["genera"], 
+        fa = lambda wildcards: expand(
+        "results/{genera}/testing/3_dedup_contigs/{assembler}/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
+        genera=config["genera"],
         sample=SAMPLES,
-        assembler=config["assembler"])
+        assembler=[wildcards.assembler])
     output:
-        "results/{genera}/testing/6_binning/semibin2/individual_metagenome_assembly/generate_concatenated_db/concatenated.fa"
+        "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/generate_concatenated_db/concatenated.fa"
     params:
-        outdir = "results/{genera}/testing/6_binning/semibin2/individual_metagenome_assembly/generate_concatenated_db",
+        outdir = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/generate_concatenated_db",
         compress = "none",
         threads = 1
     log:
-        stdout = "logs/{genera}/testing/6_binning/semibin2/individual_metagenome_assembly/generate_concatenated_db/concatenate_fa.out",
-        stderr = "logs/{genera}/testing/6_binning/semibin2/individual_metagenome_assembly/generate_concatenated_db/concatenate_fa.err"
+        stdout = "logs/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/generate_concatenated_db/concatenate_fa.out",
+        stderr = "logs/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/generate_concatenated_db/concatenate_fa.err"
     shell:
         """
         module unload miniconda
@@ -295,7 +296,7 @@ rule semibin_align_to_concatenated_db:
     Align reads from each sample to our concatenated FASTA db, necessary for SemiBin pipeline
     """
     input:
-        db = "results/{genera}/testing/6_binning/semibin2/individual_metagenome_assembly/generate_concatenated_db/concatenated.fa",
+        db = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/generate_concatenated_db/concatenated.fa",
         r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
         r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
     output:
@@ -334,23 +335,23 @@ checkpoint semibin_easy_multi_bin:
     Run Semibin2 on easy multi binning mode
     """
     input:
-        db = "results/{genera}/testing/6_binning/semibin2/individual_metagenome_assembly/generate_concatenated_db/concatenated.fa",
+        db = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/generate_concatenated_db/concatenated.fa",
         bams = expand("results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/align_to_concatenated_db/{sample}_aligned_sorted.bam", 
         genera=config["genera"], 
         sample=SAMPLES,
         assembler=config["assembler"])
     output:
-        outdir = directory("results/{genera}/testing/6_binning/semibin2/individual_metagenome_assembly/binning/output_bins"),
-        check = "results/{genera}/testing/6_binning/semibin2/individual_metagenome_assembly/binning/check.tsv"
+        outdir = directory("results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/multi_binning/output_bins"),
+        check = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/multi_binning/check.tsv"
     params:
-        base = "results/{genera}/testing/6_binning/semibin2/individual_metagenome_assembly/binning/",
-        outdir = "results/{genera}/testing/6_binning/semibin2/individual_metagenome_assembly/binning/output_bins",
+        base = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/multi_binning/",
+        outdir = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/multi_binning/output_bins",
         compress = "none",
         minlen = 1500,
         threads = 1
     log:
-        stdout = "logs/{genera}/testing/6_binning/semibin2/individual_metagenome_assembly/binning/multi_binning.out",
-        stderr = "logs/{genera}/testing/6_binning/semibin2/individual_metagenome_assembly/binning/multi_binning.err"
+        stdout = "logs/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/multi_binning/multi_binning.out",
+        stderr = "logs/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/multi_binning/multi_binning.err"
     shell:
         """
         module unload miniconda 
@@ -385,17 +386,17 @@ checkpoint easy_single_bin:
         fa = "results/{genera}/testing/3_dedup_contigs/{assembler}/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta",
         bams = "results/{genera}/testing/4_align_reads_to_contigs/{assembler}/contig_read_alignment_individual_assemblies/{sample}_aligned_sorted.bam"
     output:
-        outdir = directory("results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/binning/{sample}/output_bins"),
-        check = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/binning/{sample}/check.tsv"
+        outdir = directory("results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/single_binning/{sample}/output_bins"),
+        check = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/single_binning/{sample}/check.tsv"
     params:
-        base = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/binning/{sample}",
-        outdir = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/binning/{sample}/output_bins",
+        base = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/single_binning/{sample}",
+        outdir = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/single_binning/{sample}/output_bins",
         compress = "none",
         minlen = 1500,
         threads = 1
     log:
-        stdout = "logs/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/binning/{sample}/single_binning.out",
-        stderr = "logs/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/binning/{sample}/single_binning.err"
+        stdout = "logs/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/single_binning/{sample}/single_binning.out",
+        stderr = "logs/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/single_binning/{sample}/single_binning.err"
     shell:
         """
         module unload miniconda 
@@ -425,7 +426,7 @@ rule prep_DASTool_input:
     Create tab separated files of contig IDs and bin IDs required for DASTool input
     """
     input:
-        semibin_bins = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/binning/{sample}/output_bins",
+        semibin_bins = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/single_binning/{sample}/output_bins",
         concoct_bins = "results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/fasta_bins",
         maxbin_bins = "results/{genera}/testing/6_binning/maxbin/{assembler}_individual_assembly/{sample}/bins",
         metabat_bins = "results/{genera}/testing/6_binning/metabat/{assembler}_individual_assembly/{sample}/bins"
@@ -514,7 +515,7 @@ rule CheckM:
     Check bin quality with CheckM
     """
     input:
-        semibin_bins = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/binning/{sample}/output_bins",
+        semibin_bins = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/single_binning/{sample}/output_bins",
         concoct_bins = "results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/fasta_bins",
         maxbin_bins = "results/{genera}/testing/6_binning/maxbin/{assembler}_individual_assembly/{sample}/bins",
         metabat_bins = "results/{genera}/testing/6_binning/metabat/{assembler}_individual_assembly/{sample}/bins",
@@ -564,7 +565,7 @@ rule CheckM2:
     Check the quality of our bins with CheckM2
     """
     input:
-        semibin_bins = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/binning/{sample}/output_bins",
+        semibin_bins = "results/{genera}/testing/6_binning/semibin2/{assembler}_individual_assembly/single_binning/{sample}/output_bins",
         concoct_bins = "results/{genera}/testing/6_binning/concoct/{assembler}_individual_assembly/{sample}/fasta_bins",
         maxbin_bins = "results/{genera}/testing/6_binning/maxbin/{assembler}_individual_assembly/{sample}/bins",
         metabat_bins = "results/{genera}/testing/6_binning/metabat/{assembler}_individual_assembly/{sample}/bins",
