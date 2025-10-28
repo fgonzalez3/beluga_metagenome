@@ -26,6 +26,9 @@ rule Kaiju_Taxonomy:
     params:
         node = "nodes.dmp",
         refseq_index = "refseq/kaiju_db_refseq.fmi",
+        max_exact_matches = 12, # conservative params that result in closer precision to Kraken
+        min_score = 70, # conservative params that result in closer precision to Kraken
+        mismatches = 5 # run this on greedy-5 mode for highest sensitivity at tradeoff of slightly lower precision
     log:
         stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/Kaiju_Tax.out",
         stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/Kaiju_Tax.err"
@@ -43,6 +46,9 @@ rule Kaiju_Taxonomy:
         -i {input.r1} \
         -j {input.r2} \
         -o {output} \
+        -m {params.max_exact_matches} \
+        -s {params.min_score} \
+        -e {params.mismatches} \
         -v \
         1>> {log.stdout} 2>> {log.stderr}
         """
@@ -58,7 +64,7 @@ rule Kaiju_Summary:
     params:
         nodes = "nodes.dmp",
         names = "names.dmp",
-        rank = "genus",
+        ranks = "superkingdom,phylum,class,order,family,genus,species"
     log:
         stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/Kaiju_Summ.out",
         stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/Kaiju_Summ.err"
@@ -70,13 +76,14 @@ rule Kaiju_Summary:
         kaiju2table \
         -t {params.node} \
         -n {params.names} \
-        -r {params.rank} \
+        -l {params.ranks} \
         -o {output} \
         1>> {log.stdout} 2>> {log.stderr}
         """
 
 rule Kraken:
     """
+    Classify taxonomy for reads with Kraken
     """
     input:
     output:
