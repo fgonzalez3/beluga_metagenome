@@ -34,6 +34,9 @@ rule Kaiju_Taxonomy:
         module unload miniconda
         source activate /vast/palmer/pi/turner/flg9/conda_envs/kaiju
 
+        # Run kaiju-makedb -s nr to download nr database for reference
+        # Other interesting databases include plasmids and viruses dbs
+        
         kaiju \
         -t {params.node} \
         -f {params.refseq_index} \
