@@ -69,9 +69,6 @@ def evaluate_individual_assemblies():
 def binning_individual_assemblies():
     outputs=[]
     for assembler in config["assembler"]:
-        outputs.append(
-                f"results/{config['genera']}/testing/6_binning/semibin2/{assembler}_individual_assembly/generate_concatenated_db/concatenated.fa"
-            )
         for sample in SAMPLES:
             if assembler == "spades":
 
@@ -92,16 +89,7 @@ def binning_individual_assemblies():
                 outputs.append(f"results/{config["genera"]}/testing/6_binning/maxbin/spades_individual_assembly/{sample}/bins/check.txt"),
 
                 # SemiBin Outputs
-                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/spades_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.1.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/spades_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.2.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/spades_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.3.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/spades_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.4.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/spades_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.1.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/spades_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.2.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/spades_individual_assembly/align_to_concatenated_db/{sample}_aligned_sorted.bam"),
-                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/spades_individual_assembly/multi_binning/check.tsv"),
                 outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/spades_individual_assembly/single_binning/{sample}/check.tsv"),
-
 
                 # DASTool Outputs
                 outputs.append(f"results/{config["genera"]}/testing/6_binning/DASTool/spades_individual_assembly/contigs2bin/{sample}.metabat.contigs2bin.tsv"),
@@ -138,15 +126,7 @@ def binning_individual_assemblies():
                 outputs.append(f"results/{config["genera"]}/testing/6_binning/maxbin/megahit_individual_assembly/{sample}/bins/check.txt"),
 
                 # SemiBin Outputs
-                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.1.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.2.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.3.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.4.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.1.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}/{sample}_indexed_contig.rev.2.bt2"),
-                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/megahit_individual_assembly/align_to_concatenated_db/{sample}_aligned_sorted.bam"),
                 outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/megahit_individual_assembly/single_binning/{sample}/check.tsv"),
-                outputs.append(f"results/{config["genera"]}/testing/6_binning/semibin2/megahit_individual_assembly/multi_binning/check.tsv"),
 
                 # DASTool Outputs
                 outputs.append(f"results/{config["genera"]}/testing/6_binning/DASTool/megahit_individual_assembly/contigs2bin/{sample}.metabat.contigs2bin.tsv"),
