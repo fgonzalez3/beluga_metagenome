@@ -1,9 +1,11 @@
-# This workflow will largely be split into two parts - :
-    # 1. Read-based taxonomic classification
-    # 2. Taxonomic classification of individual MAGs
-    
 rule all:
     input:
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/classified/csseqs_#.fq", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/unclassified/ucseqs_#.fq", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/k2_output.txt", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/k2_report.txt", sample=SAMPLES, genera=config["genera"])
+
+
         expand("results/{genera}/GTDB-TK/{sample}/gtdbtk_summary.tsv", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/unbinned_contigs_taxonomy_assignment/{sample}/taxonomyResult.tsv", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/unbinned_contigs_taxonomy_assignment/{sample}/taxonomyResult_report.report", sample=SAMPLES, genera=config["genera"]),
@@ -12,85 +14,36 @@ rule all:
         expand("results/{genera}/bracken/{sample}/{sample}_bracken_combined.txt", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/bracken/all_combined_bracken.txt", genera=config["genera"])
 
-# Read-Based Taxonomic Classification Steps
 
-rule Kaiju_Taxonomy:
+checkpoint Kraken2:
     """
-    Classify taxonomy for reads with Kaiju
+    Classify taxonomy for reads with Kraken2
     """
     input:
         r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
         r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
     output:
-        "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/kaiju.out"
+        classified = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/classified/csseqs_#.fq",
+        unclassified = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/unclassified/ucseqs_#.fq",
+        stdout = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/k2_output.txt",
+        report = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/k2_report.txt"
     params:
-        node = "nodes.dmp",
-        refseq_index = "refseq/kaiju_db_refseq.fmi",
-        max_exact_matches = 12, # conservative params that result in closer precision to Kraken
-        min_score = 70, # conservative params that result in closer precision to Kraken
-        mismatches = 5 # run this on greedy-5 mode for highest sensitivity at tradeoff of slightly lower precision
+        threads = 4,
+        db = ""
     log:
-        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/Kaiju_Tax.out",
-        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/Kaiju_Tax.err"
+        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/Kraken2_Tax.out",
+        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/Kraken2_Tax.err"
     shell:
         """
-        module unload miniconda
-        source activate /vast/palmer/pi/turner/flg9/conda_envs/kaiju
-
-        # Run kaiju-makedb -s nr to download nr database for reference
-        # Other interesting databases include plasmids and viruses dbs
-        
-        kaiju \
-        -t {params.node} \
-        -f {params.refseq_index} \
-        -i {input.r1} \
-        -j {input.r2} \
-        -o {output} \
-        -m {params.max_exact_matches} \
-        -s {params.min_score} \
-        -e {params.mismatches} \
-        -v \
+        /vast/palmer/pi/turner/flg9/conda_envs/kraken2/kraken2 \
+        --paired \
+        --db {params.db} \
+        --classified-out {output.classified} \
+        --unclassified-out {output.unclassified} \
+        --output {output.stdout} \
+        --report {output.report} \
+        {input.r1} {input.r2} \
         1>> {log.stdout} 2>> {log.stderr}
-        """
-
-rule Kaiju_Summary:
-    """
-    Summarize findings from Kaiju into a tsv report
-    """
-    input:
-        "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/kaiju.out"
-    output:
-         "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/kaiju_summary.tsv"
-    params:
-        nodes = "nodes.dmp",
-        names = "names.dmp",
-        ranks = "superkingdom,phylum,class,order,family,genus,species"
-    log:
-        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/Kaiju_Summ.out",
-        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/Kaiju_Summ.err"
-    shell:
-        """
-        module unload miniconda
-        source activate /vast/palmer/pi/turner/flg9/conda_envs/kaiju
-
-        kaiju2table \
-        -t {params.node} \
-        -n {params.names} \
-        -l {params.ranks} \
-        -o {output} \
-        1>> {log.stdout} 2>> {log.stderr}
-        """
-
-rule Kraken:
-    """
-    Classify taxonomy for reads with Kraken
-    """
-    input:
-    output:
-    params:
-    log:
-    shell:
-        """
         """
 
 rule MetaPhlaAn2:
