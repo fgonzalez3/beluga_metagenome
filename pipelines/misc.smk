@@ -98,47 +98,28 @@ rule MetaWRAP: #download db
         1>> {log.stdout} 2>> {log.stderr}
         """ 
 
-rule GUNC: # work in progress
+
+rule GUNC_plot:
     """
-    Visualize binning accuracy
+    Visualize findings from our previous step
     """
     input:
-        deepurify_bins=lambda wildcards: sorted(glob.glob(f"results/{genera}/deepurify/{sample}/clean_bins.fa"))
+        "results/{genera}/6_binning/GUNC/SPAdes_individual_assembly/{sample}/output/diamond_output/SemiBin_3_sub.diamond.progenomes_2.1.out"
     output:
-        "results/{genera}/vis_bins/all_levels.tsv",
-        diamond = "results/{genera}/vis_bins/{sample}/diamond_output"
+        "results/{genera}/6_binning/GUNC/SPAdes_individual_assembly/{sample}/plot_check.txt"
     params:
-        db_path = "",
-        threads = 4,
-        tmp = "results/{genera}/vis_bins/tmp",
-        run_outdir = "results/{genera}/vis_bins",
-        plot_outdir = "results/{genera}/vis_bins/{sample}"
+        outdir = "results/{genera}/6_binning/GUNC/SPAdes_individual_assembly/{sample}"
     log:
-        stdout = "logs/{genera}/vis_bins/{sample}/gunc.out",
-        stderr = "logs/{genera}/vis_bins/{sample}/gunc.err"
+        stdout = "logs/{genera}/6_binning/GUNC/SPAdes_individual_assembly/{sample}/gunc_plot.out",
+        stderr = "logs/{genera}/6_binning/GUNC/SPAdes_individual_assembly/{sample}/gunc_plot.err"
     shell:
         """
-        module unload miniconda
-        source activate XXXXXX
-
-        # First, run on our custom binning output
-
-        # 1. Run chimerism analysis
-        gunc run \
-        -i {input} -r {params.db_path} \
-        --threads {params.threads} --temp_dir {params.tmp} \
-        --sensitive --out_dir {params.run_outdir} --detailed_output \
-        --contig_taxonomy_output \
+        apptainer exec containers/gunc-1.0.6.sif \
+        gunc plot \
+        --diamond_file {input} \
+        --out_dir {params.outdir} \
+        --tax_levels kingdom,phylum,family,genus,contig \
         1>> {log.stdout} 2>> {log.stderr}
 
-        # 2. Produce plot
-        gunc run \
-        --diamond_file {output.diamond} \
-        --outdir {params.plot_outdir}
-
-        # Second, run on wrapper output to compare with our custom set 
-
-        # 1. 
-
-        # 2. 
+        touch {output}
         """
