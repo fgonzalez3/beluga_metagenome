@@ -14,7 +14,6 @@ rule all:
         expand("results/{genera}/bracken/{sample}/{sample}_bracken_combined.txt", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/bracken/all_combined_bracken.txt", genera=config["genera"])
 
-
 checkpoint Kraken2:
     """
     Classify taxonomy for reads with Kraken2
@@ -48,13 +47,20 @@ checkpoint Kraken2:
 
 rule MetaPhlaAn2:
     """
+    Run taxonomic assignment on short reads
     """
     input:
+        r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
+        r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
     output:
+        ""
     params:
+        ""
     log:
+        ""
     shell:
         """
+        
         """
 
 # MAG-Based Taxonomic Classification Steps
