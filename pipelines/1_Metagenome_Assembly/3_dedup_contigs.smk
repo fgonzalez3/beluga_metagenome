@@ -10,16 +10,16 @@ rule deduplicate_contigs_individual_assemblies:
     """
     input:
         lambda wildcards: (
-            f"results/{wildcards.genera}/testing/2_assembly/{wildcards.assembler}/individual_metagenome_assembly/{wildcards.sample}/"
+            f"results/{wildcards.genera}/1_metagenome_assembly/2_assembly/{wildcards.assembler}/individual_metagenome_assembly/{wildcards.sample}/"
             + ("contigs.fasta" if wildcards.assembler == "spades" else "final.contigs.fa")
         )
     output:
-        "results/{genera}/testing/3_dedup_contigs/{assembler}/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta"
+        "results/{genera}/1_metagenome_assembly/3_dedup_contigs/{assembler}/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta"
     params:
-        outdir = "results/{genera}/testing/3_dedup_contigs/{assembler}/individual_metagenome_assembly/{sample}"
+        outdir = "results/{genera}/1_metagenome_assembly/3_dedup_contigs/{assembler}/individual_metagenome_assembly/{sample}"
     log:
-        stdout = "logs/{genera}/testing/3_dedup_contigs/{assembler}/individual_metagenome_assembly/{sample}/dedup_contigs.out",
-        stderr = "logs/{genera}/testing/3_dedup_contigs/{assembler}/individual_metagenome_assembly/{sample}/dedup_contigs.err"
+        stdout = "logs/{genera}/1_metagenome_assembly/3_dedup_contigs/{assembler}/individual_metagenome_assembly/{sample}/dedup_contigs.out",
+        stderr = "logs/{genera}/1_metagenome_assembly/3_dedup_contigs/{assembler}/individual_metagenome_assembly/{sample}/dedup_contigs.err"
     shell:
         """
         mkdir -p {params.outdir}

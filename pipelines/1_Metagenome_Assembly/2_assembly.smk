@@ -15,20 +15,20 @@ rule individual_metagenome_assembly:
     Assemble contigs from individual samples using either SPAdes or Megahit
     """
     input:
-        r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
-        r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
+        r1 = "results/{genera}/1_metagenome_assembly/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
+        r2 = "results/{genera}/1_metagenome_assembly/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
     output:
-        contigs = "results/{genera}/testing/2_assembly/{assembler}/individual_metagenome_assembly/{sample}/{contig_file}"
+        contigs = "results/{genera}/1_metagenome_assembly/2_assembly/{assembler}/individual_metagenome_assembly/{sample}/{contig_file}"
     params:
         preset="meta-large",
         prefix = "final",
-        outdir = "results/{genera}/testing/2_assembly/{assembler}/individual_metagenome_assembly/{sample}"
+        outdir = "results/{genera}/1_metagenome_assembly/2_assembly/{assembler}/individual_metagenome_assembly/{sample}"
     resources:
         mem_mb=200000,
         threads=4
     log:
-        stdout = "logs/{genera}/testing/2_assembly/{assembler}/individual_metagenome_assembly/{sample}/{contig_file}.assembly.out",
-        stderr = "logs/{genera}/testing/2_assembly/{assembler}/individual_metagenome_assembly/{sample}/{contig_file}.assembly.err"
+        stdout = "logs/{genera}/1_metagenome_assembly/2_assembly/{assembler}/individual_metagenome_assembly/{sample}/{contig_file}.assembly.out",
+        stderr = "logs/{genera}/1_metagenome_assembly/2_assembly/{assembler}/individual_metagenome_assembly/{sample}/{contig_file}.assembly.err"
     shell:
         """
         if [ "{wildcards.assembler}" = "spades" ]; then
@@ -36,7 +36,8 @@ rule individual_metagenome_assembly:
             module load SPAdes/3.15.5-GCC-12.2.0
 
             spades.py \
-                --meta --threads {resources.threads} \
+                --meta \
+                --threads {resources.threads} \
                 -1 {input.r1} -2 {input.r2} \
                 -o {params.outdir} \
                 1> {log.stdout} 2> {log.stderr}

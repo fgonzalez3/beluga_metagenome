@@ -5,16 +5,16 @@ rule filter_individual_assemblies:
     and we can change this length if needed.
     """
     input:
-        contigs = "results/{genera}/testing/3_dedup_contigs/{assembler}/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta"
+        contigs = "results/{genera}/1_metagenome_assembly/3_dedup_contigs/{assembler}/individual_metagenome_assembly/{sample}/{sample}_DEDUP95.fasta"
     output:
-        "results/{genera}/testing/5_evaluate_assemblies/{assembler}/filter_individual_assemblies/{sample}/assembly_DEDUP95_m1500.fasta"
+        "results/{genera}/1_metagenome_assembly/5_evaluate_assemblies/{assembler}/filter_individual_assemblies/{sample}/assembly_DEDUP95_m1500.fasta"
     params:
         len = 1500,
         threads = 4,
-        outdir = "results/{genera}/testing/5_evaluate_assemblies/{assembler}/filter_individual_assemblies/{sample}"
+        outdir = "results/{genera}/1_metagenome_assembly/5_evaluate_assemblies/{assembler}/filter_individual_assemblies/{sample}"
     log:
-        stdout = "logs/{genera}/testing/5_evaluate_assemblies/{assembler}/filter_individual_assemblies/{sample}/filter_assemblies.out",
-        stderr = "logs/{genera}/testing/5_evaluate_assemblies/{assembler}/filter_individual_assemblies/{sample}/filter_assemblies.err"
+        stdout = "logs/{genera}/1_metagenome_assembly/5_evaluate_assemblies/{assembler}/filter_individual_assemblies/{sample}/filter_assemblies.out",
+        stderr = "logs/{genera}/1_metagenome_assembly/5_evaluate_assemblies/{assembler}/filter_individual_assemblies/{sample}/filter_assemblies.err"
     shell:
         """
         module unload miniconda
@@ -28,29 +28,35 @@ rule filter_individual_assemblies:
         echo "Running seqkit..." 1>> {log.stdout} 2>> {log.stderr}
 
         seqkit seq \
-        {input.contigs} --min-len {params.len} --threads {params.threads} -o {output} 
+        {input.contigs} \
+        --min-len {params.len} \
+        --threads {params.threads} \
+        -o {output} 
         """
 
 rule evaluate_individual_assemblies:
+    """
+    Compare quality of assemblies
+    """
     input:
         expand(
-            "results/{genera}/testing/5_evaluate_assemblies/{assembler}/filter_individual_assemblies/{sample}/assembly_DEDUP95_m1500.fasta",
+            "results/{genera}/1_metagenome_assembly/5_evaluate_assemblies/{assembler}/filter_individual_assemblies/{sample}/assembly_DEDUP95_m1500.fasta",
             sample=SAMPLES,
             genera=config["genera"],
             assembler=config["assembler"]
         )
     output:
-        "results/{genera}/testing/5_evaluate_assemblies/QUAST/report.html"
+        "results/{genera}/1_metagenome_assembly/5_evaluate_assemblies/QUAST/report.html"
     params:
-        outdir = "results/{genera}/testing/5_evaluate_assemblies/QUAST",
+        outdir = "results/{genera}/1_metagenome_assembly/5_evaluate_assemblies/QUAST",
         labels = lambda wildcards, input: ",".join([
             f"{path.split('/')[-4]}.{path.split('/')[-2]}.individual.m1500"
             for path in input
         ]),
         threads = 4
     log:
-        stdout = "logs/{genera}/5_evaluate_assemblies/QUAST/assembly_eval.out",
-        stderr = "logs/{genera}/5_evaluate_assemblies/QUAST/assembly_eval.err"
+        stdout = "logs/{genera}/1_metagenome_assembly/5_evaluate_assemblies/QUAST/assembly_eval.out",
+        stderr = "logs/{genera}/1_metagenome_assembly/5_evaluate_assemblies/QUAST/assembly_eval.err"
     shell:
         """
         module unload miniconda
