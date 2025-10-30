@@ -16,7 +16,6 @@ rule all:
         expand("results/{genera}/bracken/{sample}/{sample}_bracken_combined.txt", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/bracken/all_combined_bracken.txt", genera=config["genera"])
 
-
 rule Kaiju_Taxonomy:
     """
     Classify taxonomy for reads with Kaiju
@@ -122,6 +121,47 @@ rule MetaPhlaAn2:
 
 # MAG-Based Taxonomic Classification Steps
 
+rule bin_taxonomy:
+    """
+    Assign taxonomy to bins using GTDB-Tk
+    """
+    input:
+        dastool_bins="results/{genera}/1_metagenome_assembly/6_binning/DASTool/{assembler}_individual_assembly/refined_bins/{sample}/_DASTool_bins"
+    output:
+        "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{sample}/gtdbtk_summary.tsv"
+    params:
+        threads = 4,
+        prefix = "GTB-TK_",
+        outdir = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{sample}/"
+    log:
+        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{sample}/GTDB-Tk_Tax.out",
+        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{sample}/GTDB-Tk_Tax.err"
+    shell:
+        """
+        module unload miniconda 
+        source activate /home/flg9/.conda/envs/gtdbtk-2.4.1
+        export GTDBTK_DB=/vast/palmer/pi/turner/data/db/gtdbtk-2.4.1
+
+        gtdbtk classify_wf \
+        --genome_dir {input.dastool_bins} \
+        --out_dir {params.outdir} \
+        --cpus {params.threads} \
+        --prefix {params.prefix} \
+        --debug \
+        1> {log.stdout} 2> {log.stderr}
+        """
+
+
+
+
+
+
+
+
+
+
+
+
 rule reconstruct_16S:
     """
     Reconstruct 16S rRNA genes and compare taxonomic composition between this output and those produced later in this pipeline
@@ -132,34 +172,6 @@ rule reconstruct_16S:
     log:
     shell:
         """
-        """
-
-rule taxonomy_assignment_bins:
-    """
-    Assign taxonomy to bins using GTDB-Tk
-    """
-    input:
-        bins=lambda wildcards: sorted(glob.glob(f"results/{wildcards.genera}/binning/{wildcards.sample}/MAXBIN.*.fasta"))
-    output:
-        "results/{genera}/GTDB-TK/{sample}/gtdbtk_summary.tsv"
-    params:
-        genera=config["genera"],
-        bin_dir = "results/{genera}/binning/{sample}",
-        outdir = "results/{genera}/GTDB-TK/{sample}", 
-        threads = 4,
-        prefix = "GTB-TK_"
-    log:
-        stdout = "logs/{genera}/gtdb-tk/{sample}/gtdb.out",
-        stderr = "logs/{genera}/gtdb/{sample}/gtdb.err"
-    shell:
-        """
-        module unload miniconda 
-        source activate /home/flg9/.conda/envs/gtdbtk-2.4.1
-
-        # Before running, activate your conda env and 'run conda env config vars set GTDBTK_DATA_PATH="/path/to/unarchived/gtdbtk/data";'
-
-        gtdbtk classify_wf --genome_dir {params.bin_dir} --out_dir {params.outdir} \
-        --cpus {params.threads} --debug --prefix {params.prefix} 1> {log.stdout} 2> {log.stderr}
         """
 
 rule pseudo_binning_and_taxonomy_assignment:
