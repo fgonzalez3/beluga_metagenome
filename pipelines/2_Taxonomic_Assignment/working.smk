@@ -1,11 +1,5 @@
 rule all:
     input:
-        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/classified/csseqs_#.fq", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/unclassified/ucseqs_#.fq", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/k2_output.txt", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/k2_report.txt", sample=SAMPLES, genera=config["genera"])
-
-
         expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/{sample}/Kaiju/kaiju.out", 
         genera=config["genera"],
         sample=SAMPLES),
@@ -21,37 +15,6 @@ rule all:
         expand("results/{genera}/bracken/{sample}/{sample}_bracken_level_{level}.txt", sample=SAMPLES, genera=config["genera"], level=["P", "C", "O", "F", "G", "S"]),
         expand("results/{genera}/bracken/{sample}/{sample}_bracken_combined.txt", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/bracken/all_combined_bracken.txt", genera=config["genera"])
-
-checkpoint Kraken2:
-    """
-    Classify taxonomy for reads with Kraken2
-    """
-    input:
-        r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
-        r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
-    output:
-        classified = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/classified/csseqs_#.fq",
-        unclassified = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/unclassified/ucseqs_#.fq",
-        stdout = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/k2_output.txt",
-        report = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/k2_report.txt"
-    params:
-        threads = 4,
-        db = ""
-    log:
-        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/Kraken2_Tax.out",
-        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/Kraken2_Tax.err"
-    shell:
-        """
-        /vast/palmer/pi/turner/flg9/conda_envs/kraken2/kraken2 \
-        --paired \
-        --db {params.db} \
-        --classified-out {output.classified} \
-        --unclassified-out {output.unclassified} \
-        --output {output.stdout} \
-        --report {output.report} \
-        {input.r1} {input.r2} \
-        1>> {log.stdout} 2>> {log.stderr}
-        """
 
 
 rule Kaiju_Taxonomy:
@@ -124,20 +87,37 @@ rule Kaiju_Summary:
 
 rule MetaPhlaAn2:
     """
-    Run taxonomic assignment on short reads
+    Run taxonomic assignment on short reads w/ MetaPhlan
     """
     input:
         r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
         r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
     output:
-        ""
+        profile = "profiled_metagenome.txt",
+        mapout = "metagenome.bowtie2.bz2",
+        threads = 5,
+        db = "/vast/palmer/pi/turner/data/db/MetaPhlAn"
     params:
-        ""
+        type = "fastq"
     log:
-        ""
+        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/MetaPhlan/{sample}/MetaPhlan_Tax.out",
+        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/MetaPhlan/{sample}/MetaPhlan_Tax.err"
     shell:
         """
+        module unload miniconda
+        source activate /vast/palmer/pi/turner/flg9/conda_envs/metaphlan
         
+        metaphlan \
+        {input.r1},{input.r2} \
+        --input_type {params.type} \
+        -o {output.profile} \
+        --mapout {output.mapout} \
+        --nproc {params.threads}
+        --ignore_eukaryotes \
+        --ignore_archaea \
+        --db_dir {params.db} \
+        -v \
+        1>> {log.stdout} 2>> {log.stderr}
         """
 
 # MAG-Based Taxonomic Classification Steps
