@@ -14,7 +14,7 @@ READS = {row.sample_id: {"r1": row.r1, "r2": row.r2} for row in samples_df.itert
 
 # Read-Based Taxonomic Classification Steps
 
-checkpoint Kraken2:
+rule Kraken2:
     """
     Classify taxonomy for reads with Kraken2
     """
