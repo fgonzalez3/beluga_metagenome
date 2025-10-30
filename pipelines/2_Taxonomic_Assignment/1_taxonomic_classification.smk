@@ -22,14 +22,14 @@ checkpoint Kraken2:
         r1 = "results/{genera}/1_metagenome_assembly/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
         r2 = "results/{genera}/1_metagenome_assembly/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
     output:
-        stdout = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{assembler}/{sample}/k2_output.txt",
-        report = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{assembler}/{sample}/k2_report.txt"
+        stdout = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/k2_output.txt",
+        report = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/k2_report.txt"
     params:
         threads = 4,
         db = "/vast/palmer/pi/turner/data/db/kraken2_GTDBv220"
     log:
-        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{assembler}/{sample}/Kraken2_Tax.out",
-        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{assembler}/{sample}/Kraken2_Tax.err"
+        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/Kraken2_Tax.out",
+        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/Kraken2_Tax.err"
     shell:
         """
         /vast/palmer/pi/turner/flg9/conda_envs/kraken2/kraken2 \

@@ -148,18 +148,6 @@ def binning_individual_assemblies():
                 outputs.append(f"results/{config["genera"]}/1_metagenome_assembly/6_binning/GUNC/megahit_individual_assembly/{sample}/check.txt")
     return outputs
 
-        ############################# Taxonomy Assignment Outputs #############################
-
-def taxonomic_classification():
-    outputs=[]
-    for assembler in config["assembler"]:
-        for sample in SAMPLES:
-            if assembler == "spades":
-                outputs.append(f"results/{config["genera"]}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/spades/{sample}/k2_output.txt")
-            elif assembler == "megahit":
-                outputs.append(f"results/{config["genera"]}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/megahit/{sample}/k2_report.txt")
-    return outputs
-    
 rule all:
     input:
         # 1. Read pre-processing pipeline 
@@ -197,8 +185,8 @@ rule all:
         binning_individual_assemblies(),
 
         # 1. Taxonomic Classification
-        taxonomic_classification()
-
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/k2_output.txt",sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/k2_report.txt",sample=SAMPLES, genera=config["genera"])
 
 # Pipelines to call on 
 include: "pipelines/1_Metagenome_Assembly/1_pre_processing.smk"
