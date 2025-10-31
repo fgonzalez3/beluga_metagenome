@@ -119,9 +119,10 @@ rule MetaPhlaAn2:
         1>> {log.stdout} 2>> {log.stderr}
         """
 
+
 # MAG-Based Taxonomic Classification Steps
 
-rule bin_taxonomy:
+rule GTDB-Tk:
     """
     Assign taxonomy to bins using GTDB-Tk
     """
@@ -131,6 +132,7 @@ rule bin_taxonomy:
         "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{sample}/gtdbtk_summary.tsv"
     params:
         threads = 4,
+        ext = ".fa",
         prefix = "GTB-TK_",
         outdir = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{sample}/"
     log:
@@ -147,32 +149,69 @@ rule bin_taxonomy:
         --out_dir {params.outdir} \
         --cpus {params.threads} \
         --prefix {params.prefix} \
+        -x {params.ext}
         --debug \
         1> {log.stdout} 2> {log.stderr}
         """
 
 
 
+# extra to potentially use
 
 
 
-
-
-
-
-
-
-rule reconstruct_16S:
+rule bracken_abundance:
     """
-    Reconstruct 16S rRNA genes and compare taxonomic composition between this output and those produced later in this pipeline
+    Estimate relative abundance using mmseq taxonomic classification output from unbinned contigs
     """
     input:
+        ""
     output:
+        out1 = expand("results/{{genera}}/relative_abundance_calc/{{sample}}/{{sample}}_bracken_level_{level}.txt", level=["P", "C", "O", "F", "G", "S"]),
+        out2 = "results/{genera}/relative_abundance_calc/{sample}/{sample}_bracken_combined.txt",
+        out3 = "results/{genera}/relative_abundance_calc/all_combined_bracken.txt"
     params:
-    log:
+        genera=config["genera"]
+        db = "/vast/palmer/pi/turner/data/db/kraken2_GTDBv220",
+        threads = 10, 
+        kmer_len = 35,
+        read_len = 150
     shell:
         """
+        module unload miniconda
+        source activate /home/flg9/.conda/envs/bracken
+
+        # Generate Bracken database file
+        bracken-build -d {params.db} -t {params.threads} -k {params.kmer_len} -l {params.read_len}
+        
+        # Define taxonomic levels that we want abundance counts for 
+        levels = ("P" "C" "O" "F" "G" "S")
+
+        # Loop through each of the taxon levels and output a separate file for each 
+        for level in "${{levels[@]}}"; do
+            bracken -d {params.db} -i {input} -o {output.out1} -l $level -r {params.read_len}
+
+        done
+
+        # Combine all levels for the current sample
+        cat {results/{wildcards.genera}/relative_abundance_calc/{wildcards.sample}/{wildcards.sample}_bracken_level_*.txt} > {output.out2}
+
+        # Merge all of the files into one
+        find results/{wildcards.genera}/relative_abundance_calc/ -name "*_bracken_level_*.txt" -exec cat {{}} + > {output.out3}
+
+        # Old code
+        #bracken -d KRAKEN2_DB -i contigs.report -o bracken_level_1.txt -l P -t 10
+        #bracken -d KRAKEN2_DB -i contigs.report -o bracken_level_2.txt -l C -t 10
+        #bracken -d KRAKEN2_DB -i contigs.report -o bracken_level_3.txt -l O -t 10
+        #bracken -d KRAKEN2_DB -i contigs.report -o bracken_level_4.txt -l F -t 10
+        #bracken -d KRAKEN2_DB -i contigs.report -o bracken_level_5.txt -l G -t 10
+        #bracken -d KRAKEN2_DB -i contigs.report -o bracken_level_6.txt -l S -t 10
+
+        # Concatenate the results into a single output file
+        #cat bracken_level_*.txt > bracken.txt
         """
+
+
 
 rule pseudo_binning_and_taxonomy_assignment:
     """
@@ -226,55 +265,4 @@ rule pseudo_binning_and_taxonomy_assignment:
         mmseqs taxonomyreport {params.outdir}/DB_clu_reps {params.outdir}/taxonomyResult {output.krona} --report-mode 1
 
         1> {log.stdout} 2> {log.stderr}
-        """
-
-rule abundance_estimation:
-    """
-    Estimate relative abundance using mmseq taxonomic classification output from unbinned contigs
-    """
-    input:
-        "results/{genera}/unbinned_contigs_taxonomy_assignment/{sample}/taxonomyResult_report.report"
-    output:
-        out1 = expand("results/{{genera}}/relative_abundance_calc/{{sample}}/{{sample}}_bracken_level_{level}.txt", level=["P", "C", "O", "F", "G", "S"]),
-        out2 = "results/{genera}/relative_abundance_calc/{sample}/{sample}_bracken_combined.txt",
-        out3 = "results/{genera}/relative_abundance_calc/all_combined_bracken.txt"
-    params:
-        genera=config["genera"]
-        db = "/vast/palmer/pi/turner/data/db/kraken2_GTDBv220",
-        threads = 10, 
-        kmer_len = 35,
-        read_len = 150
-    shell:
-        """
-        module unload miniconda
-        source activate /home/flg9/.conda/envs/bracken
-
-        # Generate Bracken database file
-        bracken-build -d {params.db} -t {params.threads} -k {params.kmer_len} -l {params.read_len}
-        
-        # Define taxonomic levels that we want abundance counts for 
-        levels = ("P" "C" "O" "F" "G" "S")
-
-        # Loop through each of the taxon levels and output a separate file for each 
-        for level in "${{levels[@]}}"; do
-            bracken -d {params.db} -i {input} -o {output.out1} -l $level -r {params.read_len}
-
-        done
-
-        # Combine all levels for the current sample
-        cat {results/{wildcards.genera}/relative_abundance_calc/{wildcards.sample}/{wildcards.sample}_bracken_level_*.txt} > {output.out2}
-
-        # Merge all of the files into one
-        find results/{wildcards.genera}/relative_abundance_calc/ -name "*_bracken_level_*.txt" -exec cat {{}} + > {output.out3}
-
-        # Old code
-        #bracken -d KRAKEN2_DB -i contigs.report -o bracken_level_1.txt -l P -t 10
-        #bracken -d KRAKEN2_DB -i contigs.report -o bracken_level_2.txt -l C -t 10
-        #bracken -d KRAKEN2_DB -i contigs.report -o bracken_level_3.txt -l O -t 10
-        #bracken -d KRAKEN2_DB -i contigs.report -o bracken_level_4.txt -l F -t 10
-        #bracken -d KRAKEN2_DB -i contigs.report -o bracken_level_5.txt -l G -t 10
-        #bracken -d KRAKEN2_DB -i contigs.report -o bracken_level_6.txt -l S -t 10
-
-        # Concatenate the results into a single output file
-        #cat bracken_level_*.txt > bracken.txt
         """
