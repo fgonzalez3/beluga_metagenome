@@ -1,20 +1,6 @@
 rule all:
     input:
-        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/{sample}/Kaiju/kaiju.out", 
-        genera=config["genera"],
-        sample=SAMPLES),
-        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/kaiju_summary.tsv",
-        genera=config["genera"],
-        sample=SAMPLES)
-
-
-        expand("results/{genera}/GTDB-TK/{sample}/gtdbtk_summary.tsv", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/unbinned_contigs_taxonomy_assignment/{sample}/taxonomyResult.tsv", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/unbinned_contigs_taxonomy_assignment/{sample}/taxonomyResult_report.report", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/unbinned_contigs_taxonomy_assignment/{sample}/report.html", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/bracken/{sample}/{sample}_bracken_level_{level}.txt", sample=SAMPLES, genera=config["genera"], level=["P", "C", "O", "F", "G", "S"]),
-        expand("results/{genera}/bracken/{sample}/{sample}_bracken_combined.txt", sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/bracken/all_combined_bracken.txt", genera=config["genera"])
+        expand("results/{genera}/bracken/{sample}/{sample}_bracken_level_{level}.txt", sample=SAMPLES, genera=config["genera"], level=["P", "C", "O", "F", "G", "S"])
 
 rule Kaiju_Taxonomy:
     """
@@ -119,7 +105,6 @@ rule MetaPhlaAn2:
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-
 # MAG-Based Taxonomic Classification Steps
 
 rule GTDB-Tk:
@@ -156,9 +141,7 @@ rule GTDB-Tk:
 
 
 
-# extra to potentially use
-
-
+# misc code
 
 rule bracken_abundance:
     """

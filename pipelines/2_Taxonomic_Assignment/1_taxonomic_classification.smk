@@ -1,13 +1,3 @@
-import os
-import glob
-import pandas as pd
-
-configfile: "config/assembly.yaml"
-
-samples_df = pd.read_csv("tsv/test_beluga_raw_reads.tsv", sep="\t")
-SAMPLES = samples_df["sample_id"].tolist()
-READS = {row.sample_id: {"r1": row.r1, "r2": row.r2} for row in samples_df.itertuples()}
-
 # This workflow will largely be split into two parts - :
     # 1. Read-based taxonomic classification
     # 2. Taxonomic classification of individual MAGs
