@@ -9,6 +9,8 @@ SAMPLES = samples_df["sample_id"].tolist()
 READS = {row.sample_id: {"r1": row.r1, "r2": row.r2} for row in samples_df.itertuples()}
 ASSEMBLERS=config["assembler"]
 
+        ############################# Metagenome Assembly Outputs #############################
+
 def assembly_outputs():
     outputs = []
     for assembler in config["assembler"]:
@@ -180,7 +182,11 @@ rule all:
         evaluate_individual_assemblies(),
 
         # 6. Binning
-        binning_individual_assemblies()
+        binning_individual_assemblies(),
+
+        # 1. Taxonomic Classification
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/k2_output.txt",sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/k2_report.txt",sample=SAMPLES, genera=config["genera"])
 
 # Pipelines to call on 
 include: "pipelines/1_Metagenome_Assembly/1_pre_processing.smk"
@@ -189,5 +195,5 @@ include: "pipelines/1_Metagenome_Assembly/3_dedup_contigs.smk"
 include: "pipelines/1_Metagenome_Assembly/4_align_reads_to_contigs.smk"
 include: "pipelines/1_Metagenome_Assembly/5_evaluate_assemblies.smk"
 include: "pipelines/1_Metagenome_Assembly/6_binning.smk"
-#include: pipelines/2_Taxonomic_Assignment_And_AMR_Surveillance/1_taxonomic_classification.smk
+include: "pipelines/2_Taxonomic_Assignment/1_taxonomic_classification.smk"
 #include: pipelines/virome_characterization.smk
