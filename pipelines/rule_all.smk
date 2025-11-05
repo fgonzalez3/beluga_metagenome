@@ -185,10 +185,10 @@ rule all:
         binning_individual_assemblies(),
 
         # 1. Taxonomic Classification
-        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/k2_output.txt",sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/k2_report.txt",sample=SAMPLES, genera=config["genera"])
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/{sample}.kraken2",sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/{sample}.kreport2",sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Bracken/{sample}/bracken_level_{level}.txt",sample=SAMPLES, genera=config["genera"], level=["P", "C", "O", "F", "G", "S"])  
 
-# Pipelines to call on 
 include: "pipelines/1_Metagenome_Assembly/1_pre_processing.smk"
 include: "pipelines/1_Metagenome_Assembly/2_assembly.smk"
 include: "pipelines/1_Metagenome_Assembly/3_dedup_contigs.smk"

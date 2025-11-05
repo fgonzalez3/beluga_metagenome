@@ -2,6 +2,40 @@ rule all:
     input:
         expand("results/{genera}/bracken/{sample}/{sample}_bracken_level_{level}.txt", sample=SAMPLES, genera=config["genera"], level=["P", "C", "O", "F", "G", "S"])
 
+rule bracken_build:
+    """
+    Generate bracken database file necessary for abundance estimation
+    """
+    input:
+        db = "/vast/palmer/pi/turner/data/db/kraken2_GTDBv220"
+    output:
+        check = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Bracken/check.txt"
+    params:
+        threads = 4,
+        kmer = 35,
+        readlen = 150,
+        executables = "/vast/palmer/pi/turner/flg9/conda_envs/kraken2"
+    log:
+        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Bracken/Bracken_build.out",
+        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Bracken/Bracken_build.err"
+    shell:
+        """
+        module unload miniconda
+        source activate /home/flg9/.conda/envs/bracken
+
+        bracken-build \
+        -d {input.db} \
+        -t {params.threads} \
+        -k {params.kmer} \
+        -l {params.readlen} \
+        -x {params.executables} \
+        1>> {log.stdout} 2>> {log.stderr}
+
+        # Write to an empty file once this process wraps up
+        touch {output}
+        """
+
+
 rule Kaiju_Taxonomy:
     """
     Classify taxonomy for reads with Kaiju
