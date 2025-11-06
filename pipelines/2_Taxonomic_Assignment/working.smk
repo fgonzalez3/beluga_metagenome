@@ -35,35 +35,6 @@ rule bracken_build: # bracken k-mer files are already built for this db so no ne
         touch {output}
         """
 
-
-rule Kaiju_Summary:
-    """
-    Summarize findings from Kaiju into a tsv report
-    """
-    input:
-        "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/kaiju.out"
-    output:
-        "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/kaiju_summary.tsv"
-    params:
-        nodes = "nodes.dmp",
-        names = "names.dmp",
-        ranks = "superkingdom,phylum,class,order,family,genus,species"
-    log:
-        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/Kaiju_Summ.out",
-        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/Kaiju_Summ.err"
-    shell:
-        """
-        module unload miniconda
-        source activate /vast/palmer/pi/turner/flg9/conda_envs/kaiju
-
-        kaiju2table \
-        -t {params.node} \
-        -n {params.names} \
-        -l {params.ranks} \
-        -o {output} \
-        1>> {log.stdout} 2>> {log.stderr}
-        """
-
 rule MetaPhlaAn2:
     """
     Run taxonomic assignment on short reads w/ MetaPhlan

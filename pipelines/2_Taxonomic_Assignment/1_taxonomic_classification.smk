@@ -128,7 +128,8 @@ rule Kaiju_Summary:
     params:
         nodes = "/vast/palmer/pi/turner/data/db/kaiju/nr/nodes.dmp",
         names = "/vast/palmer/pi/turner/data/db/kaiju/nr/names.dmp",
-        ranks = "superkingdom,phylum,class,order,family,genus,species"
+        ranks = "superkingdom,phylum,class,order,family,genus,species",
+        threads = 4
     log:
         stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/Kaiju_Summ.out",
         stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/Kaiju_Summ.err"
@@ -142,5 +143,6 @@ rule Kaiju_Summary:
         -n {params.names} \
         -l {params.ranks} \
         -o {output} \
+        -z {params.threads}
         1>> {log.stdout} 2>> {log.stderr}
         """
