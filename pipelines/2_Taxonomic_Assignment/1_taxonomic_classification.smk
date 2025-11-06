@@ -88,7 +88,7 @@ rule Kaiju_Taxonomy:
         "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/kaiju.out"
     params:
         mode = "nr",
-        node = "nodes.dmp",
+        node = "/vast/palmer/pi/turner/data/db/kaiju/nr/nodes.dmp",
         refseq_index = "/vast/palmer/pi/turner/data/db/kaiju/nr/kaiju_db_nr.fmi",
         max_exact_matches = 12, # conservative params that result in closer precision to Kraken
         min_score = 70, # conservative params that result in closer precision to Kraken
