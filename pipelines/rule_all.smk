@@ -188,7 +188,8 @@ rule all:
         expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/{sample}.kraken2",sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/{sample}.kreport2",sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Bracken/{sample}/bracken_level_{level}.txt",sample=SAMPLES, genera=config["genera"], level=["P", "C", "O", "F", "G", "S"]),
-        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Bracken/{sample}/bracken_merged.csv", sample=SAMPLES, genera=config["genera"])
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Bracken/{sample}/bracken_merged.csv", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/kaiju.out",  sample=SAMPLES, genera=config["genera"])
 
 include: "pipelines/1_Metagenome_Assembly/1_pre_processing.smk"
 include: "pipelines/1_Metagenome_Assembly/2_assembly.smk"

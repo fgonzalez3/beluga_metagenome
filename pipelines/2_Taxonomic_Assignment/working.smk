@@ -2,7 +2,7 @@ rule all:
     input:
         expand("results/{genera}/bracken/{sample}/{sample}_bracken_level_{level}.txt", sample=SAMPLES, genera=config["genera"], level=["P", "C", "O", "F", "G", "S"])
 
-rule bracken_build:
+rule bracken_build: # bracken k-mer files are already built for this db so no need to run this 
     """
     Generate bracken database file necessary for abundance estimation
     """
@@ -35,46 +35,6 @@ rule bracken_build:
         touch {output}
         """
 
-
-rule Kaiju_Taxonomy:
-    """
-    Classify taxonomy for reads with Kaiju
-    """
-    input:
-        r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
-        r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
-    output:
-        "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/kaiju.out"
-    params:
-        mode = "nr"
-        node = "nodes.dmp",
-        refseq_index = "refseq/kaiju_db_nr.fmi",
-        max_exact_matches = 12, # conservative params that result in closer precision to Kraken
-        min_score = 70, # conservative params that result in closer precision to Kraken
-        mismatches = 5 # run this on greedy-5 mode for highest sensitivity at tradeoff of slightly lower precision
-    log:
-        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/Kaiju_Tax.out",
-        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/Kaiju_Tax.err"
-    shell:
-        """
-        module unload miniconda
-        source activate /vast/palmer/pi/turner/flg9/conda_envs/kaiju
-
-        # Run kaiju-makedb -s nr to download nr database for reference
-        # Other interesting databases include plasmids and viruses dbs
-        
-        kaiju \
-        -t {params.node} \
-        -f {params.refseq_index} \
-        -i {input.r1} \
-        -j {input.r2} \
-        -o {output} \
-        -m {params.max_exact_matches} \
-        -s {params.min_score} \
-        -e {params.mismatches} \
-        -v \
-        1>> {log.stdout} 2>> {log.stderr}
-        """
 
 rule Kaiju_Summary:
     """
