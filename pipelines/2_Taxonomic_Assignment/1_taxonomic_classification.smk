@@ -59,3 +59,18 @@ rule bracken_abund:
             1>> {log.stdout} 2>> {log.stderr}
         """
 
+rule bracken_merge:
+    """
+    Merge Bracken abundance files into one master file per sample
+    """
+    input:
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Bracken/{sample}/bracken_level_{level}.txt",
+        sample=SAMPLES,
+        genera=config["genera"],
+        level=["P", "C", "O", "F", "G", "S"])
+    output:
+        "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Bracken/{sample}/bracken_merged.csv"
+    shell:
+        """
+        cat {input} > {output}
+        """
