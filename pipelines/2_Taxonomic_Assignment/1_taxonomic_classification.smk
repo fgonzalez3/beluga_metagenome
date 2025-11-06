@@ -116,3 +116,31 @@ rule Kaiju_Taxonomy:
         -v \
         1>> {log.stdout} 2>> {log.stderr}
         """
+
+rule Kaiju_Summary:
+    """
+    Summarize findings from Kaiju into a tsv report
+    """
+    input:
+        "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/kaiju.out"
+    output:
+        "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/kaiju_summary.tsv"
+    params:
+        nodes = "/vast/palmer/pi/turner/data/db/kaiju/nr/nodes.dmp",
+        names = "/vast/palmer/pi/turner/data/db/kaiju/nr/names.dmp",
+        ranks = "superkingdom,phylum,class,order,family,genus,species"
+    log:
+        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/Kaiju_Summ.out",
+        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/Kaiju_Summ.err"
+    shell:
+        """
+        module unload miniconda
+        source activate /vast/palmer/pi/turner/flg9/conda_envs/kaiju
+
+        kaiju2table \
+        -t {params.node} \
+        -n {params.names} \
+        -l {params.ranks} \
+        -o {output} \
+        1>> {log.stdout} 2>> {log.stderr}
+        """
