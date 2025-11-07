@@ -124,25 +124,23 @@ rule Kaiju_Summary:
     input:
         "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/kaiju.out"
     output:
-        "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/kaiju_summary.tsv"
+        "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/kaiju_summary_{level}.tsv"
     params:
         nodes = "/vast/palmer/pi/turner/data/db/kaiju/nr/nodes.dmp",
-        names = "/vast/palmer/pi/turner/data/db/kaiju/nr/names.dmp",
-        ranks = "superkingdom,phylum,class,order,family,genus,species",
-        threads = 4
+        names = "/vast/palmer/pi/turner/data/db/kaiju/nr/names.dmp"
     log:
-        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/Kaiju_Summ.out",
-        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/Kaiju_Summ.err"
+        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/Kaiju_Summ_{level}.out",
+        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/Kaiju_Summ_{level}.err"
     shell:
         """
         module unload miniconda
         source activate /vast/palmer/pi/turner/flg9/conda_envs/kaiju
 
         kaiju2table \
-        -t {params.node} \
+        {input} \
+        -t {params.nodes} \
         -n {params.names} \
-        -l {params.ranks} \
+        -r {wildcards.level} \
         -o {output} \
-        -z {params.threads}
         1>> {log.stdout} 2>> {log.stderr}
         """
