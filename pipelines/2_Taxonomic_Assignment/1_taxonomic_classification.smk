@@ -144,3 +144,38 @@ rule Kaiju_Summary:
         -o {output} \
         1>> {log.stdout} 2>> {log.stderr}
         """
+
+rule MetaPhlaAn2:
+    """
+    Run taxonomic assignment on short reads w/ MetaPhlan
+    """
+    input:
+        r1 = "results/{genera}/1_metagenome_assembly/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
+        r2 = "results/{genera}/1_metagenome_assembly/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
+    output:
+        profile = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/MetaPhlan/{sample}/profiled_metagenome.txt",
+        mapout = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/MetaPhlan/{sample}/metagenome.bowtie2.bz2"
+    params:
+        type = "fastq",
+        threads = 4,
+        db = "/vast/palmer/pi/turner/data/db/MetaPhlAn"
+    log:
+        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/MetaPhlan/{sample}/MetaPhlan_Tax.out",
+        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/MetaPhlan/{sample}/MetaPhlan_Tax.err"
+    shell:
+        """
+        module unload miniconda
+        source activate /vast/palmer/pi/turner/flg9/conda_envs/metaphlan
+        
+        metaphlan \
+        {input.r1},{input.r2} \
+        --input_type {params.type} \
+        -o {output.profile} \
+        --mapout {output.mapout} \
+        --nproc {params.threads}
+        --ignore_eukaryotes \
+        --ignore_archaea \
+        --db_dir {params.db} \
+        --verbose \
+        1>> {log.stdout} 2>> {log.stderr}
+        """

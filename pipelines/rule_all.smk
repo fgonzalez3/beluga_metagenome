@@ -193,7 +193,9 @@ rule all:
         expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/kaiju_summary_{level}.tsv", 
         sample=SAMPLES, 
         genera=config["genera"],
-        level = ["phylum","class","order","family","genus","species"])
+        level = ["phylum","class","order","family","genus","species"]),
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/MetaPhlan/{sample}/profiled_metagenome.txt", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/MetaPhlan/{sample}/metagenome.bowtie2.bz2", sample=SAMPLES, genera=config["genera"])
 
 include: "pipelines/1_Metagenome_Assembly/1_pre_processing.smk"
 include: "pipelines/1_Metagenome_Assembly/2_assembly.smk"
