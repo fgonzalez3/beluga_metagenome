@@ -35,9 +35,6 @@ rule bracken_build: # bracken k-mer files are already built for this db so no ne
         touch {output}
         """
 
-
-
-
 # MAG-Based Taxonomic Classification Steps
 
 rule GTDB-Tk:
