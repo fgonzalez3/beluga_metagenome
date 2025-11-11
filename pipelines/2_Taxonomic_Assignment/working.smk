@@ -35,40 +35,8 @@ rule bracken_build: # bracken k-mer files are already built for this db so no ne
         touch {output}
         """
 
-rule MetaPhlaAn2:
-    """
-    Run taxonomic assignment on short reads w/ MetaPhlan
-    """
-    input:
-        r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
-        r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
-    output:
-        profile = "profiled_metagenome.txt",
-        mapout = "metagenome.bowtie2.bz2",
-        threads = 5,
-        db = "/vast/palmer/pi/turner/data/db/MetaPhlAn"
-    params:
-        type = "fastq"
-    log:
-        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/MetaPhlan/{sample}/MetaPhlan_Tax.out",
-        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/MetaPhlan/{sample}/MetaPhlan_Tax.err"
-    shell:
-        """
-        module unload miniconda
-        source activate /vast/palmer/pi/turner/flg9/conda_envs/metaphlan
-        
-        metaphlan \
-        {input.r1},{input.r2} \
-        --input_type {params.type} \
-        -o {output.profile} \
-        --mapout {output.mapout} \
-        --nproc {params.threads}
-        --ignore_eukaryotes \
-        --ignore_archaea \
-        --db_dir {params.db} \
-        -v \
-        1>> {log.stdout} 2>> {log.stderr}
-        """
+
+
 
 # MAG-Based Taxonomic Classification Steps
 
@@ -103,8 +71,6 @@ rule GTDB-Tk:
         --debug \
         1> {log.stdout} 2> {log.stderr}
         """
-
-
 
 # misc code
 

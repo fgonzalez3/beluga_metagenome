@@ -166,13 +166,15 @@ rule MetaPhlaAn2:
         """
         module unload miniconda
         source activate /vast/palmer/pi/turner/flg9/conda_envs/metaphlan
+
+        export MetaPhlAn_DB_DIR={params.db}
         
         metaphlan \
         {input.r1},{input.r2} \
         --input_type {params.type} \
         -o {output.profile} \
         --mapout {output.mapout} \
-        --nproc {params.threads}
+        --nproc {params.threads} \
         --ignore_eukaryotes \
         --ignore_archaea \
         --db_dir {params.db} \
