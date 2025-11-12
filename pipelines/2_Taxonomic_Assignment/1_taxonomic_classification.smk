@@ -182,26 +182,29 @@ rule MetaPhlaAn2:
         1>> {log.stdout} 2>> {log.stderr}
         """
 
-rule GTDB-Tk:
+# MAG-Based Taxonomic Classification Steps
+
+rule GTDB_Tk:
     """
     Assign taxonomy to bins using GTDB-Tk
     """
     input:
         dastool_bins="results/{genera}/1_metagenome_assembly/6_binning/DASTool/{assembler}_individual_assembly/refined_bins/{sample}/_DASTool_bins"
     output:
-        "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{sample}/gtdbtk_summary.tsv"
+        "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{assembler}_individual_assembly/{sample}/gtdbtk_summary.tsv"
     params:
         threads = 4,
         ext = ".fa",
         prefix = "GTB-TK_",
-        outdir = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{sample}/"
+        outdir = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{assembler}_individual_assembly/{sample}/"
     log:
-        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{sample}/GTDB-Tk_Tax.out",
-        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{sample}/GTDB-Tk_Tax.err"
+        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{assembler}_individual_assembly/{sample}/GTDB-Tk_Tax.out",
+        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{assembler}_individual_assembly/{sample}/GTDB-Tk_Tax.err"
     shell:
         """
         module unload miniconda 
         source activate /home/flg9/.conda/envs/gtdbtk-2.4.1
+
         export GTDBTK_DB=/vast/palmer/pi/turner/data/db/gtdbtk-2.4.1
 
         gtdbtk classify_wf \

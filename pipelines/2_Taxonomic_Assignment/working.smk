@@ -34,41 +34,7 @@ rule bracken_build: # bracken k-mer files are already built for this db so no ne
         # Write to an empty file once this process wraps up
         touch {output}
         """
-
-# MAG-Based Taxonomic Classification Steps
-
-rule GTDB-Tk:
-    """
-    Assign taxonomy to bins using GTDB-Tk
-    """
-    input:
-        dastool_bins="results/{genera}/1_metagenome_assembly/6_binning/DASTool/{assembler}_individual_assembly/refined_bins/{sample}/_DASTool_bins"
-    output:
-        "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{sample}/gtdbtk_summary.tsv"
-    params:
-        threads = 4,
-        ext = ".fa",
-        prefix = "GTB-TK_",
-        outdir = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{sample}/"
-    log:
-        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{sample}/GTDB-Tk_Tax.out",
-        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{sample}/GTDB-Tk_Tax.err"
-    shell:
-        """
-        module unload miniconda 
-        source activate /home/flg9/.conda/envs/gtdbtk-2.4.1
-        export GTDBTK_DB=/vast/palmer/pi/turner/data/db/gtdbtk-2.4.1
-
-        gtdbtk classify_wf \
-        --genome_dir {input.dastool_bins} \
-        --out_dir {params.outdir} \
-        --cpus {params.threads} \
-        --prefix {params.prefix} \
-        -x {params.ext}
-        --debug \
-        1> {log.stdout} 2> {log.stderr}
-        """
-
+        
 # misc code
 
 rule bracken_abundance:
