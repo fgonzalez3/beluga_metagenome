@@ -187,6 +187,7 @@ rule MetaPhlaAn2:
 rule GTDB_Tk:
     """
     Assign taxonomy to bins using GTDB-Tk
+    This was run on GTDB-Tk v2.5.2 and Python v.2.12
     """
     input:
         dastool_bins="results/{genera}/1_metagenome_assembly/6_binning/DASTool/{assembler}_individual_assembly/refined_bins/{sample}/_DASTool_bins"
@@ -205,7 +206,7 @@ rule GTDB_Tk:
         module unload miniconda 
         source activate /vast/palmer/pi/turner/flg9/conda_envs/gtdbtk-2.5.2
 
-        export GTDBTK_DB=/vast/palmer/pi/turner/data/db/gtdbtk-2.5.2
+        export GTDBTK_DATA_PATH=/vast/palmer/pi/turner/data/db/gtdbtk-2.5.2
 
         gtdbtk classify_wf \
         --genome_dir {input.dastool_bins} \
