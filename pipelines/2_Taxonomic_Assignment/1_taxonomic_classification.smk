@@ -187,12 +187,12 @@ rule MetaPhlaAn2:
 rule GTDB_Tk:
     """
     Assign taxonomy to bins using GTDB-Tk
-    This was run on GTDB-Tk v2.5.2 and Python v.2.12
+    This was run on GTDB-Tk v2.5.2 and Python v.2.12 w/ 400gb RAM
     """
     input:
         dastool_bins="results/{genera}/1_metagenome_assembly/6_binning/DASTool/{assembler}_individual_assembly/refined_bins/{sample}/_DASTool_bins"
     output:
-        "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{assembler}_individual_assembly/{sample}/gtdbtk_summary.tsv"
+        "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{assembler}_individual_assembly/{sample}/gtdbtk.log"
     params:
         threads = 4,
         ext = ".fa",

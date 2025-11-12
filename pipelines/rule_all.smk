@@ -154,10 +154,10 @@ def tax_profiling_individual_assemblies():
         for sample in SAMPLES:
             if assembler == "spades":
 
-                outputs.append(f"results/{config["genera"]}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/spades_individual_assembly/{sample}/gtdbtk_summary.tsv")
+                outputs.append(f"results/{config["genera"]}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/spades_individual_assembly/{sample}/gtdbtk.log")
 
             elif assembler == "megahit":
-                outputs.append(f"results/{config["genera"]}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/megahit_individual_assembly/{sample}/gtdbtk_summary.tsv")
+                outputs.append(f"results/{config["genera"]}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/megahit_individual_assembly/{sample}/gtdbtk.log")
 
     return outputs
 
