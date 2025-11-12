@@ -203,16 +203,16 @@ rule GTDB_Tk:
     shell:
         """
         module unload miniconda 
-        source activate /home/flg9/.conda/envs/gtdbtk-2.4.1
+        source activate /vast/palmer/pi/turner/flg9/conda_envs/gtdbtk-2.5.2
 
-        export GTDBTK_DB=/vast/palmer/pi/turner/data/db/gtdbtk-2.4.1
+        export GTDBTK_DB=/vast/palmer/pi/turner/data/db/gtdbtk-2.5.2
 
         gtdbtk classify_wf \
         --genome_dir {input.dastool_bins} \
         --out_dir {params.outdir} \
         --cpus {params.threads} \
         --prefix {params.prefix} \
-        -x {params.ext}
+        -x {params.ext} \
         --debug \
         1> {log.stdout} 2> {log.stderr}
         """
