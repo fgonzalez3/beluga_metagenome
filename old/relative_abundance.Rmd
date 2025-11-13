@@ -1,0 +1,210 @@
+---
+title: "Beluga"
+author: "Freddy Gonzalez"
+date: "2023-07-21"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+
+#### Relative Abundance 
+```{r Abundance, echo=FALSE}
+
+# set wd and download bracken outputs
+homewd= '/Users/flg9/Desktop/Developer/turner_lab/beluga_feces/R script/'
+setwd(paste0(homewd))
+
+
+beluga_fec <- read.csv(file = paste0(homewd, 'bracken.csv'),
+                            header = TRUE,
+                            stringsAsFactors = FALSE,
+                            na.strings = "")
+
+# filter to remove rows that do not contain info
+filtered_bracken_df <- subset(beluga_fec, name != "name" & name != "taxonomy_id" & 
+                                name != "taxonomy_lvl" & name != "kraken_assigned_reads" & 
+                                name != "added_reads" & name != "new_est_reads" & name != "fraction_total_reads")
+
+# Create a bar plot of the abundance data 
+str(filtered_bracken_df$fraction_total_reads)
+summary(filtered_bracken_df$fraction_total_reads)
+# Remove percent signs and convert to numeric
+filtered_bracken_df$fraction_total_reads <- as.numeric(gsub("%", "", filtered_bracken_df$fraction_total_reads))
+
+# Load the required libraries
+library(ggplot2)
+
+# Assuming your data is in a data frame named bracken_data
+# Filter the data for the desired taxonomic level (e.g., Phylum)
+# Create a bar plot of the abundance data for Phylum
+
+phylum_data <- subset(filtered_bracken_df, taxonomy_lvl == "P" & name %in% c("Bacteroidota", "Bacillota", "Actinomycetota", 
+                                                                             "Mycoplasmatota", "Cyanobacteriota", "Pseudomonadota", 
+                                                                             "Fusobacteriota", "Campylobacterota", "Spirochaetota", 
+                                                                             "Thermotogota", "Thermodesulfobacteriota"))
+phylum_data$name <- trimws(phylum_data$name)
+phylum_data$name <- factor(phylum_data$name, levels = unique(phylum_data$name))
+
+
+abun_P <- ggplot(phylum_data, aes(fill=name, y= fraction_total_reads, x = taxonomy_lvl)) + 
+  geom_bar(position="fill", stat="identity") + 
+  labs(x = "Phylum", y = "Abundance", fill = "Phyla") + theme_minimal() + 
+theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        plot.margin = unit(c(1, 4, 1, 4), "cm"))
+abun_P
+
+ggsave(file = paste0(homewd, "Rel_Abun_P.png"),
+       plot = abun_P,
+       units="mm",  
+       width=150, 
+       height=100, 
+       #limitsize = F,
+       scale=4)#,
+
+# now let's do this at the family level 
+
+family_data <- subset(filtered_bracken_df, taxonomy_lvl == "F" & name != "Hominidae")
+
+family_data$name <- trimws(family_data$name)
+family_data$name <- factor(family_data$name, levels = unique(family_data$name))
+
+# this is messy so subset to see top 10 fraction total reads 
+
+library(dplyr)
+
+top_10_family_data <- family_data %>%
+  top_n(10, fraction_total_reads) %>%
+  arrange(desc(fraction_total_reads))
+
+# Load the viridis package for a visually appealing color palette
+library(viridis)
+
+# Define a custom color palette
+custom_palette <- viridis_pal(option = "viridis", direction = -1)(10)
+
+# Plot using the custom color palette
+abun_F <- ggplot(top_10_family_data, aes(fill = name, y = fraction_total_reads, x = taxonomy_lvl)) + 
+  geom_bar(position = "fill", stat = "identity") + 
+  labs(x = "Family", y = "Abundance", fill = "Family") + 
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        plot.margin = unit(c(1, 4, 1, 4), "cm")) +
+  scale_fill_manual(values = custom_palette)
+
+abun_F
+
+ggsave(file = paste0(homewd, "Rel_Abun_F.png"),
+       plot = abun_F,
+       units="mm",  
+       width=150, 
+       height=100, 
+       #limitsize = F,
+       scale=4)#,
+
+# looks good, now let's do this at the gennus level 
+
+genus_data <- subset(filtered_bracken_df, taxonomy_lvl == "G" & name != "Homo")
+
+genus_data$name <- trimws(genus_data$name)
+genus_data$name <- factor(genus_data$name, levels = unique(genus_data$name))
+
+top_10_genus_data <- genus_data %>%
+  top_n(10, fraction_total_reads) %>%
+  arrange(desc(fraction_total_reads))
+
+abun_G <- ggplot(top_10_genus_data, aes(fill = name, y = fraction_total_reads, x = taxonomy_lvl)) + 
+  geom_bar(position = "fill", stat = "identity") + 
+  labs(x = "Genus", y = "Abundance", fill = "Genus") + 
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        plot.margin = unit(c(1, 4, 1, 4), "cm")) +
+  scale_fill_manual(values = custom_palette)
+
+abun_G
+
+ggsave(file = paste0(homewd, "Rel_Abun_G.png"),
+       plot = abun_G,
+       units="mm",  
+       width=150, 
+       height=100, 
+       #limitsize = F,
+       scale=4)#,
+
+```
+#### Gene composition 
+
+```{r Genes, echo = FALSE }
+
+rm(list=ls())
+library(dplyr)
+library(ggplot2)
+library(forcats)
+library(ggridges)
+library(rcartocolor)
+library(wesanderson)
+
+
+# Now let's take a look at the gene content for our most abundant bacterial genus 
+# using Anvi'o Kegg output
+
+homewd= '/Users/flg9/Desktop/Developer/turner_lab/beluga_feces/anvio/'
+setwd(paste0(homewd))
+
+df <- read.table("contigs-metabolism.txt", header = TRUE, sep = "\t")
+
+# now subselect the largest metabolic category and observe uniqueness 
+carbohydrate_metabolism <- df %>%
+  filter(module_category == "Carbohydrate metabolism")
+
+unique(carbohydrate_metabolism$module_name)
+
+
+# now make a new df with the kegg counts
+
+metabolic_category <- table(df$module_category)
+metabolic_category
+
+# reorganize class types for visualization
+metabolic_category_df <- as.data.frame(metabolic_category)
+metabolic_category_df$Freq <- as.numeric(metabolic_category_df$Freq)
+metabolic_category_df$Var1 <- as.factor(metabolic_category_df$Var1)
+
+# rename some values 
+metabolic_category_df$Var1 <- factor(metabolic_category_df$Var1, levels = c(levels(metabolic_category_df$Var1), "Drug resistance"))
+metabolic_category_df$Var1[metabolic_category_df$Var1 == "Gene set"] <- "Drug resistance"
+
+metabolic_category_df$Var1 <- factor(metabolic_category_df$Var1, levels = c(levels(metabolic_category_df$Var1), "Metabolic capacity"))
+metabolic_category_df$Var1[metabolic_category_df$Var1 == "Module set"] <- "Metabolic capacity"
+
+# reorder to descending 
+metabolic_category_df$Var1 <- fct_reorder(metabolic_category_df$Var1, -metabolic_category_df$Freq)
+
+# plot 
+ggplot(metabolic_category_df, aes(x = Var1, y = Freq, fill = Var1)) + 
+  geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  xlab("Metabolic Pathways") + ylab("Pathway Counts") + labs(fill = "Pathways") + 
+  scale_fill_manual(values = wes_palette("FantasticFox1", 11, type = "continuous"))
+
+# heatmap_plot <- ggplot(metabolic_category_df, aes(x = Var1, y = 1, fill = Freq)) +
+ # geom_tile() +
+#  scale_fill_viridis_c() +  # You can choose any other color scale you prefer
+#  labs(title = "Gene Presence Heatmap", x = "Metabolic Category", y = "")
+
+# and subset the data a bit 
+
+# subset_df <- dat1 %>%
+ # filter(complete.cases(gene, COG, product) & nzchar(gene) & nzchar(COG) & nzchar(product))
+
+#cog_counts <- table(subset_df$COG)
+
+#cog_counts_df <- as.data.frame(cog_counts)
+
+```
