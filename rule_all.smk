@@ -161,6 +161,16 @@ def tax_profiling_individual_assemblies():
 
     return outputs
 
+def phylogenomics():
+    outputs=[]
+    for assembler in config["assembler"]:
+        for sample in SAMPLES:
+            if assembler=="spades":
+                outputs.append(f"results/{genera}/2_Taxonomic_Assignment/2_phylogenomics/PhyloPhlAn/spades/{sample}/RAxML_bestTree._DASTool_bins_refined.tre")
+            elif assembler =="megahit":
+                outputs.append(f"results/{genera}/2_Taxonomic_Assignment/2_phylogenomics/PhyloPhlAn/megahit/{sample}/RAxML_bestTree._DASTool_bins_refined.tre")
+    return outputs
+
 rule all:
     input:
         # 1. Read pre-processing pipeline 
@@ -209,7 +219,10 @@ rule all:
         level = ["phylum","class","order","family","genus","species"]),
         expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/MetaPhlan/{sample}/profiled_metagenome.txt", sample=SAMPLES, genera=config["genera"]),
         expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/MetaPhlan/{sample}/metagenome.bowtie2.bz2", sample=SAMPLES, genera=config["genera"]),
-        tax_profiling_individual_assemblies()
+        tax_profiling_individual_assemblies(),
+
+        # 2. Phylogenomics
+        phylogenomics()
 
 include: "pipelines/1_Metagenome_Assembly/1_pre_processing.smk"
 include: "pipelines/1_Metagenome_Assembly/2_assembly.smk"
