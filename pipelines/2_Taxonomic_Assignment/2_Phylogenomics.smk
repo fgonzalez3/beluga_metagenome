@@ -9,10 +9,11 @@ rule phylogenomics:
     output:
         "results/{genera}/2_Taxonomic_Assignment/2_phylogenomics/PhyloPhlAn/{assembler}/{sample}/RAxML_bestTree._DASTool_bins_refined.tre"
     params:
-        cpus = 4,
+        cpus = 1,
         diversity = "high",
+        ext = ".fa",
         db = "phylophlan", # this db uses 400 marker genes # amphora db is the other default option with 136 marker genes
-        configfile = "/vast/palmer/pi/turner/flg9/conda_envs/PhyloPhlAn/configs/supermatrix_nt.cfg",
+        configfile = "/vast/palmer/pi/turner/flg9/conda_envs/PhyloPhlAn/configs/supermatrix_aa.cfg",
         outdir = "results/{genera}/2_Taxonomic_Assignment/2_phylogenomics/PhyloPhlAn/{assembler}/{sample}"
     log:
         stdout = "logs/{genera}/2_Taxonomic_Assignment/2_phylogenomics/PhyloPhlAn/{assembler}/{sample}/phylo.out",
@@ -27,6 +28,7 @@ rule phylogenomics:
         --database {params.db} \
         --diversity {params.diversity} \
         --config_file {params.configfile} \
+        --genome_extension {params.ext} \
         --output {params.outdir} \
         --nproc {params.cpus} \
         --verbose \
