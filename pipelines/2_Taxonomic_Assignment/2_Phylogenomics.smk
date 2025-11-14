@@ -23,11 +23,12 @@ rule phylogenomics:
         source activate /vast/palmer/pi/turner/flg9/conda_envs/PhyloPhlAn
 
         phylophlan \
-        -i {input.dir} \
-        -d {params.db} \
+        --input {input.dir} \
+        --database {params.db} \
         --diversity {params.diversity} \
-        -f {params.configfile} \
-        -output_folder {params.outdir} \
-        --nproc {params.cpus}
+        --config_file {params.configfile} \
+        --output {params.outdir} \
+        --nproc {params.cpus} \
+        --verbose \
         1>> {log.stdout} 2>> {log.stderr}
         """
