@@ -2,145 +2,39 @@ rule all:
     input:
         expand("results/{genera}/bracken/{sample}/{sample}_bracken_level_{level}.txt", sample=SAMPLES, genera=config["genera"], level=["P", "C", "O", "F", "G", "S"])
 
-rule Kaiju_Taxonomy:
+rule bracken_build: # bracken k-mer files are already built for this db so no need to run this 
     """
-    Classify taxonomy for reads with Kaiju
-    """
-    input:
-        r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
-        r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
-    output:
-        "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/kaiju.out"
-    params:
-        mode = "nr"
-        node = "nodes.dmp",
-        refseq_index = "refseq/kaiju_db_nr.fmi",
-        max_exact_matches = 12, # conservative params that result in closer precision to Kraken
-        min_score = 70, # conservative params that result in closer precision to Kraken
-        mismatches = 5 # run this on greedy-5 mode for highest sensitivity at tradeoff of slightly lower precision
-    log:
-        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/Kaiju_Tax.out",
-        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/Kaiju_Tax.err"
-    shell:
-        """
-        module unload miniconda
-        source activate /vast/palmer/pi/turner/flg9/conda_envs/kaiju
-
-        # Run kaiju-makedb -s nr to download nr database for reference
-        # Other interesting databases include plasmids and viruses dbs
-        
-        kaiju \
-        -t {params.node} \
-        -f {params.refseq_index} \
-        -i {input.r1} \
-        -j {input.r2} \
-        -o {output} \
-        -m {params.max_exact_matches} \
-        -s {params.min_score} \
-        -e {params.mismatches} \
-        -v \
-        1>> {log.stdout} 2>> {log.stderr}
-        """
-
-rule Kaiju_Summary:
-    """
-    Summarize findings from Kaiju into a tsv report
+    Generate bracken database file necessary for abundance estimation
     """
     input:
-        "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/kaiju.out"
+        db = "/vast/palmer/pi/turner/data/db/kraken2_GTDBv220"
     output:
-        "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/kaiju_summary.tsv"
-    params:
-        nodes = "nodes.dmp",
-        names = "names.dmp",
-        ranks = "superkingdom,phylum,class,order,family,genus,species"
-    log:
-        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/Kaiju_Summ.out",
-        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/Kaiju_Summ.err"
-    shell:
-        """
-        module unload miniconda
-        source activate /vast/palmer/pi/turner/flg9/conda_envs/kaiju
-
-        kaiju2table \
-        -t {params.node} \
-        -n {params.names} \
-        -l {params.ranks} \
-        -o {output} \
-        1>> {log.stdout} 2>> {log.stderr}
-        """
-
-rule MetaPhlaAn2:
-    """
-    Run taxonomic assignment on short reads w/ MetaPhlan
-    """
-    input:
-        r1 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R1.fastq",
-        r2 = "results/{genera}/1_pre_processing/dedup_reads/{sample}/{sample}_host_removed_dedup_R2.fastq"
-    output:
-        profile = "profiled_metagenome.txt",
-        mapout = "metagenome.bowtie2.bz2",
-        threads = 5,
-        db = "/vast/palmer/pi/turner/data/db/MetaPhlAn"
-    params:
-        type = "fastq"
-    log:
-        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/MetaPhlan/{sample}/MetaPhlan_Tax.out",
-        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/MetaPhlan/{sample}/MetaPhlan_Tax.err"
-    shell:
-        """
-        module unload miniconda
-        source activate /vast/palmer/pi/turner/flg9/conda_envs/metaphlan
-        
-        metaphlan \
-        {input.r1},{input.r2} \
-        --input_type {params.type} \
-        -o {output.profile} \
-        --mapout {output.mapout} \
-        --nproc {params.threads}
-        --ignore_eukaryotes \
-        --ignore_archaea \
-        --db_dir {params.db} \
-        -v \
-        1>> {log.stdout} 2>> {log.stderr}
-        """
-
-# MAG-Based Taxonomic Classification Steps
-
-rule GTDB-Tk:
-    """
-    Assign taxonomy to bins using GTDB-Tk
-    """
-    input:
-        dastool_bins="results/{genera}/1_metagenome_assembly/6_binning/DASTool/{assembler}_individual_assembly/refined_bins/{sample}/_DASTool_bins"
-    output:
-        "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{sample}/gtdbtk_summary.tsv"
+        check = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Bracken/check.txt"
     params:
         threads = 4,
-        ext = ".fa",
-        prefix = "GTB-TK_",
-        outdir = "results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{sample}/"
+        kmer = 35,
+        readlen = 150,
+        executables = "/vast/palmer/pi/turner/flg9/conda_envs/kraken2"
     log:
-        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{sample}/GTDB-Tk_Tax.out",
-        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/{sample}/GTDB-Tk_Tax.err"
+        stdout = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Bracken/Bracken_build.out",
+        stderr = "logs/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Bracken/Bracken_build.err"
     shell:
         """
-        module unload miniconda 
-        source activate /home/flg9/.conda/envs/gtdbtk-2.4.1
-        export GTDBTK_DB=/vast/palmer/pi/turner/data/db/gtdbtk-2.4.1
+        module unload miniconda
+        source activate /home/flg9/.conda/envs/bracken
 
-        gtdbtk classify_wf \
-        --genome_dir {input.dastool_bins} \
-        --out_dir {params.outdir} \
-        --cpus {params.threads} \
-        --prefix {params.prefix} \
-        -x {params.ext}
-        --debug \
-        1> {log.stdout} 2> {log.stderr}
+        bracken-build \
+        -d {input.db} \
+        -t {params.threads} \
+        -k {params.kmer} \
+        -l {params.readlen} \
+        -x {params.executables} \
+        1>> {log.stdout} 2>> {log.stderr}
+
+        # Write to an empty file once this process wraps up
+        touch {output}
         """
-
-
-
+        
 # misc code
 
 rule bracken_abundance:

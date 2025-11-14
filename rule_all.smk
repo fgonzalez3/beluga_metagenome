@@ -148,6 +148,19 @@ def binning_individual_assemblies():
                 outputs.append(f"results/{config["genera"]}/1_metagenome_assembly/6_binning/GUNC/megahit_individual_assembly/{sample}/check.txt")
     return outputs
 
+def tax_profiling_individual_assemblies():
+    outputs=[]
+    for assembler in config["assembler"]:
+        for sample in SAMPLES:
+            if assembler == "spades":
+
+                outputs.append(f"results/{config["genera"]}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/spades_individual_assembly/{sample}/gtdbtk.log")
+
+            elif assembler == "megahit":
+                outputs.append(f"results/{config["genera"]}/2_Taxonomic_Assignment/1_Taxonomic_Classification/GTDB-Tk/megahit_individual_assembly/{sample}/gtdbtk.log")
+
+    return outputs
+
 rule all:
     input:
         # 1. Read pre-processing pipeline 
@@ -185,10 +198,19 @@ rule all:
         binning_individual_assemblies(),
 
         # 1. Taxonomic Classification
-        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/k2_output.txt",sample=SAMPLES, genera=config["genera"]),
-        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/k2_report.txt",sample=SAMPLES, genera=config["genera"])
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/{sample}.kraken2",sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kraken2/{sample}/{sample}.kreport2",sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Bracken/{sample}/bracken_level_{level}.txt",sample=SAMPLES, genera=config["genera"], level=["P", "C", "O", "F", "G", "S"]),
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Bracken/{sample}/bracken_merged.csv", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/kaiju.out", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/Kaiju/{sample}/kaiju_summary_{level}.tsv", 
+        sample=SAMPLES, 
+        genera=config["genera"],
+        level = ["phylum","class","order","family","genus","species"]),
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/MetaPhlan/{sample}/profiled_metagenome.txt", sample=SAMPLES, genera=config["genera"]),
+        expand("results/{genera}/2_Taxonomic_Assignment/1_Taxonomic_Classification/MetaPhlan/{sample}/metagenome.bowtie2.bz2", sample=SAMPLES, genera=config["genera"]),
+        tax_profiling_individual_assemblies()
 
-# Pipelines to call on 
 include: "pipelines/1_Metagenome_Assembly/1_pre_processing.smk"
 include: "pipelines/1_Metagenome_Assembly/2_assembly.smk"
 include: "pipelines/1_Metagenome_Assembly/3_dedup_contigs.smk"
