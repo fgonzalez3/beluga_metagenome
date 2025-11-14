@@ -166,9 +166,9 @@ def phylogenomics():
     for assembler in config["assembler"]:
         for sample in SAMPLES:
             if assembler=="spades":
-                outputs.append(f"results/{genera}/2_Taxonomic_Assignment/2_phylogenomics/PhyloPhlAn/spades/{sample}/RAxML_bestTree._DASTool_bins_refined.tre")
+                outputs.append(f"results/{config["genera"]}/2_Taxonomic_Assignment/2_phylogenomics/PhyloPhlAn/spades/{sample}/RAxML_bestTree._DASTool_bins_refined.tre")
             elif assembler =="megahit":
-                outputs.append(f"results/{genera}/2_Taxonomic_Assignment/2_phylogenomics/PhyloPhlAn/megahit/{sample}/RAxML_bestTree._DASTool_bins_refined.tre")
+                outputs.append(f"results/{config["genera"]}/2_Taxonomic_Assignment/2_phylogenomics/PhyloPhlAn/megahit/{sample}/RAxML_bestTree._DASTool_bins_refined.tre")
     return outputs
 
 rule all:

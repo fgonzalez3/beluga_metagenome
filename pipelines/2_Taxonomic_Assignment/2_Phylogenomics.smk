@@ -20,7 +20,7 @@ rule phylogenomics:
     shell: 
         """
         module unload miniconda
-        source activate /vast/palmer/pi/turner/flg9/PhyloPhlAn
+        source activate /vast/palmer/pi/turner/flg9/conda_envs/PhyloPhlAn
 
         phylophlan \
         -i {input.dir} \
