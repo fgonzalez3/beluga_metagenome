@@ -231,4 +231,5 @@ include: "pipelines/1_Metagenome_Assembly/4_align_reads_to_contigs.smk"
 include: "pipelines/1_Metagenome_Assembly/5_evaluate_assemblies.smk"
 include: "pipelines/1_Metagenome_Assembly/6_binning.smk"
 include: "pipelines/2_Taxonomic_Assignment/1_taxonomic_classification.smk"
+include: "pipelines/2_Taxonomic_Assignment/2_phylogenomics.smk"
 #include: pipelines/virome_characterization.smk
